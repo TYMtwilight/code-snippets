@@ -9,6 +9,10 @@
 - 統計情報の集計
 - マルチスレッド環境でのカウンター
 
+## 注意！
+- ※ AtomicLong は JVM 内カウンタのため、アプリ再起動や複数台構成ではリセット・重複の可能性がある。
+
+
 ## コード
 ```java
 import java.util.concurrent.atomic.AtomicLong;
