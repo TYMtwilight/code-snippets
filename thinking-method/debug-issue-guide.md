@@ -11,70 +11,143 @@
 
 ## 📋 Issueテンプレート作成
 
-### .github/ISSUE_TEMPLATE/debug.yml
-
-```yaml
+```md
+---
 name: 🐛 デバッグ用Issue
-description: エラー解決のための調査・検証用Issue
-title: "[Bug] "
-labels: ["bug", "debug"]
-body:
-  - type: markdown
-    attributes:
-      value: |
-        エラー解決のためのIssueです。調査しながら更新していきます。
+about: エラー解決のための調査・検証用Issue
+title: '[Bug] '
+labels: bug, debug
+assignees: ''
+---
 
-  - type: textarea
-    id: problem
-    attributes:
-      label: 🐛 問題
-      description: 何が起きているか
-      placeholder: |
-        現象: ユーザー一覧ページにアクセスすると500エラー
-        期待: ユーザー一覧が表示される
-    validations:
-      required: true
+## 🐛 問題
 
-  - type: textarea
-    id: environment
-    attributes:
-      label: 📋 環境
-      placeholder: |
-        - OS: macOS Sonoma 14.2
-        - Spring Boot: 3.2.1
-        - Java: 17
-    validations:
-      required: true
+### 現象
+<!-- 何が起きているか -->
 
-  - type: textarea
-    id: reproduce
-    attributes:
-      label: 📋 再現手順
-      placeholder: |
-        1. アプリケーション起動: `./mvnw spring-boot:run`
-        2. Postmanでリクエスト送信
-        3. → 500エラー発生
-    validations:
-      required: true
+### 期待する動作
+<!-- 本来どうあるべきか -->
 
-  - type: textarea
-    id: error
-    attributes:
-      label: 📊 エラー情報
-      description: エラーメッセージ、ログ、スタックトレース
-      render: shell
-    validations:
-      required: true
+---
 
-  - type: checkboxes
-    id: reproduce-rate
-    attributes:
-      label: 再現条件
-      options:
-        - label: 毎回発生する
-        - label: 特定のデータで発生する
-        - label: 特定の環境で発生する
-        - label: ランダムに発生する
+## 📋 環境
+
+- OS: 
+- 言語/フレームワークバージョン: 
+- データベース: 
+- その他: 
+
+---
+
+## 📋 再現手順
+
+1. 
+2. 
+3. 
+→ エラー発生
+
+### 再現条件
+- [ ] 毎回発生する
+- [ ] 特定のデータで発生する（データ: ）
+- [ ] 特定の環境で発生する（環境: ）
+- [ ] ランダムに発生する
+
+### 再現率
+- %
+
+---
+
+## 📊 エラー情報
+
+### エラーメッセージ
+```
+<!-- エラーメッセージとスタックトレース全体をペースト -->
+```
+
+### ログ
+```
+<!-- 関連するログを時系列で -->
+```
+
+### デバッガで確認した変数
+- 変数名: 値
+- 変数名: 値
+
+---
+
+## 🔍 問題分析
+
+### 情報収集
+<!-- エラーメッセージ、ログ、デバッガで分かったこと -->
+
+### 問題の分割
+<!-- 大きな問題を小さく分解 -->
+- [ ] 部分1: 
+- [ ] 部分2: 
+- [ ] 部分3: 
+
+---
+
+## 💡 仮説
+
+| # | 仮説 | 可能性 | 検証コスト | 優先度 |
+|---|------|--------|-----------|--------|
+| 1 |      | 高/中/低 | 高/中/低 | ⭐⭐⭐ |
+| 2 |      | 高/中/低 | 高/中/低 | ⭐⭐ |
+| 3 |      | 高/中/低 | 高/中/低 | ⭐ |
+
+---
+
+## 🔬 検証結果
+
+### 仮説1: [仮説の内容]
+- **検証方法**: 
+- **結果**: ✅成功 / ❌失敗
+- **所感**: 
+
+### 仮説2: [仮説の内容]
+- **検証方法**: 
+- **結果**: ✅成功 / ❌失敗
+- **所感**: 
+
+---
+
+## ✅ 解決策
+
+### 原因
+<!-- 根本原因を明確に -->
+
+### 対処方法
+<!-- 何をしたか -->
+
+### なぜこれで解決したか
+<!-- 理由を説明 -->
+
+### 参考資料
+- [公式ドキュメント](URL)
+- [参考記事](URL)
+
+---
+
+## 📝 学んだこと
+
+### 技術的な学び
+- 
+
+### 再発防止策
+- [ ] チェックリストに追加
+- [ ] テストコードを追加
+- [ ] ドキュメントに記載
+
+---
+
+## ⏱️ タイムログ
+
+- 問題分析: XX分
+- 仮説立案: XX分
+- 検証: XX分
+- 解決確認: XX分
+- **合計: XX分**
 ```
 
 ---
