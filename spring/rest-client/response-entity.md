@@ -65,6 +65,24 @@ ResponseEntity<List<User>>   // ボディが User のリスト
 | `getHeaders()` | `HttpHeaders` | レスポンスヘッダー |
 | `getBody()` | `T` | レスポンスボディ（ジェネリクスで指定した型） |
 
+### getForEntity と getForObject の違い
+`RestTemplate`でGETリクエストを送る際、目的に応じて使い分ける。
+
+| メソッド | 戻り値 | 用途 |
+|---|---|---|
+| `getForEntity` | `ResponseEntity<T>` | ステータスコード・ヘッダー・ボディすべてが必要なとき |
+| `getForObject` | `T` | ボディだけが必要なとき |
+
+```java
+// レスポンス全体を取得（テストで多用）
+ResponseEntity<String> response = restTemplate.getForEntity("/cashcards", String.class);
+
+// ボディだけ取得
+String body = restTemplate.getForObject("/cashcards", String.class);
+```
+
+テストではステータスコードも検証したいので`getForEntity`を使うことが多い。
+
 ### ResponseEntity の静的ファクトリメソッド（コントローラ向け）
 | メソッド | ステータスコード |
 |---|---|
