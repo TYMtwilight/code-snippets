@@ -23,8 +23,11 @@ class CashCardJsonTest {
         CashCard card = new CashCard(99L, 123.45);
 
         // シリアル化: Java → JSON
+        // ファイル全体と一致するか検証（src/test/resources/expected.json）
         assertThat(json.write(card)).isStrictlyEqualToJson("expected.json");
-        assertThat(json.write(card)).hasJsonPathNumberValue("@.id");
+
+        // 特定のパスの値を取り出して検証
+        // extractingJsonPathNumberValue: パスの値を取り出してアサーションを続けられる
         assertThat(json.write(card)).extractingJsonPathNumberValue("@.id").isEqualTo(99);
         assertThat(json.write(card)).extractingJsonPathNumberValue("@.amount").isEqualTo(123.45);
     }
@@ -43,6 +46,21 @@ class CashCardJsonTest {
 ```
 
 ### expected.json（テストリソース）
+
+**配置場所**：`src/test/resources/expected.json`
+
+`isStrictlyEqualToJson("expected.json")` はクラスパス上のファイルを参照するため、
+テストリソースディレクトリに置く必要がある。
+
+```
+src/
+└── test/
+    ├── java/
+    │   └── CashCardJsonTest.java
+    └── resources/
+        └── expected.json   ← ここに置く
+```
+
 ```json
 {"id": 99, "amount": 123.45}
 ```
@@ -54,13 +72,20 @@ class CashCardJsonTest {
 | 要素 | 役割 |
 |------|------|
 | **`@JsonTest`** | JSON関連Beanだけをロードするスライステスト環境を構築 |
-| **`JacksonTester<T>`** | Jackson JSONライブラリのラッパー。`write()`でシリアル化、`parseObject()`でデシリアル化 |
+| **`JacksonTester<T>`** | Jackson JSONライブラリのラッパー。`write()`でシリアル化（戻り値：`JsonContent<T>`）、`parseObject()`でデシリアル化（戻り値：`T`） |
 | **`@Autowired`** | SpringのDI（依存性注入）で`JacksonTester`インスタンスを自動生成・フィールドに注入 |
 
-### @JsonTestがロードするもの
-- `JacksonTester` / `GsonTester` / `BasicJsonTester`
-- `ObjectMapper`などのJackson設定
-- カスタム`@JsonComponent`（定義している場合）
+### @JsonTestがロードするもの / しないもの
+
+| 種類 | ロードされるか |
+|------|--------------|
+| `JacksonTester` / `GsonTester` / `BasicJsonTester` | ✅ される |
+| `ObjectMapper`などのJackson設定 | ✅ される |
+| カスタム`@JsonComponent` | ✅ される |
+| `@Service` / `@Repository` / `@Controller` | ❌ されない |
+| データベース関連のBean | ❌ されない |
+
+→ JSON変換に関係のないBeanは一切起動しないため、テストが高速になる
 
 ### @SpringBootTestとの違い
 
