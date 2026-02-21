@@ -28,23 +28,38 @@ public class MyUserDetailsService implements UserDetailsService {
     private UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) {
-        return userRepository.findByUsername(username); // DB参照
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new UsernameNotFoundException("ユーザーが見つかりません: " + username);
+        }
+        return user; // UserインターフェースがUserDetailsを実装していれば直接返せる
     }
 }
 ```
 
 ```java
 // テスト用：メモリ上のユーザーで認証する実装
-@Bean
-public UserDetailsService testOnlyUsers(PasswordEncoder passwordEncoder) {
-    User.UserBuilder users = User.builder();
-    UserDetails sarah = users
-        .username("sarah1")
-        .password(passwordEncoder.encode("abc123"))
-        .roles()
-        .build();
-    return new InMemoryUserDetailsManager(sarah);
+@Service
+public class TestUserDetailsService implements UserDetailsService {
+
+    private final PasswordEncoder passwordEncoder;
+
+    public TestUserDetailsService(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        if ("sarah1".equals(username)) {
+            return User.builder()
+                .username("sarah1")
+                .password(passwordEncoder.encode("abc123"))
+                .roles("USER")
+                .build();
+        }
+        throw new UsernameNotFoundException("ユーザーが見つかりません: " + username);
+    }
 }
 ```
 
@@ -58,9 +73,9 @@ public UserDetailsService testOnlyUsers(PasswordEncoder passwordEncoder) {
 [ブラウザ]
     │  POST /login  (username=sarah1, password=abc123)
     ↓
-SecurityFilterChain
-    │  「このURLは認証が必要か？」「ログインフォームはどこ？」など
-    │  HTTPレベルのセキュリティルールを管理する設定クラス
+SecurityFilterChain（フィルターの列）
+    │  リクエストが順番に通過するフィルターの集まり
+    │  CSRF検証・セッション確認・認証処理など各フィルターが直列に並んでいる
     ↓
 UsernamePasswordAuthenticationFilter
     │  フォームのusernameとpasswordを取り出して認証処理に渡す
