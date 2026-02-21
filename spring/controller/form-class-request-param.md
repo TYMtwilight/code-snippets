@@ -41,26 +41,15 @@ public class UserController {
 }
 ```
 
-### メインクラス
-```java
-package com.example.demo.RequestParamSample;
-
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-@SpringBootApplication
-public class RequestParamSampleApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(RequestParamSampleApplication.class, args);
-    }
-}
-```
-
 ## 説明
-- `@Data`（Lombok）でGetter/Setter/toString等を自動生成
+- `@Data`（Lombok）でGetter/Setter/toString/equals/hashCode/必須フィールドのコンストラクタを自動生成
 - Controllerのメソッド引数にFormクラスを指定するだけで自動バインド
 - フィールド名とリクエストパラメータ名が一致すれば自動でマッピングされる
-- `@ModelAttribute`は省略可能（Spring MVCが自動で適用）
+- `@ModelAttribute`は省略可能。書く場合はメソッド引数の直前に付ける
+  ```java
+  public String register(@ModelAttribute UserForm form)
+  ```
+  省略できる理由は**Spring MVCがメソッド引数に`@RequestParam`などの既知のアノテーションがない場合、自動的に`@ModelAttribute`を適用するから**
 
 ## 参考
 - [Spring MVC - @ModelAttribute](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/modelattrib-method-args.html)
