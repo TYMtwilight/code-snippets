@@ -68,6 +68,27 @@ void shouldReturnCashCardWithCorrectJsonStructure() {
 }
 ```
 
+### `ResponseEntity<String>` と `getBody()` の関係
+
+`getBody()` は `String` のメソッドではなく、`ResponseEntity<String>` のメソッド。
+
+```
+ResponseEntity<T>
+  ├── getStatusCode()   → HTTPステータスコード (200, 404 など)
+  ├── getHeaders()      → HTTPヘッダー
+  └── getBody()         → レスポンスボディ ← 型Tで返る
+```
+
+`<String>` というジェネリクスは「ボディをどの型として受け取るか」を指定している。
+
+| コード | 型 |
+|---|---|
+| `response` | `ResponseEntity<String>` |
+| `response.getStatusCode()` | `HttpStatus` |
+| `response.getBody()` | `String` |
+
+`ResponseEntity<String>` にする理由は、ボディをJSONオブジェクトにパースせず**生の文字列として受け取り**、JsonPathで細かくフィールドを検証するため。`ResponseEntity<CashCard>` にするとボディがCashCardオブジェクトに変換されてしまい、JSONの構造そのものをテストしにくくなる。
+
 ## 説明
 
 ### API契約で決めるべきこと
