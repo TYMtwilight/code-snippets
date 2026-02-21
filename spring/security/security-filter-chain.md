@@ -1,16 +1,23 @@
 # SecurityFilterChain - HTTPリクエストへのセキュリティ処理の定義
 
 ## 概要
-HTTPリクエストに対して「どのセキュリティ処理を、どの順番で適用するか」を定義したもの。`HttpSecurity` で設定を組み立て、`build()` で生成する。
+
+Webアプリへのリクエストが届いたとき、コントローラーに到達する前に「このページは誰でも見ていい？ログインが必要？」といったチェックを行う仕組み。
+
+`SecurityFilterChain` はそのチェックのルールをまとめたもので、`HttpSecurity` を使ってルールを組み立て、最後に `http.build()` で完成させる。
+
+```
+ブラウザ → SecurityFilterChain（ルールに従ってチェック） → コントローラー
+```
 
 ## 使用場面
-- 認証・認可のルールを設定するとき
-- APIとWeb画面でセキュリティ設定を分けたいとき
-- ログイン・ログアウトの挙動をカスタマイズするとき
+
+- ログインが必要なページ・不要なページを分けたいとき
+- ログイン・ログアウトの動きをカスタマイズしたいとき
 
 ## コード
+
 ```java
-// 基本的な定義
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -19,90 +26,95 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/public/**").permitAll()  // 誰でもアクセス可
-                .anyRequest().authenticated()               // それ以外は認証必須
+                .requestMatchers("/public/**").permitAll()  // /public/ 以下は誰でもアクセス可
+                .anyRequest().authenticated()               // それ以外はログイン必須
             )
             .formLogin(form -> form
-                .loginPage("/login").permitAll()
+                .loginPage("/login").permitAll()            // ログインページのURLを指定
             )
             .logout(logout -> logout
-                .logoutUrl("/logout")
+                .logoutUrl("/logout")                       // ログアウトのURLを指定
             );
 
-        return http.build();
+        return http.build();  // ここでSecurityFilterChainが完成する
     }
-}
-```
-
-```java
-// 複数チェーンを定義する（APIとWeb画面で設定を分ける）
-@Bean
-@Order(1)
-public SecurityFilterChain apiChain(HttpSecurity http) throws Exception {
-    http.securityMatcher("/api/**")   // /api/** にだけ適用
-        .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
-        .sessionManagement(s -> s.sessionCreationPolicy(STATELESS)); // JWTなどで使う
-    return http.build();
-}
-
-@Bean
-@Order(2)
-public SecurityFilterChain webChain(HttpSecurity http) throws Exception {
-    http.authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
-        .formLogin(Customizer.withDefaults());
-    return http.build();
 }
 ```
 
 ## 説明
 
-**リクエストの流れ**
+### 処理の流れ
+
+リクエストが来ると、コントローラーの前にセキュリティのチェックが入る。
+
 ```
-リクエスト
+ブラウザからリクエスト
     ↓
-┌─────────────────────────────┐
-│      SecurityFilterChain    │
-│                             │
-│  Filter1: 認証トークン確認   │
-│      ↓                      │
-│  Filter2: 認可チェック       │
-│      ↓                      │
-│  Filter3: セッション管理     │
-│      ↓                      │
-└─────────────────────────────┘
-    ↓
-コントローラー（処理本体）
+┌──────────────────────────────┐
+│      SecurityFilterChain     │
+│                              │
+│  ① ログイン済みか確認         │
+│  ② このURLにアクセスできるか  │
+│  ③ セッションを管理           │
+└──────────────────────────────┘
+    ↓（問題なければ）
+コントローラーで処理
 ```
 
-**`HttpSecurity` との関係**
+### `authorizeHttpRequests` でURLごとにアクセス制限を設定する
+
+```java
+.authorizeHttpRequests(auth -> auth
+    .requestMatchers("/public/**").permitAll()   // /public/ 以下は認証不要
+    .requestMatchers("/admin/**").hasRole("ADMIN") // /admin/ は ADMIN ロールのみ
+    .anyRequest().authenticated()               // 上記以外はログインが必要
+)
+```
+
+上から順に評価されるので、**より具体的なパスを先に書く**。
+
+### `formLogin` でログイン画面を設定する
+
+```java
+.formLogin(form -> form
+    .loginPage("/login")          // ログイン画面のURL（デフォルトは /login）
+    .defaultSuccessUrl("/home")   // ログイン成功後のリダイレクト先
+    .permitAll()                  // ログイン画面自体は誰でもアクセス可にする
+)
+```
+
+`permitAll()` を忘れると、ログイン画面にアクセスするためにもログインが必要という状態になるので注意。
+
+### `logout` でログアウトを設定する
+
+```java
+.logout(logout -> logout
+    .logoutUrl("/logout")               // ログアウトのURL（デフォルトは /logout）
+    .logoutSuccessUrl("/login?logout")  // ログアウト後のリダイレクト先
+)
+```
+
+### `HttpSecurity` との関係
 
 | | 役割 |
 |---|---|
-| `HttpSecurity` | ルールを設定するビルダー |
+| `HttpSecurity` | ルールを記述するビルダー（設定の組み立て役） |
 | `SecurityFilterChain` | `http.build()` で完成した設定の実体 |
 
-`HttpSecurity` で「どう守るか」を組み立て、`build()` で `SecurityFilterChain` が完成する。
-
-**複数チェーンの使い分け**
-
-`@Order` で優先度を指定し、`securityMatcher()` で適用するURLパターンを絞る。マッチしたチェーンが使われ、残りは無視される。
-
-```
-リクエスト: /api/users
-    ↓
-@Order(1) apiChain: securityMatcher("/api/**") → マッチ → このチェーンを適用
-@Order(2) webChain: 評価されない
-```
+`HttpSecurity` で「どう守るか」を書き、`build()` を呼ぶことで `SecurityFilterChain` が完成してSpringに登録される。
 
 ## 参考
+
 - [Spring Security Reference - Security Filter Chain](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-securityfilterchain)
-- [Spring Security Reference - Multiple SecurityFilterChain](https://docs.spring.io/spring-security/reference/servlet/configuration/java.html#_multiple_httpsecurity)
 
 ## 関連スニペット
+
 - [@Configuration](../annotations/Configuration.md)
 
 ## 作成日
+
 2026-02-20
 
 ## タグ
+
 #spring #spring-security #security #filter #authentication #authorization
