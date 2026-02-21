@@ -29,6 +29,7 @@ public class UserService {
     private final UserRepository repository;
     
     // コンストラクタインジェクション（推奨）
+    // コンストラクタが1つだけなら @Autowired は省略可能（Spring 4.3以降）
     public UserService(UserRepository repository) {
         this.repository = repository;  // Springが注入してくれる
     }
@@ -38,7 +39,8 @@ public class UserService {
     }
 }
 
-@Repository
+// Spring Data JPA のインターフェースは @Repository 不要
+// JpaRepository を継承するだけで Spring が自動的に Bean として登録する
 public interface UserRepository extends JpaRepository<User, Long> {
     // Springが実装を自動生成してくれる
 }
@@ -70,6 +72,33 @@ public class OrderService {
     // 方法3: フィールドインジェクション（非推奨：テストしにくい）
     // @Autowired
     // private LoggingService loggingService;
+}
+```
+
+### JavaConfig による Bean 定義（@Configuration + @Bean）
+```java
+// @Service 等のアノテーションが付けられないサードパーティのクラスを
+// Bean として登録したい場合に使う
+@Configuration
+public class AppConfig {
+
+    // Jackson の ObjectMapper を Bean として登録する例
+    @Bean
+    public ObjectMapper objectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        return mapper;
+    }
+}
+
+// 使う側は通常の DI と同様に注入できる
+@Service
+public class JsonService {
+    private final ObjectMapper objectMapper;
+    
+    public JsonService(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 }
 ```
 
@@ -128,6 +157,32 @@ public class MyApplication {
   3. Springがライフサイクルを管理
 - **Beanにするもの**：`@Service`, `@Repository`, `@Controller`, `@Component`
 - **Beanにしないもの**：エンティティ（`@Entity`）、DTO、値オブジェクト
+  - これらはリクエストや処理のたびに `new` して使い捨てるオブジェクト
+  - アプリ全体で1つ持ち回る必要がないため、Springに管理させる意味がない
+
+### ApplicationContextとは
+
+一言で言うと「**Beanを保管・管理する箱**」。
+
+アプリ起動時にSpringが `@Service` や `@Repository` などのアノテーションを手がかりにBeanを作成し、この箱の中に格納する。以降、誰かがそのBeanを必要とするとき、Springは箱の中から取り出して注入してくれる。
+
+```
+┌─────────────────────────────────────────────┐
+│            ApplicationContext               │
+│  （Beanの箱）                                │
+│                                             │
+│  ┌─────────────┐    ┌──────────────────┐   │
+│  │ UserService │───▶│ UserRepository   │   │
+│  └─────────────┘    └──────────────────┘   │
+│                                             │
+│  ┌──────────────┐   ┌──────────────────┐   │
+│  │ OrderService │───▶│ PaymentService  │   │
+│  └──────────────┘   └──────────────────┘   │
+└─────────────────────────────────────────────┘
+         ↑ アプリ起動時に自動で構築される
+```
+
+同じBeanを複数の場所から注入しても、デフォルトでは**同じインスタンスが使い回される**（シングルトンスコープ）。
 
 ### BeanFactory vs ApplicationContext
 | 項目 | BeanFactory | ApplicationContext |
@@ -152,7 +207,7 @@ Springに「これはBeanです」「この依存が必要です」と教える�
 
 **3つの方法**：
 1. アノテーション（主流）：`@Service`, `@Autowired`等
-2. JavaConfig：`@Configuration` + `@Bean`
+2. JavaConfig：`@Configuration` + `@Bean`（サードパーティのクラスをBeanにしたい時）
 3. XML（レガシー）：`<bean>`タグ
 
 ## 参考
