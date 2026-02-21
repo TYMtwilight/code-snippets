@@ -17,9 +17,9 @@ Notifications APIは、ウェブページやアプリからシステムレベル
 if (Notification.permission === "granted") {
   // 通知可能
 } else if (Notification.permission === "default") {
-  // まだ許可を求められていない
+  // まだ許可も拒否もしていない → requestPermission() で許可を求められる
 } else if (Notification.permission === "denied") {
-  // ユーザーが拒否した
+  // ユーザーが拒否した → requestPermission() を呼んでも許可ダイアログは出ない
 }
 ```
 
@@ -72,14 +72,68 @@ for (let i = 0; i < 10; i++) {
 }
 ```
 
+### サンプル：許可リクエストから通知表示まで一連の流れ
+```javascript
+// 許可状態に応じて処理を分岐し、通知を表示するユーティリティ関数
+async function showNotification(title, options = {}) {
+  // 既に拒否されている場合は何もしない
+  if (Notification.permission === "denied") {
+    console.warn("通知がブロックされています。ブラウザの設定を確認してください。");
+    return;
+  }
+
+  // まだ許可を求めていない場合はリクエストする
+  if (Notification.permission === "default") {
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") return;
+  }
+
+  // 通知を表示
+  const notification = new Notification(title, options);
+
+  // クリックしたらウィンドウにフォーカスして通知を閉じる
+  notification.addEventListener("click", () => {
+    window.focus();
+    notification.close();
+  });
+}
+
+// 使用例：ボタンクリックで通知を出す
+document.getElementById("notifyBtn").addEventListener("click", () => {
+  showNotification("タスク完了", {
+    body: "レポートのエクスポートが完了しました",
+    icon: "/img/icon-128.png",
+    tag: "task-complete"
+  });
+});
+```
+
+### サンプル：ポモドーロタイマーの終了通知
+```javascript
+// タイマー終了時に通知を出す例
+function startPomodoroTimer(minutes) {
+  const ms = minutes * 60 * 1000;
+
+  setTimeout(async () => {
+    await showNotification("⏰ ポモドーロ終了！", {
+      body: `${minutes}分経過しました。休憩しましょう。`,
+      icon: "/img/tomato.png",
+      tag: "pomodoro"  // 複数タイマーが重ならないようにtagを統一
+    });
+  }, ms);
+}
+
+startPomodoroTimer(25);
+```
+
 ## 説明
 
 ### Notification.permission の値
 | 値 | 説明 |
 |---|---|
 | `granted` | ユーザーが通知表示を許可 |
-| `denied` | ユーザーが通知表示を拒否 |
-| `default` | まだ許可を求めていない（deniedと同じ動作） |
+| `denied` | ユーザーが通知表示を拒否（`requestPermission()` を呼んでもダイアログは出ない） |
+| `default` | まだ許可も拒否もしていない（`requestPermission()` でダイアログを出せる） |
 
 ### 重要な注意点
 - **HTTPS必須**: セキュアコンテキスト（HTTPS）でのみ利用可能
