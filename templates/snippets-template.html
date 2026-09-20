@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[スニペット名]</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f3ff;
+    --surface: #ffffff;
+    --fg: #221d3d;
+    --muted: #6b6580;
+    --border: #e6e1fa;
+    --code-bg: #1e1b2e;
+    --code-fg: #e6e1fa;
+    --accent-1: #7c3aed;
+    --accent-2: #ec4899;
+    --accent-3: #06b6d4;
+    --accent-4: #f59e0b;
+    --shadow: 0 8px 24px rgba(124, 58, 237, 0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14111f;
+      --surface: #1c1830;
+      --fg: #efe9ff;
+      --muted: #a79fc4;
+      --border: #322b4e;
+      --code-bg: #0f0c1a;
+      --code-fg: #e6e1fa;
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 2.5rem 1rem 5rem;
+    background:
+      radial-gradient(circle at 15% -10%, rgba(124,58,237,0.15), transparent 40%),
+      radial-gradient(circle at 100% 0%, rgba(6,182,212,0.12), transparent 35%),
+      var(--bg);
+    color: var(--fg);
+    font-family: "Zen Maru Gothic", -apple-system, "Hiragino Kaku Gothic ProN", sans-serif;
+    line-height: 1.75;
+  }
+  main {
+    max-width: 780px;
+    margin: 0 auto;
+  }
+
+  .hero {
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    border-radius: 20px;
+    padding: 2rem 1.75rem;
+    color: #fff;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: "🔥";
+    position: absolute;
+    right: 1.25rem;
+    top: 1rem;
+    font-size: 2.5rem;
+    opacity: 0.35;
+    transform: rotate(10deg);
+  }
+  .eyebrow {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: rgba(255,255,255,0.2);
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    margin-bottom: 0.75rem;
+  }
+  h1 {
+    font-size: 1.9rem;
+    font-weight: 900;
+    margin: 0 0 0.75rem;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .meta li {
+    background: rgba(255,255,255,0.18);
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem 1.75rem;
+    margin-top: 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  section h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0 0 1rem;
+  }
+  .icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    flex-shrink: 0;
+  }
+  .sec-overview .icon   { background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); }
+  .sec-usecase .icon    { background: linear-gradient(135deg, var(--accent-3), #22d3ee); }
+  .sec-code .icon       { background: linear-gradient(135deg, #312e81, #1e1b2e); }
+  .sec-explain .icon    { background: linear-gradient(135deg, var(--accent-4), #f97316); }
+  .sec-reference .icon  { background: linear-gradient(135deg, #10b981, #06b6d4); }
+  .sec-related .icon    { background: linear-gradient(135deg, var(--accent-2), #f472b6); }
+  .sec-tags .icon       { background: linear-gradient(135deg, #7c3aed, #06b6d4); }
+
+  h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-top: 1.25rem;
+  }
+  p, li { color: var(--fg); }
+  p.placeholder, li.placeholder { color: var(--muted); font-style: italic; }
+  ul { padding-left: 1.3rem; margin: 0.5rem 0; }
+  li { margin: 0.3rem 0; }
+
+  .editor {
+    background: var(--code-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+  }
+  .editor-bar {
+    display: flex;
+    gap: 0.4rem;
+    padding: 0.65rem 0.85rem;
+    background: rgba(255,255,255,0.05);
+  }
+  .editor-bar span {
+    width: 0.65rem;
+    height: 0.65rem;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .editor-bar span:nth-child(1) { background: #ff5f57; }
+  .editor-bar span:nth-child(2) { background: #febc2e; }
+  .editor-bar span:nth-child(3) { background: #28c840; }
+  pre {
+    margin: 0;
+    padding: 1.1rem 1.25rem;
+    overflow-x: auto;
+  }
+  code {
+    font-family: "Fira Code", "SFMono-Regular", Consolas, monospace;
+    font-size: 0.88rem;
+    color: var(--code-fg);
+  }
+  p code, li code {
+    background: var(--border);
+    color: var(--fg);
+    padding: 0.15em 0.4em;
+    border-radius: 5px;
+    font-family: "Fira Code", monospace;
+    font-size: 0.85em;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.75rem 0;
+    font-size: 0.92rem;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+  }
+  th { background: var(--bg); }
+
+  a {
+    color: var(--accent-1);
+    font-weight: 500;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  a:hover { border-bottom-color: currentColor; }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .tag {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-3));
+    color: #fff;
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  .footer-note {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-top: 2rem;
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <header class="hero">
+    <span class="eyebrow">Code Snippet</span>
+    <h1>[スニペット名]</h1>
+    <ul class="meta">
+      <li>📅 作成日: YYYY-MM-DD</li>
+      <li>🔄 更新日: YYYY-MM-DD</li>
+    </ul>
+  </header>
+
+  <section class="sec-overview">
+    <h2><span class="icon">🎯</span>概要</h2>
+    <p class="placeholder">このスニペットの目的・用途を1-2行で説明</p>
+  </section>
+
+  <section class="sec-usecase">
+    <h2><span class="icon">📌</span>使用場面</h2>
+    <ul>
+      <li>場面1</li>
+      <li>場面2</li>
+    </ul>
+  </section>
+
+  <section class="sec-code">
+    <h2><span class="icon">💻</span>コード</h2>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">// コード例
+public class Example {
+    // ...
+}</code></pre>
+    </div>
+  </section>
+
+  <section class="sec-explain">
+    <h2><span class="icon">💡</span>説明</h2>
+    <p class="placeholder">コードの重要なポイントを説明</p>
+  </section>
+
+  <section class="sec-reference">
+    <h2><span class="icon">📚</span>参考</h2>
+    <ul>
+      <li><a href="URL">公式ドキュメント</a></li>
+      <li><a href="URL">参考記事</a></li>
+    </ul>
+  </section>
+
+  <section class="sec-related">
+    <h2><span class="icon">🔗</span>関連スニペット</h2>
+    <ul>
+      <li><a href="../path/to/snippet.html">関連するスニペット1</a></li>
+      <li><a href="../path/to/snippet.html">関連するスニペット2</a></li>
+    </ul>
+  </section>
+
+  <section class="sec-tags">
+    <h2><span class="icon">🏷️</span>タグ</h2>
+    <ul class="tags">
+      <li><span class="tag">spring</span></li>
+      <li><span class="tag">controller</span></li>
+      <li><span class="tag">rest-api</span></li>
+    </ul>
+  </section>
+
+  <p class="footer-note">✨ 学びを積み重ねよう ✨</p>
+
+</main>
+</body>
+</html>
