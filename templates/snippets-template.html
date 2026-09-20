@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
 <style>
   :root {
     --bg: #f5f3ff;
@@ -132,8 +133,6 @@
   .sec-code .icon       { background: linear-gradient(135deg, #312e81, #1e1b2e); }
   .sec-explain .icon    { background: linear-gradient(135deg, var(--accent-4), #f97316); }
   .sec-reference .icon  { background: linear-gradient(135deg, #10b981, #06b6d4); }
-  .sec-related .icon    { background: linear-gradient(135deg, var(--accent-2), #f472b6); }
-  .sec-tags .icon       { background: linear-gradient(135deg, #7c3aed, #06b6d4); }
 
   h3 {
     font-size: 1rem;
@@ -176,6 +175,20 @@
     font-size: 0.88rem;
     color: var(--code-fg);
   }
+  /* Prism.js: 見た目はテーマのまま、背景・余白だけ .editor に合わせる */
+  pre[class*="language-"],
+  pre[class*="language-"] > code {
+    background: transparent;
+    text-shadow: none;
+  }
+  pre[class*="language-"] {
+    margin: 0;
+    padding: 1.1rem 1.25rem;
+  }
+  code[class*="language-"] {
+    font-family: "Fira Code", "SFMono-Regular", Consolas, monospace;
+    font-size: 0.88rem;
+  }
   p code, li code {
     background: var(--border);
     color: var(--fg);
@@ -205,24 +218,6 @@
     border-bottom: 1px solid transparent;
   }
   a:hover { border-bottom-color: currentColor; }
-
-  .tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  .tag {
-    display: inline-block;
-    background: linear-gradient(135deg, var(--accent-1), var(--accent-3));
-    color: #fff;
-    padding: 0.3rem 0.8rem;
-    border-radius: 999px;
-    font-size: 0.85rem;
-    font-weight: 500;
-  }
 
   .footer-note {
     text-align: center;
@@ -281,25 +276,13 @@ public class Example {
     </ul>
   </section>
 
-  <section class="sec-related">
-    <h2><span class="icon">🔗</span>関連スニペット</h2>
-    <ul>
-      <li><a href="../path/to/snippet.html">関連するスニペット1</a></li>
-      <li><a href="../path/to/snippet.html">関連するスニペット2</a></li>
-    </ul>
-  </section>
-
-  <section class="sec-tags">
-    <h2><span class="icon">🏷️</span>タグ</h2>
-    <ul class="tags">
-      <li><span class="tag">spring</span></li>
-      <li><span class="tag">controller</span></li>
-      <li><span class="tag">rest-api</span></li>
-    </ul>
-  </section>
-
   <p class="footer-note">✨ 学びを積み重ねよう ✨</p>
 
 </main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script>
+  Prism.plugins.autoloader.languages_path = "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/";
+</script>
 </body>
 </html>
