@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PostgreSQLドライバとapplication.propertiesの関係</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<style>
+  :root {
+    --bg: #f5f3ff;
+    --surface: #ffffff;
+    --fg: #221d3d;
+    --muted: #6b6580;
+    --border: #e6e1fa;
+    --code-bg: #1e1b2e;
+    --code-fg: #e6e1fa;
+    --accent-1: #7c3aed;
+    --accent-2: #ec4899;
+    --accent-3: #06b6d4;
+    --accent-4: #f59e0b;
+    --shadow: 0 8px 24px rgba(124, 58, 237, 0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14111f;
+      --surface: #1c1830;
+      --fg: #efe9ff;
+      --muted: #a79fc4;
+      --border: #322b4e;
+      --code-bg: #0f0c1a;
+      --code-fg: #e6e1fa;
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 2.5rem 1rem 5rem;
+    background:
+      radial-gradient(circle at 15% -10%, rgba(124,58,237,0.15), transparent 40%),
+      radial-gradient(circle at 100% 0%, rgba(6,182,212,0.12), transparent 35%),
+      var(--bg);
+    color: var(--fg);
+    font-family: "Zen Maru Gothic", -apple-system, "Hiragino Kaku Gothic ProN", sans-serif;
+    line-height: 1.75;
+  }
+  main { max-width: 780px; margin: 0 auto; }
+
+  .hero {
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    border-radius: 20px;
+    padding: 2rem 1.75rem;
+    color: #fff;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  h1 { font-size: 1.9rem; font-weight: 900; margin: 0 0 0.75rem; }
+  .meta { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+  .meta li { background: rgba(255,255,255,0.18); padding: 0.3rem 0.75rem; border-radius: 999px; font-size: 0.85rem; font-weight: 500; }
+
+  section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem 1.75rem;
+    margin-top: 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  section h2 { display: flex; align-items: center; gap: 0.55rem; font-size: 1.15rem; font-weight: 700; margin: 0 0 1rem; }
+  .icon { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 10px; font-size: 1.05rem; flex-shrink: 0; }
+  .sec-overview .icon  { background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); }
+  .sec-code .icon      { background: linear-gradient(135deg, #312e81, #1e1b2e); }
+  .sec-reference .icon { background: linear-gradient(135deg, #10b981, #06b6d4); }
+
+  h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-top: 1.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border);
+  }
+  h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--muted);
+    margin-top: 1.25rem;
+  }
+  p, li { color: var(--fg); }
+  ul { padding-left: 1.3rem; margin: 0.5rem 0; }
+  li { margin: 0.3rem 0; }
+
+  .editor { background: var(--code-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 6px 16px rgba(0,0,0,0.25); }
+  .editor-bar { display: flex; gap: 0.4rem; padding: 0.65rem 0.85rem; background: rgba(255,255,255,0.05); }
+  .editor-bar span { width: 0.65rem; height: 0.65rem; border-radius: 50%; display: inline-block; }
+  .editor-bar span:nth-child(1) { background: #ff5f57; }
+  .editor-bar span:nth-child(2) { background: #febc2e; }
+  .editor-bar span:nth-child(3) { background: #28c840; }
+  pre { margin: 0; padding: 1.1rem 1.25rem; overflow-x: auto; }
+  code { font-family: "Fira Code", "SFMono-Regular", Consolas, monospace; font-size: 0.88rem; color: var(--code-fg); }
+  pre[class*="language-"], pre[class*="language-"] > code { background: transparent; text-shadow: none; }
+  pre[class*="language-"] { margin: 0; padding: 1.1rem 1.25rem; }
+  code[class*="language-"] { font-family: "Fira Code", "SFMono-Regular", Consolas, monospace; font-size: 0.88rem; }
+  p code, li code, td code, th code { background: var(--border); color: var(--fg); padding: 0.15em 0.4em; border-radius: 5px; font-family: "Fira Code", monospace; font-size: 0.85em; }
+
+  table { border-collapse: collapse; width: 100%; margin: 0.75rem 0; font-size: 0.92rem; }
+  th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+  th { background: var(--bg); }
+
+  a { color: var(--accent-1); font-weight: 500; text-decoration: none; border-bottom: 1px solid transparent; }
+  a:hover { border-bottom-color: currentColor; }
+
+  .dep-list { display: flex; flex-direction: column; gap: 1.1rem; margin: 0.75rem 0; padding: 0; list-style: none; }
+  .dep-list > li { padding-left: 0; }
+  .dep-name { display: block; font-weight: 700; margin-bottom: 0.25rem; }
+  .dep-desc { margin: 0; color: var(--muted); }
+  .dep-note { margin: 0.6rem 0 0; padding: 0.75rem 0.9rem; background: var(--bg); border-radius: 10px; font-size: 0.92rem; }
+  .dep-note strong { color: var(--fg); }
+
+  .deep-dive { margin-top: 1rem; padding: 1rem 1.1rem; border: 1px dashed var(--accent-1); border-radius: 12px; }
+  .deep-dive-title { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 700; color: var(--accent-1); margin: 0 0 0.75rem; }
+  .deep-dive h4 { margin-top: 1.1rem; }
+  .deep-dive h4:first-of-type { margin-top: 0; }
+</style>
+</head>
+<body>
+<main>
+
+  <header class="hero">
+    <h1>PostgreSQLドライバとapplication.propertiesの関係</h1>
+    <ul class="meta">
+      <li>📅 作成日: 2026-09-21</li>
+      <li>🔄 更新日: 2026-09-21</li>
+    </ul>
+  </header>
+
+  <section class="sec-overview">
+    <h2><span class="icon">🎯</span>概要</h2>
+    <p>PostgreSQLに接続するには、<code>postgresql</code>ドライバ(<code>pom.xml</code>)と接続設定(<code>application.properties</code>)の2つが必要になる。それぞれが何の役割を持ち、どう組み合わさって接続が成立するのかを整理する。</p>
+
+    <div class="deep-dive">
+      <p class="deep-dive-title">🔍 用語ノート: runtimeスコープとは</p>
+      <p class="dep-note">Mavenの依存関係が「いつ必要になるか」を指定する設定の1つ。依存関係(ライブラリ)は、大きく分けて2つのタイミングで使われる。</p>
+      <p class="dep-note">
+        ・<strong>コンパイル時</strong>: コードを書くときに、そのクラスやインターフェースを<code>import</code>して直接参照する
+        <br>・<strong>実行時</strong>: アプリを動かすときに、裏側で実際に必要になる
+        <br><br>
+        Mavenの<code>&lt;scope&gt;</code>は、この「どのタイミングで必要か」をMavenに伝えるための指定。
+      </p>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.postgresql&lt;/groupId&gt;
+    &lt;artifactId&gt;postgresql&lt;/artifactId&gt;
+    &lt;scope&gt;runtime&lt;/scope&gt;
+&lt;/dependency&gt;</code></pre>
+      </div>
+      <table>
+        <thead>
+          <tr><th>スコープ</th><th>コンパイル時</th><th>実行時</th><th>例</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>compile</code>(デフォルト)</td><td>必要</td><td>必要</td><td>Spring MVCなど、コードで直接使うもの</td></tr>
+          <tr><td><code>runtime</code></td><td>不要</td><td>必要</td><td>JDBCドライバなど</td></tr>
+          <tr><td><code>test</code></td><td>テストのみ</td><td>テストのみ</td><td>JUnitなど</td></tr>
+          <tr><td><code>provided</code></td><td>必要</td><td>不要(サーバー側が用意)</td><td>Servlet APIなど</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="sec-code">
+    <h2><span class="icon">💻</span>コード</h2>
+    <h3>1. pom.xmlへの追加</h3>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.postgresql&lt;/groupId&gt;
+    &lt;artifactId&gt;postgresql&lt;/artifactId&gt;
+    &lt;scope&gt;runtime&lt;/scope&gt;
+&lt;/dependency&gt;</code></pre>
+    </div>
+
+    <h4>なぜruntimeスコープなのか</h4>
+    <p>普段書くコードの中に<code>org.postgresql.Driver</code>は出てこない。触るのは<code>JpaRepository</code>や<code>EntityManager</code>といったJPA(Hibernate)側のAPIだけで、ドライバのクラスを直接<code>import</code>することはない。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">// これは書くが…
+userRepository.findById(1L);
+
+// こういうのは書かない
+// org.postgresql.Driver driver = new org.postgresql.Driver();</code></pre>
+    </div>
+    <p>とはいえドライバが不要というわけではない。JPA(Hibernate)がPostgreSQLと実際に通信する瞬間には、「PostgreSQLの言葉に翻訳してくれる相手」としてこのドライバが裏側で動いている。</p>
+    <ul>
+      <li><strong>コンパイル時は不要</strong>: コードがドライバのクラスを直接参照していないため</li>
+      <li><strong>実行時は必要</strong>: JPA/HibernateがDBに接続する瞬間に、裏側で呼び出されるため</li>
+    </ul>
+    <p>つまり<code>runtime</code>スコープとは、「コードには出てこないが、実行時には必要になるもの」に付ける指定。</p>
+
+    <h3>2. application.propertiesへの追加</h3>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-properties">spring.datasource.url=jdbc:postgresql://localhost:5432/mydb
+spring.datasource.username=postgres
+spring.datasource.password=secret
+
+# 任意: Hibernateがテーブルを自動生成/検証する挙動
+spring.jpa.hibernate.ddl-auto=update</code></pre>
+    </div>
+
+    <h4>ドライバと設定、両方が必要な理由</h4>
+    <p>結論としては、ドライバと設定はセットで機能するもので、どちらか片方だけでは接続できない。役割分担は次の通り。</p>
+    <ul>
+      <li><strong><code>postgresql</code>ドライバ(runtimeスコープ)</strong>: PostgreSQLと実際に通信する「翻訳者」そのもの。JDBCの標準的な呼び出しを、PostgreSQL固有の通信プロトコルに変換する実体(コード)</li>
+      <li><strong><code>application.properties</code>の設定</strong>: その翻訳者に対する「接続先の指示書」。どこ(<code>url</code>)に、誰の名前で(<code>username</code>)、どうやって(<code>password</code>)接続するかという情報</li>
+    </ul>
+    <p>Spring Bootが起動すると、内部で(自動設定によって)だいたい次のような処理が行われる。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">// イメージ(実際にはSpring Bootが自動でやる)
+DataSource dataSource = DriverManager.getConnection(
+    "jdbc:postgresql://localhost:5432/mydb",  // ← application.propertiesのurl
+    "postgres",                                // ← username
+    "secret"                                   // ← password
+);</code></pre>
+    </div>
+    <p>このとき<code>jdbc:postgresql://...</code>というURLを見て、「これはPostgreSQL用の接続だ」と判断し、クラスパス上にある<code>org.postgresql.Driver</code>(＝runtimeスコープで追加した依存関係)を実際に呼び出す。</p>
+    <ul>
+      <li>ドライバだけあって設定がない → どこに接続すればいいか分からず起動できない</li>
+      <li>設定だけあってドライバがない → 接続先は分かっているが、PostgreSQLと会話する手段(通信ロジック)がクラスパス上に存在せず、起動時に<code>ClassNotFoundException</code>のようなエラーになる</li>
+    </ul>
+    <p><code>application.properties</code>は「runtimeスコープの依存関係を使うために必須の設定」というより、「その依存関係(ドライバ)にどう動いてほしいかを教える設定」。どちらか一方だけでは接続できず、両方揃って初めてデータベース接続が成立する。</p>
+
+    <div class="deep-dive">
+      <p class="deep-dive-title">🔍 補足: Configクラスは必要か</p>
+      <p class="dep-note">基本的に自分で書く必要はない。<code>spring-boot-starter-data-jpa</code> + <code>postgresql</code>ドライバがクラスパスにあれば、Spring Bootの自動設定(Auto Configuration)がDataSourceやEntityManagerFactory、TransactionManagerなどを自動的に組み立ててくれる。最低限必要なのは前述の<code>application.properties</code>の接続情報だけ。</p>
+      <p class="dep-note">これだけで、Spring Bootが裏側で以下を自動的に行う。</p>
+      <ul>
+        <li><code>postgresql</code>ドライバがクラスパスにあることを検出</li>
+        <li><code>DataSource</code>(コネクションプール、デフォルトはHikariCP)を自動生成</li>
+        <li>JPA用の<code>EntityManagerFactory</code>を自動生成</li>
+        <li><code>PlatformTransactionManager</code>を自動生成</li>
+      </ul>
+      <p class="dep-note">
+        <strong>明示的なConfigクラス(<code>@Configuration</code>)が必要になるケース</strong><br>
+        ・複数のデータベースに接続したい(マルチDataSource)
+        <br>・コネクションプールの詳細設定を細かくカスタマイズしたい
+        <br>・<code>DataSource</code>の生成方法自体を独自にしたい(特殊な認証方式など)
+        <br><br>
+        単一のPostgreSQLに接続するだけの一般的なアプリであれば、<code>application.properties</code>の数行だけで十分。
+      </p>
+    </div>
+  </section>
+
+  <section class="sec-reference">
+    <h2><span class="icon">📚</span>参考</h2>
+    <ul>
+      <li><a href="./spring-initializr.html">Spring Initializrでのプロジェクト作成</a></li>
+      <li><a href="https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html">Maven - Introduction to the Dependency Mechanism</a></li>
+      <li><a href="https://docs.spring.io/spring-boot/docs/current/reference/html/data.html">Spring Boot Reference - Data Access</a></li>
+    </ul>
+  </section>
+
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script>
+  Prism.plugins.autoloader.languages_path = "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/";
+</script>
+</body>
+</html>
