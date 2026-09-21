@@ -47,10 +47,7 @@
     font-family: "Zen Maru Gothic", -apple-system, "Hiragino Kaku Gothic ProN", sans-serif;
     line-height: 1.75;
   }
-  main {
-    max-width: 780px;
-    margin: 0 auto;
-  }
+  main { max-width: 780px; margin: 0 auto; }
 
   .hero {
     background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
@@ -61,46 +58,9 @@
     position: relative;
     overflow: hidden;
   }
-  .hero::after {
-    content: "🔥";
-    position: absolute;
-    right: 1.25rem;
-    top: 1rem;
-    font-size: 2.5rem;
-    opacity: 0.35;
-    transform: rotate(10deg);
-  }
-  .eyebrow {
-    display: inline-block;
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    background: rgba(255,255,255,0.2);
-    padding: 0.25rem 0.7rem;
-    border-radius: 999px;
-    margin-bottom: 0.75rem;
-  }
-  h1 {
-    font-size: 1.9rem;
-    font-weight: 900;
-    margin: 0 0 0.75rem;
-  }
-  .meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-  .meta li {
-    background: rgba(255,255,255,0.18);
-    padding: 0.3rem 0.75rem;
-    border-radius: 999px;
-    font-size: 0.85rem;
-    font-weight: 500;
-  }
+  h1 { font-size: 1.9rem; font-weight: 900; margin: 0 0 0.75rem; }
+  .meta { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+  .meta li { background: rgba(255,255,255,0.18); padding: 0.3rem 0.75rem; border-radius: 999px; font-size: 0.85rem; font-weight: 500; }
 
   section {
     background: var(--surface);
@@ -110,175 +70,57 @@
     margin-top: 1.25rem;
     box-shadow: var(--shadow);
   }
-  section h2 {
-    display: flex;
-    align-items: center;
-    gap: 0.55rem;
-    font-size: 1.15rem;
-    font-weight: 700;
-    margin: 0 0 1rem;
-  }
-  .icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 10px;
-    font-size: 1.05rem;
-    flex-shrink: 0;
-  }
-  .sec-overview .icon   { background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); }
-  .sec-usecase .icon    { background: linear-gradient(135deg, var(--accent-3), #22d3ee); }
-  .sec-code .icon       { background: linear-gradient(135deg, #312e81, #1e1b2e); }
-  .sec-explain .icon    { background: linear-gradient(135deg, var(--accent-4), #f97316); }
-  .sec-reference .icon  { background: linear-gradient(135deg, #10b981, #06b6d4); }
+  section h2 { display: flex; align-items: center; gap: 0.55rem; font-size: 1.15rem; font-weight: 700; margin: 0 0 1rem; }
+  .icon { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 10px; font-size: 1.05rem; flex-shrink: 0; }
+  .sec-overview .icon  { background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); }
+  .sec-usecase .icon   { background: linear-gradient(135deg, var(--accent-3), #22d3ee); }
+  .sec-code .icon      { background: linear-gradient(135deg, #312e81, #1e1b2e); }
+  .sec-reference .icon { background: linear-gradient(135deg, #10b981, #06b6d4); }
 
-  h3 {
-    font-size: 1.05rem;
-    font-weight: 700;
-    margin-top: 1.75rem;
-    padding-bottom: 0.4rem;
-    border-bottom: 1px solid var(--border);
-  }
-  h4 {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--muted);
-    margin-top: 1.25rem;
-  }
+  h3 { font-size: 1.05rem; font-weight: 700; margin-top: 1.75rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border); }
+  h4 { font-size: 0.95rem; font-weight: 700; color: var(--muted); margin-top: 1.25rem; }
   p, li { color: var(--fg); }
-  p.placeholder, li.placeholder { color: var(--muted); font-style: italic; }
   ul { padding-left: 1.3rem; margin: 0.5rem 0; }
   li { margin: 0.3rem 0; }
 
-  .editor {
-    background: var(--code-bg);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
-  }
-  .editor-bar {
-    display: flex;
-    gap: 0.4rem;
-    padding: 0.65rem 0.85rem;
-    background: rgba(255,255,255,0.05);
-  }
-  .editor-bar span {
-    width: 0.65rem;
-    height: 0.65rem;
-    border-radius: 50%;
-    display: inline-block;
-  }
+  .editor { background: var(--code-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 6px 16px rgba(0,0,0,0.25); }
+  .editor-bar { display: flex; gap: 0.4rem; padding: 0.65rem 0.85rem; background: rgba(255,255,255,0.05); }
+  .editor-bar span { width: 0.65rem; height: 0.65rem; border-radius: 50%; display: inline-block; }
   .editor-bar span:nth-child(1) { background: #ff5f57; }
   .editor-bar span:nth-child(2) { background: #febc2e; }
   .editor-bar span:nth-child(3) { background: #28c840; }
-  pre {
-    margin: 0;
-    padding: 1.1rem 1.25rem;
-    overflow-x: auto;
-  }
-  code {
-    font-family: "Fira Code", "SFMono-Regular", Consolas, monospace;
-    font-size: 0.88rem;
-    color: var(--code-fg);
-  }
-  /* Prism.js: 見た目はテーマのまま、背景・余白だけ .editor に合わせる */
-  pre[class*="language-"],
-  pre[class*="language-"] > code {
-    background: transparent;
-    text-shadow: none;
-  }
-  pre[class*="language-"] {
-    margin: 0;
-    padding: 1.1rem 1.25rem;
-  }
-  code[class*="language-"] {
-    font-family: "Fira Code", "SFMono-Regular", Consolas, monospace;
-    font-size: 0.88rem;
-  }
-  p code, li code, td code, th code {
-    background: var(--border);
-    color: var(--fg);
-    padding: 0.15em 0.4em;
-    border-radius: 5px;
-    font-family: "Fira Code", monospace;
-    font-size: 0.85em;
-  }
+  pre { margin: 0; padding: 1.1rem 1.25rem; overflow-x: auto; }
+  code { font-family: "Fira Code", "SFMono-Regular", Consolas, monospace; font-size: 0.88rem; color: var(--code-fg); }
+  pre[class*="language-"], pre[class*="language-"] > code { background: transparent; text-shadow: none; }
+  pre[class*="language-"] { margin: 0; padding: 1.1rem 1.25rem; }
+  code[class*="language-"] { font-family: "Fira Code", "SFMono-Regular", Consolas, monospace; font-size: 0.88rem; }
+  p code, li code, td code, th code { background: var(--border); color: var(--fg); padding: 0.15em 0.4em; border-radius: 5px; font-family: "Fira Code", monospace; font-size: 0.85em; }
 
-  .dep-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.1rem;
-    margin: 0.75rem 0;
-    padding: 0;
-    list-style: none;
-  }
+  .dep-list { display: flex; flex-direction: column; gap: 1.1rem; margin: 0.75rem 0; padding: 0; list-style: none; }
   .dep-list > li { padding-left: 0; }
   .dep-name { display: block; font-weight: 700; margin-bottom: 0.25rem; }
   .dep-desc { margin: 0; color: var(--muted); }
-  .dep-note {
-    margin: 0.6rem 0 0;
-    padding: 0.75rem 0.9rem;
-    background: var(--bg);
-    border-radius: 10px;
-    font-size: 0.92rem;
-  }
+  .dep-note { margin: 0.6rem 0 0; padding: 0.75rem 0.9rem; background: var(--bg); border-radius: 10px; font-size: 0.92rem; }
   .dep-note strong { color: var(--fg); }
 
-  /* 補足・深掘り情報を本文と視覚的に分けたいときに使う */
-  .deep-dive {
-    margin-top: 1rem;
-    padding: 1rem 1.1rem;
-    border: 1px dashed var(--accent-1);
-    border-radius: 12px;
-  }
-  .deep-dive-title {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--accent-1);
-    margin: 0 0 0.75rem;
-  }
+  .deep-dive { margin-top: 1rem; padding: 1rem 1.1rem; border: 1px dashed var(--accent-1); border-radius: 12px; }
+  .deep-dive-title { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 700; color: var(--accent-1); margin: 0 0 0.75rem; }
   .deep-dive h4 { margin-top: 1.1rem; }
   .deep-dive h4:first-of-type { margin-top: 0; }
 
-  table {
-    border-collapse: collapse;
-    width: 100%;
-    margin: 0.75rem 0;
-    font-size: 0.92rem;
-  }
-  th, td {
-    border: 1px solid var(--border);
-    padding: 0.5rem 0.75rem;
-    text-align: left;
-  }
+  table { border-collapse: collapse; width: 100%; margin: 0.75rem 0; font-size: 0.92rem; }
+  th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
   th { background: var(--bg); }
 
-  a {
-    color: var(--accent-1);
-    font-weight: 500;
-    text-decoration: none;
-    border-bottom: 1px solid transparent;
-  }
+  a { color: var(--accent-1); font-weight: 500; text-decoration: none; border-bottom: 1px solid transparent; }
   a:hover { border-bottom-color: currentColor; }
 
-  .footer-note {
-    text-align: center;
-    color: var(--muted);
-    font-size: 0.9rem;
-    margin-top: 2rem;
-  }
 </style>
 </head>
 <body>
 <main>
 
   <header class="hero">
-    <span class="eyebrow">Code Snippet</span>
     <h1>[スニペット名]</h1>
     <ul class="meta">
       <li>📅 作成日: YYYY-MM-DD</li>
@@ -286,9 +128,17 @@
     </ul>
   </header>
 
+
   <section class="sec-overview">
     <h2><span class="icon">🎯</span>概要</h2>
-    <p class="placeholder">このスニペットの目的・用途を1-2行で説明</p>
+    <p>このスニペットの目的・用途を1-2行で説明する。</p>
+
+    <div class="deep-dive">
+      <p class="deep-dive-title">🔍 用語ノート: [用語]</p>
+      <p class="dep-note">
+        補足として説明したい用語や前提知識をここに書く。
+      </p>
+    </div>
   </section>
 
   <section class="sec-usecase">
@@ -301,6 +151,8 @@
 
   <section class="sec-code">
     <h2><span class="icon">💻</span>コード</h2>
+
+    <h3>1. [手順・区分のタイトル]</h3>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">// コード例
@@ -308,11 +160,22 @@ public class Example {
     // ...
 }</code></pre>
     </div>
-  </section>
+    <p>コードの重要なポイントを説明する。</p>
 
-  <section class="sec-explain">
-    <h2><span class="icon">💡</span>説明</h2>
-    <p class="placeholder">コードの重要なポイントを説明</p>
+    <h4>[補足見出し]</h4>
+    <ul>
+      <li>ポイント1</li>
+      <li>ポイント2</li>
+    </ul>
+
+    <h4>各要素の意味</h4>
+    <ul class="dep-list">
+      <li>
+        <span class="dep-name">項目名 <code>identifier</code></span>
+        <p class="dep-desc">説明文。</p>
+        <p class="dep-note"><strong>補足タイトル</strong><br>詳しい説明。</p>
+      </li>
+    </ul>
   </section>
 
   <section class="sec-reference">
@@ -322,8 +185,6 @@ public class Example {
       <li><a href="URL">参考記事</a></li>
     </ul>
   </section>
-
-  <p class="footer-note">✨ 学びを積み重ねよう ✨</p>
 
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
