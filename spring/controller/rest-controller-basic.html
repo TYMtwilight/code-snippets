@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REST Controller - 基本パターン(CRUD)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<style>
+  :root {
+    --bg: #f5f3ff;
+    --surface: #ffffff;
+    --fg: #221d3d;
+    --muted: #6b6580;
+    --border: #e6e1fa;
+    --code-bg: #1e1b2e;
+    --code-fg: #e6e1fa;
+    --accent-1: #7c3aed;
+    --accent-2: #ec4899;
+    --accent-3: #06b6d4;
+    --accent-4: #f59e0b;
+    --shadow: 0 8px 24px rgba(124, 58, 237, 0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14111f;
+      --surface: #1c1830;
+      --fg: #efe9ff;
+      --muted: #a79fc4;
+      --border: #322b4e;
+      --code-bg: #0f0c1a;
+      --code-fg: #e6e1fa;
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 2.5rem 1rem 5rem;
+    background:
+      radial-gradient(circle at 15% -10%, rgba(124,58,237,0.15), transparent 40%),
+      radial-gradient(circle at 100% 0%, rgba(6,182,212,0.12), transparent 35%),
+      var(--bg);
+    color: var(--fg);
+    font-family: "Zen Maru Gothic", -apple-system, "Hiragino Kaku Gothic ProN", sans-serif;
+    line-height: 1.75;
+  }
+  main { max-width: 780px; margin: 0 auto; }
+
+  .hero {
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    border-radius: 20px;
+    padding: 2rem 1.75rem;
+    color: #fff;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  h1 { font-size: 1.9rem; font-weight: 900; margin: 0 0 0.75rem; }
+  .meta { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+  .meta li { background: rgba(255,255,255,0.18); padding: 0.3rem 0.75rem; border-radius: 999px; font-size: 0.85rem; font-weight: 500; }
+
+  section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem 1.75rem;
+    margin-top: 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  section h2 { display: flex; align-items: center; gap: 0.55rem; font-size: 1.15rem; font-weight: 700; margin: 0 0 1rem; }
+  .icon { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 10px; font-size: 1.05rem; flex-shrink: 0; }
+  .sec-overview .icon  { background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); }
+  .sec-usecase .icon   { background: linear-gradient(135deg, var(--accent-3), #22d3ee); }
+  .sec-code .icon      { background: linear-gradient(135deg, #312e81, #1e1b2e); }
+  .sec-reference .icon { background: linear-gradient(135deg, #10b981, #06b6d4); }
+
+  h3 { font-size: 1.05rem; font-weight: 700; margin-top: 1.75rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border); }
+  h3:first-child { margin-top: 0; }
+  h4 { font-size: 0.95rem; font-weight: 700; color: var(--muted); margin-top: 1.25rem; }
+  p, li { color: var(--fg); }
+  ul { padding-left: 1.3rem; margin: 0.5rem 0; }
+  li { margin: 0.3rem 0; }
+
+  .editor { background: var(--code-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 6px 16px rgba(0,0,0,0.25); margin: 0.75rem 0; }
+  .editor-bar { display: flex; gap: 0.4rem; padding: 0.65rem 0.85rem; background: rgba(255,255,255,0.05); }
+  .editor-bar span { width: 0.65rem; height: 0.65rem; border-radius: 50%; display: inline-block; }
+  .editor-bar span:nth-child(1) { background: #ff5f57; }
+  .editor-bar span:nth-child(2) { background: #febc2e; }
+  .editor-bar span:nth-child(3) { background: #28c840; }
+  pre { margin: 0; padding: 1.1rem 1.25rem; overflow-x: auto; }
+  code { font-family: "Fira Code", "SFMono-Regular", Consolas, monospace; font-size: 0.88rem; color: var(--code-fg); }
+  pre[class*="language-"], pre[class*="language-"] > code { background: transparent; text-shadow: none; }
+  pre[class*="language-"] { margin: 0; padding: 1.1rem 1.25rem; }
+  code[class*="language-"] { font-family: "Fira Code", "SFMono-Regular", Consolas, monospace; font-size: 0.88rem; }
+  p code, li code, td code, th code { background: var(--border); color: var(--fg); padding: 0.15em 0.4em; border-radius: 5px; font-family: "Fira Code", monospace; font-size: 0.85em; }
+
+  .dep-list { display: flex; flex-direction: column; gap: 1.1rem; margin: 0.75rem 0; padding: 0; list-style: none; }
+  .dep-list > li { padding-left: 0; }
+  .dep-name { display: block; font-weight: 700; margin-bottom: 0.25rem; }
+  .dep-desc { margin: 0; color: var(--muted); }
+  .dep-note { margin: 0.6rem 0 0; padding: 0.75rem 0.9rem; background: var(--bg); border-radius: 10px; font-size: 0.92rem; }
+  .dep-note strong { color: var(--fg); }
+
+  .deep-dive { margin-top: 1rem; padding: 1rem 1.1rem; border: 1px dashed var(--accent-1); border-radius: 12px; }
+  .deep-dive-title { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 700; color: var(--accent-1); margin: 0 0 0.75rem; }
+  .deep-dive h4 { margin-top: 1.1rem; }
+  .deep-dive h4:first-of-type { margin-top: 0; }
+
+  table { border-collapse: collapse; width: 100%; margin: 0.75rem 0; font-size: 0.92rem; }
+  th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+  th { background: var(--bg); }
+
+  a { color: var(--accent-1); font-weight: 500; text-decoration: none; border-bottom: 1px solid transparent; }
+  a:hover { border-bottom-color: currentColor; }
+
+</style>
+</head>
+<body>
+<main>
+
+  <header class="hero">
+    <h1>REST Controller - 基本パターン(CRUD)</h1>
+    <ul class="meta">
+      <li>📅 作成日: 2026-03-21</li>
+      <li>🔄 更新日: 2026-09-22</li>
+    </ul>
+  </header>
+
+
+  <section class="sec-overview">
+    <h2><span class="icon">🎯</span>概要</h2>
+    <p><code>@RestController</code>と<code>@RequestMapping</code>を使ったREST APIコントローラーの基本パターン。GET / POST / PUT / PATCH / DELETEの5メソッドをDTO + Service層と組み合わせて実装する。</p>
+
+    <div class="deep-dive">
+      <p class="deep-dive-title">🔍 用語ノート: @RequestMapping</p>
+      <p class="dep-note">
+        URLパスをControllerのクラス/メソッドに紐付けるアノテーション。クラスに付けると、そのControllerが担当する共通のベースパスを指定できる(例: <code>@RequestMapping("/api/todos")</code>を付けたクラス内の<code>@GetMapping</code>は実際には<code>GET /api/todos</code>になる)。<br><br>
+        <code>@GetMapping</code>、<code>@PostMapping</code>などは<code>@RequestMapping(method = RequestMethod.GET)</code>等のショートカット(合成アノテーション)。メソッド単体に<code>@RequestMapping</code>を付けてパスとHTTPメソッドを指定することも技術的には可能だが、今は<code>@GetMapping</code>等を使うのが主流。「クラスに<code>@RequestMapping</code>、メソッドに<code>@GetMapping</code>等」という組み合わせが最も一般的。
+      </p>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-java">// 古い書き方(今はあまり使わない)
+@RequestMapping(value = "/{id}", method = RequestMethod.GET)
+
+// 今の主流(@GetMappingが上と同じ意味のショートカット)
+@GetMapping("/{id}")</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec-usecase">
+    <h2><span class="icon">📌</span>使用場面</h2>
+    <ul>
+      <li>リソース(例: TODO、ユーザー、商品)のCRUD APIを設計する時</li>
+      <li>Bean Validation(<code>@Valid</code>)でリクエストを検証したい時</li>
+      <li>Service層に処理を委譲し、Controllerをシンプルに保ちたい時</li>
+    </ul>
+  </section>
+
+  <section class="sec-code">
+    <h2><span class="icon">💻</span>コード</h2>
+
+    <h3>基本形</h3>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@RestController
+@RequestMapping("/api/todos")
+public class TodoController {
+
+  private final TodoService todoService;
+
+  // コンストラクタインジェクション
+  public TodoController(TodoService todoService) {
+    this.todoService = todoService;
+  }
+
+  // GET /api/todos?status=ALL|ACTIVE|COMPLETED
+  @GetMapping
+  public ResponseEntity&lt;List&lt;TodoResponse&gt;&gt; getAll(
+      @RequestParam(name = "status", defaultValue = "ALL") String status) {
+    return ResponseEntity.ok(todoService.findAll(status));
+  }
+
+  // POST /api/todos → 201 Created
+  @PostMapping
+  public ResponseEntity&lt;TodoResponse&gt; create(
+      @Valid @RequestBody TodoRequest request) {
+    TodoResponse created = todoService.create(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(created);
+  }
+
+  // PUT /api/todos/{id} → 200 OK
+  @PutMapping("/{id}")
+  public ResponseEntity&lt;TodoResponse&gt; update(
+      @PathVariable("id") Long id,
+      @Valid @RequestBody TodoRequest request) {
+    TodoResponse updated = todoService.update(id, request);
+    return ResponseEntity.ok(updated);
+  }
+
+  // PATCH /api/todos/{id}/toggle → 200 OK(部分更新)
+  @PatchMapping("/{id}/toggle")
+  public ResponseEntity&lt;TodoResponse&gt; toggle(@PathVariable("id") Long id) {
+    TodoResponse toggled = todoService.toggleComplete(id);
+    return ResponseEntity.ok(toggled);
+  }
+
+  // DELETE /api/todos/{id} → 204 No Content
+  @DeleteMapping("/{id}")
+  public ResponseEntity&lt;Void&gt; delete(@PathVariable("id") Long id) {
+    todoService.delete(id);
+    return ResponseEntity.noContent().build();
+  }
+}</code></pre>
+    </div>
+
+    <h3>① リクエストを受け取る</h3>
+
+    <h4>@RequestParam のデフォルト値</h4>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@RequestParam(name = "status", defaultValue = "ALL") String status</code></pre>
+    </div>
+    <ul>
+      <li>クエリパラメータ未指定時に<code>"ALL"</code>が使われる</li>
+      <li><code>?status=ACTIVE</code>のように渡すと<code>"ACTIVE"</code>になる</li>
+    </ul>
+
+    <h4>@PathVariable の明示的な name 指定</h4>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@PathVariable("id") Long id</code></pre>
+    </div>
+    <ul>
+      <li>メソッド引数名とパス変数名が一致する場合は省略可能だが、明示すると可読性が上がる</li>
+    </ul>
+
+    <h4>@Valid でリクエストボディを検証</h4>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@PostMapping
+public ResponseEntity&lt;TodoResponse&gt; create(@Valid @RequestBody TodoRequest request) {</code></pre>
+    </div>
+    <ul>
+      <li><code>@Valid</code>を付けると<code>TodoRequest</code>のBean Validationアノテーション(<code>@NotBlank</code>、<code>@Size</code>など)が実行される</li>
+      <li>バリデーション失敗時は<code>MethodArgumentNotValidException</code>がスローされる</li>
+      <li><code>@RestControllerAdvice</code>で一括ハンドリングするのが定石</li>
+    </ul>
+
+    <div class="deep-dive">
+      <p class="deep-dive-title">🔍 なぜ create() に throws が書かれていないのに例外が飛ぶのか</p>
+
+      <h4>throws が必要なのはチェック例外だけ</h4>
+      <p class="dep-note">
+        Javaの例外には「チェック例外」と「非チェック例外」の2種類がある。<code>IOException</code>のようなチェック例外は<code>throws</code>を書かないとコンパイルエラーになるが、<code>RuntimeException</code>を継承した非チェック例外はコンパイラが一切チェックしない。<code>MethodArgumentNotValidException</code>は<code>RuntimeException</code>系(<code>BindException</code>経由)なので、<code>throws</code>を書かなくてもコンパイルは通る。「<code>throws</code>が書かれていない = 例外が起きない」わけではなく、単に「Javaがそのチェックを強制していない」だけ。
+      </p>
+
+      <h4>例外は create() の中身が実行される前に発生する</h4>
+      <p class="dep-note">
+        より重要なのは、この例外が<code>create()</code>メソッドの処理が始まる<strong>前</strong>に発生している点。<code>@Valid @RequestBody TodoRequest request</code>という引数を見つけると、Springは実際に<code>create()</code>を呼び出す前に、引数を準備する段階(<code>HandlerMethodArgumentResolver</code>という内部の仕組み)でJSONの変換とバリデーションを済ませてしまう。ここで失敗すると、Spring自身が<code>MethodArgumentNotValidException</code>を投げ、<code>create()</code>の中身は1行も実行されない。
+      </p>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code>① リクエスト受信 (POST /api/todos, JSON body)
+        ↓
+② JSONを TodoRequest オブジェクトに変換 (デシリアライズ)
+        ↓
+③ @Valid が付いているのを見つける
+        ↓
+④ TodoRequest の中身をバリデーションルールと照合
+        ↓
+   ┌─ OK なら ──────────────→ ⑤ create(request) を実際に呼び出す
+   └─ NG なら ──→ MethodArgumentNotValidException を投げて
+                  ⑤には絶対に到達しない(即座に処理が中断される)</code></pre>
+      </div>
+      <p class="dep-note">
+        つまり「<code>create()</code>メソッドが例外を投げている」のではなく、「Springが<code>create()</code>を呼ぶ前にチェックして、ダメならSpring自身が例外を投げる」という流れ。だからコントローラー側には<code>throws</code>はおろか、例外に関するコードが一切登場しない。捕まえたい場合は<code>@RestControllerAdvice</code>で一括ハンドリングする。
+      </p>
+    </div>
+
+    <h4>DTOパターン: なぜEntityを直接受け取らないか</h4>
+    <p>Entityをそのまま受け取って返すのではなく、DTO(Data Transfer Object)に変換して受け渡しする。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code>Request JSON → TodoRequest (DTO) → todoService.create() → Entity → TodoResponse (DTO) → Response JSON</code></pre>
+    </div>
+    <p><strong>理由:</strong></p>
+    <ul>
+      <li>Entityのフィールド変更がレスポンス形式に影響しない</li>
+      <li>不要なフィールド(パスワードなど)を返さずに済む</li>
+      <li>バリデーションロジックをDTOに閉じ込められる(<code>@Valid</code>が機能するのもこのため)</li>
+    </ul>
+
+    <div class="deep-dive">
+      <p class="deep-dive-title">🔍 「バリデーションロジックをDTOに閉じ込める」とは / Before・After比較</p>
+      <p class="dep-note">
+        入力チェックのルールを1箇所(DTOクラス)にまとめて書き、使う側(Controller)は何も考えずに済むようにする、という意味。
+      </p>
+
+      <h4>DTOを使わない場合(悪い例)</h4>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-java">@PostMapping
+public ResponseEntity&lt;Todo&gt; create(@RequestBody Todo todo) {
+    // Controllerの中でチェックを書く羽目になる
+    if (todo.getTitle() == null || todo.getTitle().isBlank()) {
+        return ResponseEntity.badRequest().build();
+    }
+    if (todo.getTitle().length() &gt; 100) {
+        return ResponseEntity.badRequest().build();
+    }
+    // ...他のフィールドのチェックも続く
+    todoService.save(todo);
+    return ResponseEntity.ok(todo);
+}</code></pre>
+      </div>
+      <ul>
+        <li>チェックのロジックがControllerに散らばる</li>
+        <li>同じEntityを使う別のControllerやメソッドがあれば、そこにも同じif文をコピペすることになる</li>
+        <li>「タイトルのルールは何文字までだっけ?」を知りたい時、Controllerのコードを読まないと分からない</li>
+      </ul>
+
+      <h4>DTOパターンを使う場合(良い例)</h4>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-java">public class TodoRequest {
+    @NotBlank(message = "タイトルは必須です")
+    @Size(max = 100, message = "タイトルは100文字以内で入力してください")
+    private String title;
+    // getter / setter
+}</code></pre>
+      </div>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-java">@PostMapping
+public ResponseEntity&lt;TodoResponse&gt; create(@Valid @RequestBody TodoRequest request) {
+    // if文が一切ない。ここに来た時点でルールは全て満たされている
+    TodoResponse created = todoService.create(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(created);
+}</code></pre>
+      </div>
+      <ul>
+        <li>ルール(<code>@NotBlank</code>、<code>@Size</code>など)が<code>TodoRequest</code>クラスのフィールド定義そのものに書かれている</li>
+        <li>Controller側は<code>@Valid</code>を付けるだけで、ルールの中身を一切知らなくていい</li>
+        <li>別のControllerや別の場所で同じ<code>TodoRequest</code>を受け取れば、自動的に同じチェックが効く(コピペ不要)</li>
+        <li>ルールを変更したい時(例: 最大文字数を200に変える)も、<code>TodoRequest</code>クラスの1箇所を直せば、使っている全箇所に反映される</li>
+      </ul>
+      <p class="dep-note">
+        つまり「ロジックをDTOに閉じ込める」= チェックのルールをDTOという1つの箱にしまい込んで、使う側はその箱を渡すだけで済むようにする、というイメージ。カプセル化と同じ発想。
+      </p>
+    </div>
+
+    <h3>② レスポンスを返す</h3>
+
+    <div class="deep-dive">
+      <p class="deep-dive-title">🔍 用語ノート: ResponseEntity&lt;List&lt;TodoResponse&gt;&gt; の意味</p>
+      <p class="dep-note">
+        ジェネリクスが入れ子になっているだけで、分解すると難しくない。
+      </p>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code>ResponseEntity&lt; List&lt; TodoResponse &gt; &gt;
+     ↑              ↑        ↑
+  レスポンス全体   複数件の  TodoResponse
+  (ステータス+     リスト    という具体的な型
+   ボディ)</code></pre>
+      </div>
+      <p class="dep-note">
+        <strong>List&lt;TodoResponse&gt;</strong><br>
+        「<code>TodoResponse</code>型の要素だけを持つリスト」という意味。<code>List</code>だけだと中身が何型か分からないが、<code>&lt;TodoResponse&gt;</code>と書くことで中身の型をコンパイラに教えている。
+      </p>
+      <p class="dep-note">
+        <strong>ResponseEntity&lt;T&gt;</strong><br>
+        <code>ResponseEntity</code>自体もジェネリクスを使ったクラスで、「レスポンスのボディに何を入れるか」を<code>&lt;T&gt;</code>の部分で指定する。<code>ResponseEntity&lt;TodoResponse&gt;</code>ならボディは1件、<code>ResponseEntity&lt;List&lt;TodoResponse&gt;&gt;</code>ならボディは複数件のリストになる。
+      </p>
+      <p class="dep-note">
+        <code>getAll()</code>は一覧取得(複数件)なので<code>List</code>で包み、<code>create()</code>や<code>update()</code>は1件だけ返すので<code>ResponseEntity&lt;TodoResponse&gt;</code>(<code>List</code>なし)になっている。
+      </p>
+    </div>
+
+    <h4>HTTPメソッドとResponseEntityの対応</h4>
+    <table>
+      <tr><th>HTTPメソッド</th><th>用途</th><th>正常時のステータス</th><th>ResponseEntity</th></tr>
+      <tr><td><code>@GetMapping</code></td><td>一覧取得・単件取得</td><td>200 OK</td><td><code>ResponseEntity.ok(body)</code></td></tr>
+      <tr><td><code>@PostMapping</code></td><td>新規作成</td><td>201 Created</td><td><code>ResponseEntity.status(HttpStatus.CREATED).body(body)</code></td></tr>
+      <tr><td><code>@PutMapping</code></td><td>全体更新</td><td>200 OK</td><td><code>ResponseEntity.ok(body)</code></td></tr>
+      <tr><td><code>@PatchMapping</code></td><td>部分更新</td><td>200 OK</td><td><code>ResponseEntity.ok(body)</code></td></tr>
+      <tr><td><code>@DeleteMapping</code></td><td>削除</td><td>204 No Content</td><td><code>ResponseEntity.noContent().build()</code></td></tr>
+    </table>
+    <p>POSTで新規作成した場合は「作成されたリソースが返る」ことを示すため<code>201 Created</code>を使うのがRESTの慣習。DELETEは「成功したかどうか」だけが重要で返すデータがないため、<code>200 OK</code> + 空ボディより<code>204 No Content</code>の方が「意図的にボディがない」ことを明確に伝えられる。</p>
+
+    <h4>ResponseEntityの組み立て方</h4>
+    <p><code>ResponseEntity</code>は「ステータスコード + ボディ」をビルダー形式で組み立てるクラス。<code>ok(body)</code>や<code>status(...).body(...)</code>はすべて内部的に同じ考え方で作られている。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">// ボディありのパターン(POST → 201 Created)
+ResponseEntity.status(HttpStatus.CREATED)  // ① ステータスだけ決める
+              .body(created);              // ② ボディを詰めて完成
+
+// ボディなしのパターン(DELETE → 204 No Content)
+ResponseEntity.noContent()  // ① ステータスを204に設定
+              .build();      // ② ボディなしでレスポンスを完成させる</code></pre>
+    </div>
+
+    <h4>各メソッドの意味</h4>
+    <ul class="dep-list">
+      <li>
+        <span class="dep-name"><code>status(HttpStatus.CREATED)</code> / <code>noContent()</code></span>
+        <p class="dep-desc">まずステータスコードだけを決める。</p>
+        <p class="dep-note">
+          <strong>ショートカットの関係</strong><br>
+          <code>status(任意のステータス)</code>が本来の基本形で、何でも指定できる汎用メソッド。<code>noContent()</code>や<code>ok()</code>は、その中でもよく使うステータスコードを固定して呼び出しを短く書けるようにした「省略形(ショートカット)」に過ぎない。<br><br>
+          つまり内部的には次のように実装されているイメージ:
+        </p>
+        <div class="editor">
+          <div class="editor-bar"><span></span><span></span><span></span></div>
+          <pre><code class="language-java">// ResponseEntity クラスの中身(イメージ)
+public static BodyBuilder noContent() {
+    return status(HttpStatus.NO_CONTENT); // 結局これを呼んでいるだけ
+}
+
+public static BodyBuilder ok() {
+    return status(HttpStatus.OK); // これも同じパターン
+}</code></pre>
+        </div>
+        <p class="dep-note">
+          そのため以下の2行は完全に同じ意味になる。
+        </p>
+        <div class="editor">
+          <div class="editor-bar"><span></span><span></span><span></span></div>
+          <pre><code class="language-java">ResponseEntity.noContent().build();
+ResponseEntity.status(HttpStatus.NO_CONTENT).build();  // ↑と全く同じ</code></pre>
+        </div>
+      </li>
+      <li>
+        <span class="dep-name"><code>.body(created)</code></span>
+        <p class="dep-desc">レスポンスに含めるオブジェクトをボディにセットして完成させる。</p>
+        <p class="dep-note"><strong>使いどころ</strong><br><code>200</code>以外(<code>201</code>, <code>202</code>, <code>409</code>など)のステータスでボディを返したい時に使う。</p>
+      </li>
+      <li>
+        <span class="dep-name"><code>.build()</code></span>
+        <p class="dep-desc">ボディをセットせず完成させる専用メソッド。</p>
+        <p class="dep-note"><strong>なぜ.body(null)ではないか</strong><br><code>204 No Content</code>は「ボディを含めない」ことに意味があるステータスなので、<code>.body(null)</code>ではなく<code>.build()</code>で「ボディが存在しない」ことを型として表現する。</p>
+      </li>
+    </ul>
+  </section>
+
+  <section class="sec-reference">
+    <h2><span class="icon">📚</span>参考</h2>
+    <ul>
+      <li><a href="https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller.html">Spring Web MVC - Annotated Controllers</a></li>
+      <li><a href="https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/http/ResponseEntity.html">ResponseEntity</a></li>
+    </ul>
+  </section>
+
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script>
+  Prism.plugins.autoloader.languages_path = "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/";
+</script>
+</body>
+</html>
