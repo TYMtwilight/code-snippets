@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RESTコントローラーの主要アノテーション</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<style>
+  :root {
+    --bg: #f5f3ff;
+    --surface: #ffffff;
+    --fg: #221d3d;
+    --muted: #6b6580;
+    --border: #e6e1fa;
+    --code-bg: #1e1b2e;
+    --code-fg: #e6e1fa;
+    --accent-1: #7c3aed;
+    --accent-2: #ec4899;
+    --accent-3: #06b6d4;
+    --accent-4: #f59e0b;
+    --shadow: 0 8px 24px rgba(124, 58, 237, 0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14111f;
+      --surface: #1c1830;
+      --fg: #efe9ff;
+      --muted: #a79fc4;
+      --border: #322b4e;
+      --code-bg: #0f0c1a;
+      --code-fg: #e6e1fa;
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 2.5rem 1rem 5rem;
+    background:
+      radial-gradient(circle at 15% -10%, rgba(124,58,237,0.15), transparent 40%),
+      radial-gradient(circle at 100% 0%, rgba(6,182,212,0.12), transparent 35%),
+      var(--bg);
+    color: var(--fg);
+    font-family: "Zen Maru Gothic", -apple-system, "Hiragino Kaku Gothic ProN", sans-serif;
+    line-height: 1.75;
+  }
+  main { max-width: 780px; margin: 0 auto; }
+
+  .hero {
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    border-radius: 20px;
+    padding: 2rem 1.75rem;
+    color: #fff;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  h1 { font-size: 1.9rem; font-weight: 900; margin: 0 0 0.75rem; }
+  .meta { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+  .meta li { background: rgba(255,255,255,0.18); padding: 0.3rem 0.75rem; border-radius: 999px; font-size: 0.85rem; font-weight: 500; }
+
+  section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem 1.75rem;
+    margin-top: 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  section h2 { display: flex; align-items: center; gap: 0.55rem; font-size: 1.15rem; font-weight: 700; margin: 0 0 1rem; }
+  .icon { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 10px; font-size: 1.05rem; flex-shrink: 0; }
+  .sec-overview .icon  { background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); }
+  .sec-usecase .icon   { background: linear-gradient(135deg, var(--accent-3), #22d3ee); }
+  .sec-code .icon      { background: linear-gradient(135deg, #312e81, #1e1b2e); }
+  .sec-reference .icon { background: linear-gradient(135deg, #10b981, #06b6d4); }
+
+  h3 { font-size: 1rem; font-weight: 700; margin-top: 1.25rem; }
+  p, li { color: var(--fg); }
+  ul, ol { padding-left: 1.3rem; margin: 0.5rem 0; }
+  li { margin: 0.3rem 0; }
+  .walkthrough li { margin: 1rem 0; }
+  .walkthrough .snippet { background: var(--code-bg); border-radius: 8px; padding: 0.5rem 0.85rem; margin: 0.3rem 0 0.45rem; overflow-x: auto; }
+  .walkthrough .snippet code { background: transparent; color: var(--code-fg); padding: 0; font-size: 0.85rem; }
+  .walkthrough p { margin: 0; }
+
+  .editor { background: var(--code-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 6px 16px rgba(0,0,0,0.25); }
+  .editor-bar { display: flex; gap: 0.4rem; padding: 0.65rem 0.85rem; background: rgba(255,255,255,0.05); }
+  .editor-bar span { width: 0.65rem; height: 0.65rem; border-radius: 50%; display: inline-block; }
+  .editor-bar span:nth-child(1) { background: #ff5f57; }
+  .editor-bar span:nth-child(2) { background: #febc2e; }
+  .editor-bar span:nth-child(3) { background: #28c840; }
+  pre { margin: 0; padding: 1.1rem 1.25rem; overflow-x: auto; }
+  code { font-family: "Fira Code", "SFMono-Regular", Consolas, monospace; font-size: 0.88rem; color: var(--code-fg); }
+  pre[class*="language-"], pre[class*="language-"] > code { background: transparent; text-shadow: none; }
+  pre[class*="language-"] { margin: 0; padding: 1.1rem 1.25rem; }
+  code[class*="language-"] { font-family: "Fira Code", "SFMono-Regular", Consolas, monospace; font-size: 0.88rem; }
+  p code, li code, td code, th code, h3 code { background: var(--border); color: var(--fg); padding: 0.15em 0.4em; border-radius: 5px; font-family: "Fira Code", monospace; font-size: 0.85em; }
+
+  table { border-collapse: collapse; width: 100%; margin: 0.75rem 0; font-size: 0.92rem; }
+  th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+  th { background: var(--bg); }
+
+  a { color: var(--accent-1); font-weight: 500; text-decoration: none; border-bottom: 1px solid transparent; }
+  a:hover { border-bottom-color: currentColor; }
+
+  .guide-title { font-weight: 700; margin: 1.5rem 0 0.75rem; }
+  .guide-list { display: flex; flex-direction: column; gap: 0.75rem; }
+  .guide-card { border: 1px solid var(--border); border-radius: 12px; padding: 0.9rem 1rem; background: var(--bg); border-left: 4px solid var(--accent-color); }
+  .guide-card:nth-child(1) { --accent-color: var(--accent-1); }
+  .guide-card:nth-child(2) { --accent-color: var(--accent-3); }
+  .guide-card:nth-child(3) { --accent-color: var(--accent-4); }
+  .guide-card .q { font-size: 0.85rem; color: var(--muted); margin: 0 0 0.5rem; }
+  .guide-card .a { display: flex; align-items: center; gap: 0.4rem; font-weight: 700; margin: 0 0 0.5rem; }
+  .guide-card .a code { font-weight: 500; }
+  .guide-card .arrow { color: var(--accent-color); }
+  .guide-card .req { margin: 0; }
+  .guide-card .req code { background: var(--border); }
+
+</style>
+</head>
+<body>
+<main>
+
+  <header class="hero">
+    <h1>RESTコントローラーの主要アノテーション</h1>
+    <ul class="meta">
+      <li>📅 作成日: 2026-09-21</li>
+      <li>🔄 更新日: 2026-09-21</li>
+    </ul>
+  </header>
+
+
+  <section class="sec-overview">
+    <h2><span class="icon">🎯</span>概要</h2>
+    <p><code>@RestController</code>を中心に、パスの切り方(<code>@RequestMapping</code>)、HTTPメソッドの振り分け(<code>@GetMapping</code>/<code>@PostMapping</code>)、パラメータの受け取り方(<code>@PathVariable</code>/<code>@RequestParam</code>/<code>@RequestBody</code>)の役割分担を整理する。</p>
+
+    <h3><code>@RestController</code></h3>
+    <p><code>@Controller</code> + <code>@ResponseBody</code> の合成。戻り値を自動的にJSONへシリアライズしてレスポンスボディに書き込む。画面(View)を返さないAPI専用コントローラーであることを明示する。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@RestController
+public class SnippetController { ... }</code></pre>
+    </div>
+
+    <h3><code>@ResponseBody</code></h3>
+    <p>メソッドの戻り値をHTTPレスポンスボディにそのまま書き込む(ビュー名として解決しない)ことを示す。<code>@RestController</code>はこれをクラス全体に適用した合成アノテーションなので、通常は個別に付ける必要はない。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Controller
+public class SnippetController {
+
+    @GetMapping("/{id}")
+    @ResponseBody
+    public SnippetReviewDto getById(@PathVariable Long id) {
+        return snippetService.findById(id);
+    }
+}</code></pre>
+    </div>
+
+    <h3><code>@RequestMapping("/api/snippets")</code></h3>
+    <p>クラスに付けることで、そのコントローラー内の全エンドポイントに共通のベースパスを設定する。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@RequestMapping("/api/snippets")
+public class SnippetController { ... }</code></pre>
+    </div>
+
+    <h3><code>@GetMapping</code> / <code>@PostMapping</code></h3>
+    <p><code>@RequestMapping(method = ...)</code>の短縮形。HTTPメソッドごとにハンドラメソッドを分ける。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@GetMapping("/{id}")
+public ResponseEntity&lt;SnippetReviewDto&gt; getById(...) { ... }
+
+@PostMapping
+public ResponseEntity&lt;SnippetReviewDto&gt; create(...) { ... }</code></pre>
+    </div>
+
+    <h3><code>@PathVariable</code></h3>
+    <p>URLパスの一部(<code>/snippets/42</code>の<code>42</code>)を受け取る。リソースを一意に識別するIDなど、「そのURL自体の一部」を表す値に使う。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">// GET /api/snippets/42
+@GetMapping("/{id}")
+public ResponseEntity&lt;SnippetReviewDto&gt; getById(@PathVariable Long id) {
+    return ResponseEntity.ok(snippetService.findById(id));
+}</code></pre>
+    </div>
+
+    <h3><code>@RequestParam</code></h3>
+    <p>クエリパラメータ(<code>?tag=spring&amp;page=0</code>)を受け取る。検索条件・フィルタ・ページングなど、任意/省略可能な値に使うことが多い。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">// GET /api/snippets?tag=spring&amp;page=0
+@GetMapping
+public ResponseEntity&lt;List&lt;SnippetReviewDto&gt;&gt; search(
+        @RequestParam(required = false) String tag,
+        @RequestParam(defaultValue = "0") int page) {
+    return ResponseEntity.ok(snippetService.search(tag, page));
+}</code></pre>
+    </div>
+
+    <h3><code>@RequestBody</code></h3>
+    <p>リクエストボディのJSONを、Jacksonを介してJavaオブジェクト(DTO)に変換する。作成・更新系のPOST/PUTでよく使う。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">// POST /api/snippets
+@PostMapping
+public ResponseEntity&lt;SnippetReviewDto&gt; create(@Valid @RequestBody SyncRequestDto request) {
+    SnippetReviewDto created = snippetService.create(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(created);
+}</code></pre>
+    </div>
+
+    <p class="guide-title">💡 使い分けの目安</p>
+    <div class="guide-list">
+      <div class="guide-card">
+        <p class="q">そのリソースを特定するためのIDか?</p>
+        <p class="a"><span class="arrow">→</span><code>@PathVariable</code></p>
+        <p class="req"><code>GET /api/snippets/42</code></p>
+      </div>
+      <div class="guide-card">
+        <p class="q">絞り込み・並び替え・省略可能なオプションか?</p>
+        <p class="a"><span class="arrow">→</span><code>@RequestParam</code></p>
+        <p class="req"><code>GET /api/snippets?tag=spring&amp;page=0</code></p>
+      </div>
+      <div class="guide-card">
+        <p class="q">作成・更新するデータ本体か?</p>
+        <p class="a"><span class="arrow">→</span><code>@RequestBody</code></p>
+        <p class="req"><code>POST /api/snippets</code><br>Body: <code>{ "title": "...", "code": "..." }</code></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec-code">
+    <h2><span class="icon">💻</span>コード</h2>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@RestController
+@RequestMapping("/api/snippets")
+public class SnippetController {
+
+    private final SnippetService snippetService;
+
+    public SnippetController(SnippetService snippetService) {
+        this.snippetService = snippetService;
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity&lt;SnippetReviewDto&gt; getById(@PathVariable Long id) {
+        return ResponseEntity.ok(snippetService.findById(id));
+    }
+
+    @GetMapping
+    public ResponseEntity&lt;List&lt;SnippetReviewDto&gt;&gt; search(
+            @RequestParam(required = false) String tag,
+            @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(snippetService.search(tag, page));
+    }
+
+    @PostMapping
+    public ResponseEntity&lt;SnippetReviewDto&gt; create(@Valid @RequestBody SyncRequestDto request) {
+        SnippetReviewDto created = snippetService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+}</code></pre>
+    </div>
+
+    <h3>コード解説</h3>
+    <ol class="walkthrough">
+      <li>
+        <pre class="snippet"><code class="language-java">@RestController
+@RequestMapping("/api/snippets")
+public class SnippetController {</code></pre>
+        <p><code>@RestController</code>でこのクラスをREST用のコントローラーとして登録し、各メソッドの戻り値をJSONとしてレスポンスボディに書き込む。<code>@RequestMapping("/api/snippets")</code>でクラス全体の共通パスを固定し、以降の各メソッドのパスはこれに追加される形になる。</p>
+      </li>
+      <li>
+        <pre class="snippet"><code class="language-java">private final SnippetService snippetService;
+
+public SnippetController(SnippetService snippetService) {
+    this.snippetService = snippetService;
+}</code></pre>
+        <p>ビジネスロジックを担う<code>SnippetService</code>をフィールドとして保持し、コンストラクタインジェクションでSpringに注入してもらう。</p>
+      </li>
+      <li>
+        <pre class="snippet"><code class="language-java">@GetMapping("/{id}")
+public ResponseEntity&lt;SnippetReviewDto&gt; getById(@PathVariable Long id) {
+    return ResponseEntity.ok(snippetService.findById(id));
+}</code></pre>
+        <p><code>GET /api/snippets/{id}</code>宛のリクエストを割り当てる。URLパスの<code>{id}</code>部分を<code>@PathVariable</code>で<code>Long id</code>として受け取り、取得したデータをステータス200(OK)とともに返す。</p>
+      </li>
+      <li>
+        <pre class="snippet"><code class="language-java">@GetMapping
+public ResponseEntity&lt;List&lt;SnippetReviewDto&gt;&gt; search(
+        @RequestParam(required = false) String tag,
+        @RequestParam(defaultValue = "0") int page) {
+    return ResponseEntity.ok(snippetService.search(tag, page));
+}</code></pre>
+        <p>ベースパス<code>/api/snippets</code>そのものへのGETリクエスト(検索用)を割り当てる。クエリパラメータ<code>?tag=...</code>は<code>@RequestParam(required = false)</code>で省略可能な値として、<code>?page=...</code>は<code>@RequestParam(defaultValue = "0")</code>で省略時に<code>0</code>となる値として受け取り、検索結果を一覧(<code>List</code>)で200とともに返す。</p>
+      </li>
+      <li>
+        <pre class="snippet"><code class="language-java">@PostMapping
+public ResponseEntity&lt;SnippetReviewDto&gt; create(@Valid @RequestBody SyncRequestDto request) {
+    SnippetReviewDto created = snippetService.create(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(created);
+}</code></pre>
+        <p><code>POST /api/snippets</code>宛のリクエスト(新規作成)を割り当てる。リクエストボディのJSONを<code>@RequestBody</code>で<code>SyncRequestDto</code>に変換し、<code>@Valid</code>でバリデーションを実行してからサービスに登録処理を委譲し、作成成功を表すステータス201(CREATED)とともに作成されたリソースを返す。</p>
+      </li>
+    </ol>
+  </section>
+
+  <section class="sec-reference">
+    <h2><span class="icon">📚</span>参考</h2>
+    <ul>
+      <li><a href="https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-requestmapping.html">Spring Framework: Annotated Controllers</a></li>
+    </ul>
+  </section>
+
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script>
+  Prism.plugins.autoloader.languages_path = "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/";
+</script>
+</body>
+</html>
