@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>@RestControllerAdvice - 例外の種類ごとに共通形式のエラーJSONを返す</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<style>
+  :root {
+    --bg: #f5f3ff;
+    --surface: #ffffff;
+    --fg: #221d3d;
+    --muted: #6b6580;
+    --border: #e6e1fa;
+    --code-bg: #1e1b2e;
+    --code-fg: #e6e1fa;
+    --accent-1: #7c3aed;
+    --accent-2: #ec4899;
+    --accent-3: #06b6d4;
+    --accent-4: #f59e0b;
+    --shadow: 0 8px 24px rgba(124, 58, 237, 0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14111f;
+      --surface: #1c1830;
+      --fg: #efe9ff;
+      --muted: #a79fc4;
+      --border: #322b4e;
+      --code-bg: #0f0c1a;
+      --code-fg: #e6e1fa;
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 2.5rem 1rem 5rem;
+    background:
+      radial-gradient(circle at 15% -10%, rgba(124,58,237,0.15), transparent 40%),
+      radial-gradient(circle at 100% 0%, rgba(6,182,212,0.12), transparent 35%),
+      var(--bg);
+    color: var(--fg);
+    font-family: "Zen Maru Gothic", -apple-system, "Hiragino Kaku Gothic ProN", sans-serif;
+    line-height: 1.75;
+  }
+  main {
+    max-width: 780px;
+    margin: 0 auto;
+  }
+
+  .hero {
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    border-radius: 20px;
+    padding: 2rem 1.75rem;
+    color: #fff;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .eyebrow {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: rgba(255,255,255,0.2);
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    margin-bottom: 0.75rem;
+  }
+  h1 {
+    font-size: 1.9rem;
+    font-weight: 900;
+    margin: 0 0 0.75rem;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .meta li {
+    background: rgba(255,255,255,0.18);
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem 1.75rem;
+    margin-top: 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  section h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0 0 1rem;
+  }
+  .icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    flex-shrink: 0;
+  }
+  .sec-overview .icon   { background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); }
+  .sec-usecase .icon    { background: linear-gradient(135deg, var(--accent-3), #22d3ee); }
+  .sec-code .icon       { background: linear-gradient(135deg, #312e81, #1e1b2e); }
+  .sec-advanced .icon   { background: linear-gradient(135deg, #16a34a, #4ade80); }
+  .sec-reference .icon  { background: linear-gradient(135deg, #10b981, #06b6d4); }
+
+  /* 見出し 大(h2) > 中(h3) > 小(h4) */
+  section h2 {
+    font-size: 1.3rem;
+    padding-bottom: 0.7rem;
+    border-bottom: 2px solid var(--border);
+  }
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 2.4rem 0 1rem;
+    padding: 0.55rem 0.9rem;
+    background: linear-gradient(90deg, rgba(124, 58, 237, 0.12), transparent);
+    border-left: 4px solid var(--accent-1);
+    border-radius: 0 8px 8px 0;
+  }
+  section h2 + h3 { margin-top: 1.2rem; }
+  .h3-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    background: var(--accent-1);
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+  h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.98rem;
+    font-weight: 700;
+    margin: 1.6rem 0 0.5rem;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px dashed var(--border);
+  }
+  h4::before {
+    content: "";
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 2px;
+    background: var(--accent-3);
+    flex-shrink: 0;
+  }
+  h3 + h4 { margin-top: 0.8rem; }
+  h3 code, h4 code { background: var(--border); color: var(--fg); padding: 0.1em 0.35em; border-radius: 5px; font-family: "Fira Code", monospace; font-size: 0.85em; }
+  p, li { color: var(--fg); }
+  ul { padding-left: 1.3rem; margin: 0.5rem 0; }
+  li { margin: 0.3rem 0; }
+
+  .editor {
+    background: var(--code-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+    margin: 0.75rem 0 1.25rem;
+  }
+  .editor-bar {
+    display: flex;
+    gap: 0.4rem;
+    padding: 0.65rem 0.85rem;
+    background: rgba(255,255,255,0.05);
+  }
+  .editor-bar span {
+    width: 0.65rem;
+    height: 0.65rem;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .editor-bar span:nth-child(1) { background: #ff5f57; }
+  .editor-bar span:nth-child(2) { background: #febc2e; }
+  .editor-bar span:nth-child(3) { background: #28c840; }
+  pre {
+    margin: 0;
+    padding: 1.1rem 1.25rem;
+    overflow-x: auto;
+  }
+  code {
+    font-family: "Fira Code", "SFMono-Regular", Consolas, monospace;
+    font-size: 0.88rem;
+    color: var(--code-fg);
+  }
+  /* Prism.js: 見た目はテーマのまま、背景・余白だけ .editor に合わせる */
+  pre[class*="language-"],
+  pre[class*="language-"] > code {
+    background: transparent;
+    text-shadow: none;
+  }
+  pre[class*="language-"] {
+    margin: 0;
+    padding: 1.1rem 1.25rem;
+  }
+  code[class*="language-"] {
+    font-family: "Fira Code", "SFMono-Regular", Consolas, monospace;
+    font-size: 0.88rem;
+  }
+  p code, li code {
+    background: var(--border);
+    color: var(--fg);
+    padding: 0.15em 0.4em;
+    border-radius: 5px;
+    font-family: "Fira Code", monospace;
+    font-size: 0.85em;
+  }
+
+  a {
+    color: var(--accent-1);
+    font-weight: 500;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  a:hover { border-bottom-color: currentColor; }
+
+  .note {
+    border-left: 4px solid var(--accent-4);
+    background: rgba(245, 158, 11, 0.12);
+    padding: 0.85rem 1.1rem;
+    border-radius: 0 10px 10px 0;
+    margin: 1rem 0;
+  }
+  .note p { margin: 0.4rem 0; }
+  .note p:first-child { margin-top: 0; }
+  .note p:last-child { margin-bottom: 0; }
+  .note-title {
+    font-weight: 700;
+    color: var(--accent-4);
+  }
+  .code-points { list-style: none; counter-reset: point; margin: 0.5rem 0 1rem; padding: 0; }
+  .code-points > li { counter-increment: point; position: relative; margin: 0 0 1rem; padding: 0.1rem 0 0 2.6rem; }
+  .code-points > li::before {
+    content: counter(point);
+    position: absolute; left: 0; top: 0;
+    width: 1.8rem; height: 1.8rem; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--fg); color: var(--surface);
+    font-weight: 900; font-size: 0.9rem;
+  }
+  .code-points > li > p { margin: 0.2rem 0; }
+  .point-title { font-weight: 700; }
+
+  .supplement {
+    position: relative;
+    margin: 1.5rem 0 1.25rem 1rem;
+    padding: 1.4rem 1.1rem 0.9rem;
+    border: 1px dashed var(--accent-1);
+    border-left: 4px solid var(--accent-1);
+    border-radius: 0 12px 12px 0;
+    background: var(--bg);
+    font-size: 0.92rem;
+  }
+  .supplement-label {
+    position: absolute;
+    top: -0.75rem;
+    left: 0.9rem;
+    margin: 0;
+    padding: 0.05rem 0.7rem;
+    border-radius: 999px;
+    background: var(--accent-1);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+  .supplement-title {
+    margin: 0 0 0.5rem;
+    font-weight: 700;
+    color: var(--accent-1);
+  }
+  .supplement .editor { margin: 0.6rem 0 0.9rem; }
+  .supplement ul { margin-bottom: 0; }
+  .supplement-sub { margin: 1.4rem 0 0.4rem; padding-bottom: 0.25rem; border-bottom: 1px dashed var(--border); font-weight: 700; }
+  .figure {
+    margin: 0.75rem 0 1rem;
+    padding: 0.6rem 1rem 0.7rem;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent-3);
+    border-radius: 0 10px 10px 0;
+    background: var(--bg);
+  }
+  .supplement .figure { background: var(--surface); }
+  .figure-caption { margin: 0 0 0.3rem; font-size: 0.75rem; font-weight: 700; color: var(--muted); letter-spacing: 0.05em; }
+  .figure .tree, .figure .chain { margin-bottom: 0; }
+  .chain { list-style: none; margin: 0; padding: 0; }
+  .chain > li { margin: 0; }
+  .chain > li + li::before { content: "↓"; display: block; margin: 0.1rem 0 0.1rem 0.3rem; color: var(--accent-3); font-weight: 700; }
+  .api-list { margin: 0.75rem 0 1rem; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface); }
+  .api-list > div { display: grid; grid-template-columns: minmax(9rem, 13rem) 1fr; }
+  .api-list > div + div { border-top: 1px solid var(--border); }
+  .api-list dt { margin: 0; padding: 0.55rem 0.8rem; background: rgba(124, 58, 237, 0.07); overflow-wrap: anywhere; }
+  .api-list dt code { background: none; padding: 0; color: var(--accent-1); font-weight: 500; font-family: "Fira Code", monospace; font-size: 0.85em; }
+  .api-list dd { margin: 0; padding: 0.55rem 0.8rem; }
+  .api-list dd code { background: var(--border); color: var(--fg); padding: 0.1em 0.35em; border-radius: 5px; font-family: "Fira Code", monospace; font-size: 0.85em; }
+  @media (max-width: 560px) {
+    .api-list > div { grid-template-columns: 1fr; }
+    .api-list dd { padding-top: 0.2rem; }
+  }
+  table { border-collapse: collapse; width: 100%; margin: 0.75rem 0; font-size: 0.9rem; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--border); padding: 0.45rem 0.7rem; text-align: left; vertical-align: top; }
+  th { background: var(--bg); white-space: nowrap; }
+  td code, th code { background: var(--border); color: var(--fg); padding: 0.1em 0.35em; border-radius: 5px; font-family: "Fira Code", monospace; font-size: 0.85em; }
+  .tree, .tree ul { list-style: none; margin: 0.4rem 0; }
+  .tree { padding-left: 0; }
+  .tree ul { padding-left: 1.4rem; }
+  .tree ul > li { position: relative; }
+  .tree ul > li::before { content: "└─"; position: absolute; left: -1.3rem; color: var(--muted); }
+
+  ol {
+    padding-left: 1.4rem;
+    margin: 0.5rem 0;
+  }
+  ol li { margin: 0.35rem 0; }
+</style>
+</head>
+<body>
+<main>
+
+  <header class="hero">
+    <span class="eyebrow">Code Snippet</span>
+    <h1>@RestControllerAdvice - 例外の種類ごとに共通形式のエラーJSONを返す</h1>
+    <ul class="meta">
+      <li>📅 作成日: 2026-03-21</li>
+      <li>🔄 更新日: 2026-09-30</li>
+    </ul>
+  </header>
+
+  <section class="sec-overview">
+    <h2><span class="icon">🎯</span>概要</h2>
+    <p><code>@RestControllerAdvice</code> を付けたクラスに <code>@ExceptionHandler</code> メソッドを集めると、アプリ全体の Controller で起きた例外を1か所で受け取り、統一フォーマットのJSONエラーレスポンスを返せる。実務での例外ハンドリングは、この形で書くのが基本。</p>
+  </section>
+
+  <section class="sec-usecase">
+    <h2><span class="icon">📌</span>使用場面</h2>
+    <ul>
+      <li>バリデーションエラー(<code>@Valid</code>)を 400 Bad Request で返したい時</li>
+      <li>存在しないリソースへのアクセスを 404 Not Found で返したい時</li>
+      <li>各 Controller にエラーハンドリングを散在させず、エラーレスポンスの形式をAPI全体でそろえたい時</li>
+    </ul>
+  </section>
+
+  <section class="sec-code">
+    <h2><span class="icon">💻</span>コード</h2>
+
+    <h3><span class="h3-num">1</span>全体像: 例外がエラーレスポンスになるまで</h3>
+    <p>Controller や Service では <code>try-catch</code> を書かず、例外はすべて <code>GlobalExceptionHandler</code> に任せる。例外は次の順に処理される。</p>
+    <div class="figure">
+      <p class="figure-caption">処理の流れ</p>
+      <ol class="chain">
+        <li>Controller や Service の処理中に例外が発生する(<code>try-catch</code> は書かない)</li>
+        <li>例外が Controller の外へ飛び出し、Spring が受け取る</li>
+        <li><code>GlobalExceptionHandler</code> の中から、例外の型に合う <code>@ExceptionHandler</code> メソッドが呼ばれる</li>
+        <li>そのメソッドが作った <code>ErrorResponse</code>(共通形式の JSON)がクライアントに返る</li>
+      </ol>
+    </div>
+    <p>このページでは、次の3つのパターンを扱う。</p>
+    <table>
+      <tr><th>パターン</th><th>受け取る例外</th><th>投げるのは</th><th>ステータス</th><th>ハンドラ</th></tr>
+      <tr><td>① バリデーションエラー</td><td><code>MethodArgumentNotValidException</code></td><td>Spring(<code>@Valid</code>)</td><td>400</td><td><code>handleValidation()</code></td></tr>
+      <tr><td>② リソース未検出</td><td><code>ResourceNotFoundException</code></td><td>自分(Service)</td><td>404</td><td><code>handleNotFound()</code></td></tr>
+      <tr><td>③ 想定外の例外</td><td>①②以外のすべて</td><td>―</td><td>500</td><td><code>handleUnexpected()</code></td></tr>
+    </table>
+    <p>3つのハンドラは、すべて1つのクラスにまとめて書く。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+  // ① バリデーションエラー → 400
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity&lt;ErrorResponse&gt; handleValidation(MethodArgumentNotValidException ex) {
+    ...
+  }
+
+  // ② リソース未検出 → 404
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public ResponseEntity&lt;ErrorResponse&gt; handleNotFound(ResourceNotFoundException ex) {
+    ...
+  }
+
+  // ③ 想定外の例外 → 500
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity&lt;ErrorResponse&gt; handleUnexpected(Exception ex) {
+    ...
+  }
+}</code></pre>
+    </div>
+    <p>どのパターンも、<code>ErrorResponse(status, error, message, timestamp)</code> を作って <code>ResponseEntity</code> で返す、という同じ形になっている(<code>ErrorResponse</code> の中身は「6. エラーレスポンスの形式」)。違うのは、受け取る例外・ステータスコード・メッセージの作り方の3点。</p>
+
+    <aside class="supplement">
+      <p class="supplement-label">補足</p>
+      <p class="supplement-title">2つのアノテーションの役割</p>
+
+      <p class="supplement-sub"><code>@RestControllerAdvice</code> とは</p>
+      <ul>
+        <li><code>@ControllerAdvice</code> + <code>@ResponseBody</code> の合成アノテーション。ハンドラの戻り値がそのままJSONのレスポンスボディになる</li>
+        <li><code>@Controller</code>(<code>@RestController</code> 含む)全体に横断的に適用される</li>
+      </ul>
+
+      <p class="supplement-sub"><code>@ExceptionHandler</code> の基本</p>
+      <ul>
+        <li>Spring MVCのアノテーションで、Controller で発生した例外を専用のメソッドでキャッチして処理するためのもの。通常は <code>@RestControllerAdvice</code> のクラスに書く</li>
+        <li><code>@ExceptionHandler(ResourceNotFoundException.class)</code>のように対象の例外クラスを指定し、そのメソッドで例外を受け取ってレスポンスを組み立てる</li>
+        <li>複数の例外クラスを1つのメソッドでまとめて扱うことも可能: <code>@ExceptionHandler({FooException.class, BarException.class})</code></li>
+      </ul>
+    </aside>
+
+    <h3><span class="h3-num">2</span>Controller: エラー処理は書かない</h3>
+    <p>例外を処理するコードは、Controller には1行もない。正常系の処理だけを書く。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@RestController
+@RequestMapping("/api/todos")
+public class TodoController {
+
+  private final TodoService todoService;
+
+  public TodoController(TodoService todoService) {
+    this.todoService = todoService;
+  }
+
+  // 見つからなければ Service が ResourceNotFoundException を投げる → GlobalExceptionHandler が 404 に変換
+  @GetMapping("/{id}")
+  public TodoResponse findById(@PathVariable Long id) {
+    return todoService.findById(id);
+  }
+
+  // 入力ルール違反なら MethodArgumentNotValidException → GlobalExceptionHandler が 400 に変換
+  @PostMapping
+  public ResponseEntity&lt;TodoResponse&gt; create(@Valid @RequestBody TodoRequest request) {
+    TodoResponse created = todoService.create(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(created);
+  }
+}</code></pre>
+    </div>
+
+    <h4>何が嬉しいか</h4>
+    <ul>
+      <li>try-catchをコントローラーの各メソッドに書かなくて済む(関心の分離)。上の <code>TodoController</code> には正常系の処理しかない</li>
+      <li>例外の種類ごとにHTTPステータスコードやレスポンス形式を統一的に定義できる</li>    </ul>
+
+    <h3><span class="h3-num">3</span>パターン① バリデーションエラー → 400</h3>
+
+    <h4>入力ルールを定義する</h4>
+    <p>入力ルールは、リクエスト DTO に Bean Validation のアノテーションで定義する。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">public class TodoRequest {
+
+  @NotBlank(message = "タイトルは必須です")
+  @Size(max = 100, message = "タイトルは100文字以内で入力してください")
+  private String title;
+
+  // getter / setter
+}</code></pre>
+    </div>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@PostMapping
+public ResponseEntity&lt;TodoResponse&gt; create(
+    @Valid @RequestBody TodoRequest request) {</code></pre>
+    </div>
+    <div class="note">
+      <p class="note-title">⚠️ @Valid はどこに付ける？</p>
+      <p>1つ目のコード例の <code>TodoRequest</code> クラス自体には <code>@Valid</code> が付いていないが、これで正しい。<code>@Valid</code> は<strong>DTOクラス自体には付けない</strong>。</p>
+      <p><code>@NotBlank</code> / <code>@Size</code> は「制約(ルール)」を定義するだけのもので、<code>@Valid</code> は「このルールを今チェックしろ」という指示。だから<strong>DTOを使う側</strong>(Controllerのメソッド引数)に付ける。</p>
+      <p>Service の引数には付けなくてよい。リクエストは必ず Controller を通るので、必須・文字数などの<strong>形式のチェックは、入口の Controller で1回やれば十分</strong>。</p>
+    </div>
+
+    <h4>400 になるまでの流れ</h4>
+    <div class="figure">
+      <p class="figure-caption">処理の流れ</p>
+      <ol class="chain">
+        <li>クライアントが不正なリクエストを送る</li>
+        <li><code>@Valid</code> が <code>TodoRequest</code> をチェックする</li>
+        <li>ルール違反なら <code>MethodArgumentNotValidException</code> が発生する</li>
+        <li><code>handleValidation()</code> が例外を受け取り、400 のエラーレスポンスを返す</li>
+      </ol>
+    </div>
+
+    <h4>ハンドラのコード</h4>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@ExceptionHandler(MethodArgumentNotValidException.class)
+public ResponseEntity&lt;ErrorResponse&gt; handleValidation(
+    MethodArgumentNotValidException ex) {
+  String message = ex.getBindingResult().getFieldErrors().stream()
+      .map(FieldError::getDefaultMessage)
+      .collect(Collectors.joining(", "));
+
+  ErrorResponse error = new ErrorResponse(
+      HttpStatus.BAD_REQUEST.value(),
+      "Bad Request",
+      message,
+      LocalDateTime.now());
+  return ResponseEntity.badRequest().body(error);
+}</code></pre>
+    </div>
+
+    <ol class="code-points">
+      <li>
+        <p class="point-title">受け取る例外: <code>MethodArgumentNotValidException</code></p>
+        <p>リクエストの中身が入力ルール(<code>@NotBlank</code> など)に合わなかったときに、<strong>Spring が自動で投げる</strong>例外。<code>@Valid</code> を付けた引数でだけ発生する。自分で <code>throw</code> する必要はなく、このハンドラで受け取るだけでよい。</p>
+
+        <aside class="supplement">
+          <p class="supplement-label">補足</p>
+          <p class="supplement-title"><code>MethodArgumentNotValidException</code> は検査例外</p>
+          <p><code>RuntimeException</code> を継承していないので、<strong>検査例外</strong>になる(Spring 5.3 以降は <code>BindException</code> を継承。それより前は <code>Exception</code> を直接継承)。</p>
+          <div class="figure">
+            <p class="figure-caption">継承関係</p>
+            <ul class="tree">
+              <li><code>Exception</code>
+                <ul>
+                  <li><code>BindException</code>(Spring)
+                    <ul>
+                      <li><code>MethodArgumentNotValidException</code></li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+          <p>検査例外なのに Controller や Service に <code>throws</code> を書かなくていいのは、<strong>自分のコードの中で投げられる例外ではない</strong>から。リクエストが届いてからの順番は次のとおり。</p>
+          <div class="figure">
+            <p class="figure-caption">例外が投げられるタイミング</p>
+            <ol class="chain">
+              <li>リクエストが届く</li>
+              <li>Spring が JSON を <code>TodoRequest</code> に変換し、<code>@Valid</code> のチェックを実行する。違反があれば、<strong>ここで</strong> <code>MethodArgumentNotValidException</code> を投げる</li>
+              <li>チェックを通ったときだけ、<code>TodoController.create()</code> が呼ばれる</li>
+            </ol>
+          </div>
+          <ul>
+            <li>例外が投げられるのは、Spring が <strong>Controller のメソッドを呼び出す前</strong>、引数を準備している段階。違反があると <code>create()</code> はそもそも呼ばれず、例外は Controller を一度も通らない</li>
+            <li>投げるのも受け取るのも Spring 側のコードで、<code>throws</code> の宣言が必要なのも Spring の内部メソッド(そちらではきちんと宣言されている)</li>
+            <li>検査例外で <code>throws</code> が必要になるのは、その例外が<strong>自分の書いたメソッドを通過する</strong>ときだけ。この例外は通過しないので、<code>throws</code> はいらない</li>
+            <li><code>@ExceptionHandler</code> は検査例外か非検査例外かに関係なく受け取れるので、このハンドラでそのまま扱える</li>
+          </ul>
+        </aside>
+      </li>
+
+      <li>
+        <p class="point-title">エラー一覧を取り出す: <code>ex.getBindingResult().getFieldErrors()</code></p>
+        <p>例外の中には、チェックの結果(<code>BindingResult</code>)が入っている。<code>getFieldErrors()</code> で、そこから<strong>違反したフィールドのエラーを一覧(<code>List&lt;FieldError&gt;</code>)で</strong>取り出す。1つの <code>FieldError</code> には「どのフィールドが」「どのメッセージで」違反したかが入っている。</p>
+      </li>
+
+      <li>
+        <p class="point-title">メッセージを1つの文字列にまとめる: <code>stream()</code> 〜 <code>Collectors.joining(", ")</code></p>
+        <p>エラー一覧から<strong>メッセージだけを取り出し、カンマ区切りの1つの文字列</strong>にする。メッセージは、<code>@NotBlank(message = "タイトルは必須です")</code> の <code>message</code> に書いた文言。</p>
+
+        <aside class="supplement">
+          <p class="supplement-label">補足</p>
+          <p class="supplement-title"><code>stream()</code> 〜 <code>Collectors.joining()</code> で何をしているか</p>
+          <div class="editor">
+            <div class="editor-bar"><span></span><span></span><span></span></div>
+            <pre><code class="language-java">ex.getBindingResult().getFieldErrors()   // List&lt;FieldError&gt;  違反したフィールドのエラー一覧
+    .stream()                            // 一覧を「1件ずつ流して加工できる形」にする
+    .map(FieldError::getDefaultMessage)  // 各 FieldError → メッセージ文字列 に変換
+    .collect(Collectors.joining(", "));  // 文字列を ", " でつないで1つにする</code></pre>
+          </div>
+          <p>データの形は次のように変わっていく(<code>dueDate</code> は説明のための仮のフィールド)。</p>
+          <div class="figure">
+            <p class="figure-caption">データの変化</p>
+            <ol class="chain">
+              <li><strong>はじめ</strong>: <code>FieldError</code> の一覧。<code>[FieldError(title, "タイトルは必須です"), FieldError(dueDate, "期限は必須です")]</code></li>
+              <li><strong><code>.stream()</code> の後</strong>: 同じ <code>FieldError</code> が1件ずつ流れてくる</li>
+              <li><strong><code>.map(FieldError::getDefaultMessage)</code> の後</strong>: 中身が文字列に変わる。<code>"タイトルは必須です"</code>、<code>"期限は必須です"</code></li>
+              <li><strong><code>.collect(Collectors.joining(", "))</code> の後</strong>: 1つの <code>String</code> になる。<code>"タイトルは必須です, 期限は必須です"</code></li>
+            </ol>
+          </div>
+          <dl class="api-list">
+            <div>
+              <dt><code>stream()</code></dt>
+              <dd><code>List</code> を Stream にする。Stream にすると、<code>map</code>(変換)や <code>filter</code>(絞り込み)を順につなげて書ける</dd>
+            </div>
+            <div>
+              <dt><code>map(...)</code></dt>
+              <dd>流れてくる要素を1件ずつ別の値に変換する。ここでは <code>FieldError</code> → <code>String</code></dd>
+            </div>
+            <div>
+              <dt><code>FieldError::getDefaultMessage</code></dt>
+              <dd><strong>メソッド参照</strong>。ラムダ式 <code>error -&gt; error.getDefaultMessage()</code> の省略形で、「各要素の <code>getDefaultMessage()</code> を呼ぶ」という意味</dd>
+            </div>
+            <div>
+              <dt><code>collect(...)</code></dt>
+              <dd>流れてきた要素を最後にまとめて、1つの結果にする</dd>
+            </div>
+            <div>
+              <dt><code>Collectors.joining(", ")</code></dt>
+              <dd>まとめ方の指定。文字列を <code>", "</code> を区切りにしてつなげる(最後の要素の後ろには付かない)</dd>
+            </div>
+          </dl>
+
+          <p class="supplement-sub"><code>Collectors</code> とは</p>
+          <p><code>collect()</code> に渡す<strong>「まとめ方」を用意してくれるクラス</strong>(<code>java.util.stream.Collectors</code>)。<code>collect()</code> は「流れてきた要素を最後に1つにまとめる」メソッドだが、「どうまとめるか」は自分では決めず、まとめ方(<code>Collector</code>)を引数で受け取る。<code>Collectors</code> は、よく使うまとめ方をあらかじめ用意した道具箱のようなもの。</p>
+          <dl class="api-list">
+            <div>
+              <dt><code>collect()</code></dt>
+              <dd>Stream のメソッド。「まとめる」処理を実行する</dd>
+            </div>
+            <div>
+              <dt><code>Collector</code></dt>
+              <dd>「まとめ方」を表すインターフェース</dd>
+            </div>
+            <div>
+              <dt><code>Collectors</code>(s付き)</dt>
+              <dd><code>Collector</code> を作って返す static メソッドを集めたクラス。<code>Collections</code>(<code>List</code> を操作するクラス)とは別物</dd>
+            </div>
+          </dl>
+        </aside>
+      </li>
+
+      <li>
+        <p class="point-title">400 で返す: <code>ResponseEntity.badRequest()</code></p>
+        <p>まとめたメッセージを <code>ErrorResponse</code> に詰め、<strong>400 Bad Request</strong> として返す。<code>HttpStatus.BAD_REQUEST.value()</code> は数値の <code>400</code>。<code>ResponseEntity.badRequest()</code> は <code>ResponseEntity.status(HttpStatus.BAD_REQUEST)</code> の省略形。</p>
+        <div class="editor">
+          <div class="editor-bar"><span></span><span></span><span></span></div>
+          <pre><code class="language-java">ErrorResponse error = new ErrorResponse(
+    HttpStatus.BAD_REQUEST.value(),   // 400
+    "Bad Request",
+    message,                          // 1つ前の項目でまとめた違反メッセージ
+    LocalDateTime.now());             // 今の日時
+return ResponseEntity.badRequest().body(error);</code></pre>
+        </div>
+        <p><code>ResponseEntity</code> は「① ステータスコードを決める → ② <code>.body(...)</code> でボディを入れる」の2段階でレスポンスを組み立てる。①の 400 の指定方法は次の3通りあり、<strong>どれか1つを書けばよい</strong>(どれでも同じレスポンスになる)。</p>
+        <table>
+          <tr><th>書き方</th><th>400 の指定方法</th></tr>
+          <tr><td><code>ResponseEntity.badRequest()</code></td><td>400 専用のメソッドを使う。名前自体が 400 を意味する(このコードで採用)</td></tr>
+          <tr><td><code>ResponseEntity.status(HttpStatus.BAD_REQUEST)</code></td><td>汎用の <code>status()</code> に、400 を表す定数を渡す</td></tr>
+          <tr><td><code>ResponseEntity.status(400)</code></td><td>汎用の <code>status()</code> に、数値の 400 を直接渡す。何のステータスか読み取りにくいので、あまり使わない</td></tr>
+        </table>
+        <p>よく使うステータスには <code>badRequest()</code> のような専用メソッドが用意されている(<code>ok()</code> は 200、<code>notFound()</code> は 404)。専用メソッドがないステータスは <code>status(HttpStatus.XXX)</code> で指定する。</p>
+
+        <aside class="supplement">
+          <p class="supplement-label">補足</p>
+          <p class="supplement-title"><code>ErrorResponse</code> の構造</p>
+          <p>エラー時に返す JSON の形を決める DTO(<code>record</code>)。①〜③のどのハンドラもこれを返すので、<strong>エラーの種類が違っても JSON の形は常に同じ</strong>になる。</p>
+          <dl class="api-list">
+            <div>
+              <dt><code>status</code>(<code>int</code>)</dt>
+              <dd>HTTP ステータスコードの数値。ここでは <code>400</code></dd>
+            </div>
+            <div>
+              <dt><code>error</code>(<code>String</code>)</dt>
+              <dd>ステータスの名前。ここでは <code>"Bad Request"</code></dd>
+            </div>
+            <div>
+              <dt><code>message</code>(<code>String</code>)</dt>
+              <dd>何が起きたかの説明。ここでは1つ前の項目でまとめた違反メッセージ</dd>
+            </div>
+            <div>
+              <dt><code>timestamp</code>(<code>LocalDateTime</code>)</dt>
+              <dd>エラーが起きた日時。ログと突き合わせて調べるときに使う</dd>
+            </div>
+          </dl>
+          <p>フィールド名がそのまま JSON のキーになり、次のようなレスポンスが返る。</p>
+          <div class="editor">
+            <div class="editor-bar"><span></span><span></span><span></span></div>
+            <pre><code class="language-json">{
+  "status": 400,
+  "error": "Bad Request",
+  "message": "タイトルは必須です",
+  "timestamp": "2026-03-21T10:00:00.123456"
+}</code></pre>
+          </div>
+          <p>各フィールドの詳しい説明や、②③のハンドラが入れる値は「6. エラーレスポンスの形式」を参照。</p>
+        </aside>
+      </li>
+    </ol>
+
+    <h3><span class="h3-num">4</span>パターン② リソース未検出 → 404</h3>
+
+    <h4>独自例外を用意する</h4>
+    <p>「見つからない」ことを表す独自例外を用意し、Service で見つからなかったときに投げる。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">public class ResourceNotFoundException extends RuntimeException {
+  public ResourceNotFoundException(String message) {
+    super(message);
+  }
+}
+
+// Service 側で投げる
+throw new ResourceNotFoundException("TODO が見つかりません：id = " + id);</code></pre>
+    </div>
+
+    <h4>ハンドラのコード</h4>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@ExceptionHandler(ResourceNotFoundException.class)
+public ResponseEntity&lt;ErrorResponse&gt; handleNotFound(ResourceNotFoundException ex) {
+  ErrorResponse error = new ErrorResponse(
+      HttpStatus.NOT_FOUND.value(),
+      "Not Found",
+      ex.getMessage(),
+      LocalDateTime.now());
+  return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+}</code></pre>
+    </div>
+    <ol class="code-points">
+      <li>
+        <p class="point-title">受け取る例外: <code>ResourceNotFoundException</code></p>
+        <p>Service で「見つからない」ときに<strong>自分で投げる</strong>独自例外。</p>
+      </li>
+      <li>
+        <p class="point-title">メッセージ: <code>ex.getMessage()</code></p>
+        <p>例外を投げたときにコンストラクタへ渡した文言(例: <code>"TODO が見つかりません：id = 99"</code>)をそのままレスポンスに入れる。自分で作った例外なので、メッセージに何が入るかを把握でき、クライアントに見せても問題ない。</p>
+      </li>
+      <li>
+        <p class="point-title">404 で返す: <code>ResponseEntity.status(HttpStatus.NOT_FOUND)</code></p>
+        <p><strong>404 Not Found</strong> として返す。<code>ResponseEntity.notFound()</code> という専用メソッドもあるが、こちらはボディを入れられないため、ここでは <code>status()</code> を使っている。</p>
+      </li>
+    </ol>
+    <div class="note">
+      <p class="note-title">⚠️ <code>RuntimeException</code> をまとめて 404 にしない</p>
+      <p>404 用のハンドラを <code>@ExceptionHandler(RuntimeException.class)</code> にすると、<code>NullPointerException</code> などのバグまで「見つかりません(404)」として返ってしまう。404 にしたい例外は専用の独自例外にして、それだけを指定する。</p>
+    </div>
+
+    <h3><span class="h3-num">5</span>パターン③ 想定外の例外(最後の砦) → 500</h3>
+
+    <h4>ハンドラのコード</h4>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@ExceptionHandler(Exception.class)
+public ResponseEntity&lt;ErrorResponse&gt; handleUnexpected(Exception ex) {
+  ErrorResponse error = new ErrorResponse(
+      HttpStatus.INTERNAL_SERVER_ERROR.value(),
+      "Internal Server Error",
+      "予期しないエラーが発生しました",
+      LocalDateTime.now());
+  return ResponseEntity.internalServerError().body(error);
+}</code></pre>
+    </div>
+    <ol class="code-points">
+      <li>
+        <p class="point-title">受け取る例外: <code>Exception</code></p>
+        <p><code>Exception.class</code> を指定すると、ほぼすべての例外が対象になる。ただし①②のようにより具体的なハンドラがある例外はそちらが優先されるので、ここに届くのは<strong>他のどれにも当てはまらない例外だけ</strong>(「7. @ExceptionHandler の優先順位」)。</p>
+      </li>
+      <li>
+        <p class="point-title">メッセージ: 固定の文言</p>
+        <p><code>ex.getMessage()</code> は使わない。想定外の例外のメッセージには、SQL文やクラス名など内部の情報が含まれることがあり、<strong>クライアントに見せるべきではない</strong>ため。代わりに、実務では <code>log.error("...", ex)</code> で例外をログに残しておくと、原因を調べやすい。</p>
+      </li>
+      <li>
+        <p class="point-title">500 で返す: <code>ResponseEntity.internalServerError()</code></p>
+        <p><strong>500 Internal Server Error</strong> として返す。<code>ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)</code> の省略形。</p>
+      </li>
+    </ol>
+
+    <h3><span class="h3-num">6</span>エラーレスポンスの形式(ErrorResponse)</h3>
+    <p><code>ErrorResponse</code> は、<strong>エラー時に返す JSON の形を決めるための DTO</strong>。どのハンドラーも、この同じ DTO を返す。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">public record ErrorResponse(
+    int status,              // HTTP ステータスコードの数値
+    String error,            // ステータスの名前
+    String message,          // 何が起きたかの説明
+    LocalDateTime timestamp  // エラーが起きた日時
+) {}</code></pre>
+    </div>
+
+    <h4>各フィールドの意味</h4>
+    <table>
+      <tr><th>フィールド</th><th>型</th><th>中身</th><th>例</th></tr>
+      <tr><td><code>status</code></td><td><code>int</code></td><td>HTTP ステータスコードの数値</td><td><code>400</code>, <code>404</code>, <code>500</code></td></tr>
+      <tr><td><code>error</code></td><td><code>String</code></td><td>ステータスの名前</td><td><code>"Bad Request"</code>, <code>"Not Found"</code></td></tr>
+      <tr><td><code>message</code></td><td><code>String</code></td><td>何が起きたかの具体的な説明。クライアントが画面に表示したりする</td><td><code>"タイトルは必須です"</code></td></tr>
+      <tr><td><code>timestamp</code></td><td><code>LocalDateTime</code></td><td>エラーが起きた日時。ログと突き合わせて調べるときに使う</td><td><code>2026-03-21T10:00:00</code></td></tr>
+    </table>
+    <p><code>status</code> と <code>error</code> は、HTTP のステータス行(<code>400 Bad Request</code>)と同じ情報。ヘッダーだけでなく<strong>ボディにも入れておく</strong>ことで、クライアントは JSON を読むだけで状況が分かる。</p>
+
+    <h4>3つのハンドラが入れる値</h4>
+    <table>
+      <tr><th>ハンドラ</th><th><code>status</code></th><th><code>error</code></th><th><code>message</code></th></tr>
+      <tr><td>① <code>handleValidation()</code></td><td><code>400</code></td><td><code>"Bad Request"</code></td><td>違反メッセージをカンマでつないだもの</td></tr>
+      <tr><td>② <code>handleNotFound()</code></td><td><code>404</code></td><td><code>"Not Found"</code></td><td><code>ex.getMessage()</code>(例外を投げたときの文言)</td></tr>
+      <tr><td>③ <code>handleUnexpected()</code></td><td><code>500</code></td><td><code>"Internal Server Error"</code></td><td>固定の <code>"予期しないエラーが発生しました"</code></td></tr>
+    </table>
+    <p>どのハンドラも同じ <code>ErrorResponse</code> を返すので、<strong>エラーの種類が違っても JSON の形は常に同じ</strong>になる。クライアントは「エラーなら <code>message</code> を表示する」という1つの処理で、すべてのエラーに対応できる。これが「統一エラーハンドリング」の「統一」の意味。</p>
+
+    <h4>JSON への変換</h4>
+    <p><code>record</code> のフィールド名が、そのまま JSON のキーになる(Spring Boot に入っている Jackson が変換する)。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">new ErrorResponse(400, "Bad Request", "タイトルは必須です", LocalDateTime.now())</code></pre>
+    </div>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-json">{
+  "status": 400,
+  "error": "Bad Request",
+  "message": "タイトルは必須です",
+  "timestamp": "2026-03-21T10:00:00.123456"
+}</code></pre>
+    </div>
+    <p><code>LocalDateTime</code> は、Spring Boot の初期設定では ISO 形式の文字列になる。<code>LocalDateTime.now()</code> はミリ秒以下も持っているので、<code>.123456</code> のような小数部分も出力される。</p>
+
+    <h4>なぜ <code>record</code> なのか</h4>
+    <ul>
+      <li>フィールド・コンストラクタ・getter・<code>equals</code>/<code>toString</code> を自動で作ってくれるので、短く定義できる</li>
+      <li>値を後から変更できない(イミュータブル)。「作って返すだけ」のレスポンス DTO に向いている</li>
+    </ul>
+
+    <h3><span class="h3-num">7</span>@ExceptionHandler の優先順位</h3>
+    <p>同一クラス内に複数の <code>@ExceptionHandler</code> がある場合、投げられた例外に<strong>継承関係がより近いハンドラ</strong>が優先される。たとえば <code>ResourceNotFoundException</code> は <code>Exception</code> のサブクラスでもあるが、より具体的な <code>handleNotFound()</code> の方にマッチする。<code>handleUnexpected()</code> に届くのは、他のどれにも当てはまらない例外だけ。</p>
+    <div class="figure">
+      <p class="figure-caption">継承関係</p>
+      <ul class="tree">
+        <li><code>Exception</code> … 最も汎用的(<code>handleUnexpected()</code>: 最後のフォールバック)
+          <ul>
+            <li><code>RuntimeException</code>
+              <ul>
+                <li><code>ResourceNotFoundException</code> … より具体的(<code>handleNotFound()</code>: <strong>こちらが選ばれる</strong>)</li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <p>なお、Controller 内にも同じ例外用の <code>@ExceptionHandler</code> がある場合は、Controller 内の方が <code>@RestControllerAdvice</code> より優先される。</p>
+  </section>
+
+  <section class="sec-advanced">
+    <h2><span class="icon">🚀</span>発展</h2>
+    <p>Advice が扱う Controller の範囲は絞り込める。何も指定しなければ全 Controller が対象になる。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">// com.example.api パッケージ配下の Controller だけに適用
+@RestControllerAdvice(basePackages = "com.example.api")
+public class ApiExceptionHandler { ... }
+
+// 特定の Controller クラスだけに適用
+@RestControllerAdvice(assignableTypes = {TodoController.class})
+public class TodoExceptionHandler { ... }</code></pre>
+    </div>
+    <p>API 用と画面用で返し方を分けたいときなどに使う。範囲外の Controller の例外は、その Advice では受け取らない。</p>
+  </section>
+
+  <section class="sec-reference">
+    <h2><span class="icon">📚</span>参考</h2>
+    <ul>
+      <li><a href="https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-advice.html">Spring Web MVC - @ControllerAdvice</a></li>
+      <li><a href="https://beanvalidation.org/">Bean Validation - 公式仕様</a></li>
+      <li><a href="exception-handler.html">@ExceptionHandler - 例外を受け取ってレスポンスに変える(このリポジトリ内)</a></li>
+    </ul>
+  </section>
+
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script>
+  Prism.plugins.autoloader.languages_path = "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/";
+</script>
+</body>
+</html>
