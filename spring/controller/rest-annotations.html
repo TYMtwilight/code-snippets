@@ -85,6 +85,8 @@
   .walkthrough .snippet { background: var(--code-bg); border-radius: 8px; padding: 0.5rem 0.85rem; margin: 0.3rem 0 0.45rem; overflow-x: auto; }
   .walkthrough .snippet code { background: transparent; color: var(--code-fg); padding: 0; font-size: 0.85rem; }
   .walkthrough p { margin: 0; }
+  .walkthrough .param-list { margin: 0.35rem 0; }
+  .walkthrough .param-list li { margin: 0.2rem 0; }
 
   .editor { background: var(--code-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 6px 16px rgba(0,0,0,0.25); }
   .editor-bar { display: flex; gap: 0.4rem; padding: 0.65rem 0.85rem; background: rgba(255,255,255,0.05); }
@@ -92,6 +94,9 @@
   .editor-bar span:nth-child(1) { background: #ff5f57; }
   .editor-bar span:nth-child(2) { background: #febc2e; }
   .editor-bar span:nth-child(3) { background: #28c840; }
+  .editor-bar { align-items: center; }
+  .editor-bar .editor-label { margin-left: auto; width: auto; height: auto; font-size: 0.75rem; font-weight: 700; padding: 0.1rem 0.6rem; border-radius: 999px; font-family: "Zen Maru Gothic", sans-serif; background: rgba(255, 255, 255, 0.12); color: #e6e1fa; }
+  .editor + .editor { margin-top: 0.75rem; }
   pre { margin: 0; padding: 1.1rem 1.25rem; overflow-x: auto; }
   code { font-family: "Fira Code", "SFMono-Regular", Consolas, monospace; font-size: 0.88rem; color: var(--code-fg); }
   pre[class*="language-"], pre[class*="language-"] > code { background: transparent; text-shadow: none; }
@@ -106,6 +111,23 @@
   a { color: var(--accent-1); font-weight: 500; text-decoration: none; border-bottom: 1px solid transparent; }
   a:hover { border-bottom-color: currentColor; }
 
+  .fp-list { display: flex; flex-direction: column; gap: 0.75rem; margin: 1rem 0 0.5rem; }
+  .fp-card { border: 1px solid var(--border); border-left: 4px solid var(--accent-3); border-radius: 12px; padding: 0.9rem 1.1rem; background: var(--bg); }
+  .fp-card p { margin: 0.4rem 0; font-size: 0.92rem; }
+  .fp-card .fp-title { margin: 0 0 0.5rem; font-size: 1rem; font-weight: 700; }
+  .fp-codes { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.6rem; margin: 0.6rem 0; }
+  .fp-codes code { background: var(--code-bg); color: var(--code-fg); padding: 0.3rem 0.65rem; border-radius: 6px; font-size: 0.8rem; }
+  .fp-eq { font-weight: 700; color: var(--muted); }
+  .fp-card .fp-warn { background: rgba(245, 158, 11, 0.12); border-radius: 8px; padding: 0.45rem 0.7rem; font-size: 0.88rem; }
+  .fp-card table { background: var(--surface); margin: 0.6rem 0 0.2rem; font-size: 0.85rem; }
+  .fp-card th, .fp-card td { white-space: nowrap; }
+  .fp-choice { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; margin-top: 0.3rem; }
+  .fp-option { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.7rem 0.9rem; }
+  .fp-card .fp-option p { margin: 0; }
+  .fp-card .fp-when { font-size: 0.82rem; color: var(--muted); }
+  .fp-card .fp-pick { font-weight: 700; margin: 0.25rem 0; color: var(--accent-1); }
+  .fp-card .fp-why { font-size: 0.85rem; margin-top: 0.25rem; }
+  @media (max-width: 560px) { .fp-choice { grid-template-columns: 1fr; } .fp-card table { display: block; overflow-x: auto; } }
   .guide-title { font-weight: 700; margin: 1.5rem 0 0.75rem; }
   .guide-list { display: flex; flex-direction: column; gap: 0.75rem; }
   .guide-card { border: 1px solid var(--border); border-radius: 12px; padding: 0.9rem 1rem; background: var(--bg); border-left: 4px solid var(--accent-color); }
@@ -128,7 +150,7 @@
     <h1>RESTコントローラーの主要アノテーション</h1>
     <ul class="meta">
       <li>📅 作成日: 2026-09-21</li>
-      <li>🔄 更新日: 2026-09-21</li>
+      <li>🔄 更新日: 2026-10-03</li>
     </ul>
   </header>
 
@@ -142,30 +164,15 @@
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">@RestController
-public class SnippetController { ... }</code></pre>
+public class ProductController { ... }</code></pre>
     </div>
 
-    <h3><code>@ResponseBody</code></h3>
-    <p>メソッドの戻り値をHTTPレスポンスボディにそのまま書き込む(ビュー名として解決しない)ことを示す。<code>@RestController</code>はこれをクラス全体に適用した合成アノテーションなので、通常は個別に付ける必要はない。</p>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">@Controller
-public class SnippetController {
-
-    @GetMapping("/{id}")
-    @ResponseBody
-    public SnippetReviewDto getById(@PathVariable Long id) {
-        return snippetService.findById(id);
-    }
-}</code></pre>
-    </div>
-
-    <h3><code>@RequestMapping("/api/snippets")</code></h3>
+    <h3><code>@RequestMapping("/api/products")</code></h3>
     <p>クラスに付けることで、そのコントローラー内の全エンドポイントに共通のベースパスを設定する。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">@RequestMapping("/api/snippets")
-public class SnippetController { ... }</code></pre>
+      <pre><code class="language-java">@RequestMapping("/api/products")
+public class ProductController { ... }</code></pre>
     </div>
 
     <h3><code>@GetMapping</code> / <code>@PostMapping</code></h3>
@@ -173,44 +180,102 @@ public class SnippetController { ... }</code></pre>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">@GetMapping("/{id}")
-public ResponseEntity&lt;SnippetReviewDto&gt; getById(...) { ... }
+public ResponseEntity&lt;ProductResponse&gt; getById(...) { ... }
 
 @PostMapping
-public ResponseEntity&lt;SnippetReviewDto&gt; create(...) { ... }</code></pre>
+public ResponseEntity&lt;ProductResponse&gt; create(...) { ... }</code></pre>
     </div>
 
     <h3><code>@PathVariable</code></h3>
-    <p>URLパスの一部(<code>/snippets/42</code>の<code>42</code>)を受け取る。リソースを一意に識別するIDなど、「そのURL自体の一部」を表す値に使う。</p>
+    <p>URLパスの一部(<code>/products/42</code>の<code>42</code>)を受け取る。リソースを一意に識別するIDなど、「そのURL自体の一部」を表す値に使う。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">// GET /api/snippets/42
+      <pre><code class="language-java">// GET /api/products/42
 @GetMapping("/{id}")
-public ResponseEntity&lt;SnippetReviewDto&gt; getById(@PathVariable Long id) {
-    return ResponseEntity.ok(snippetService.findById(id));
+public ResponseEntity&lt;ProductResponse&gt; getById(@PathVariable Long id) {
+    return ResponseEntity.ok(productService.findById(id));
 }</code></pre>
     </div>
 
     <h3><code>@RequestParam</code></h3>
-    <p>クエリパラメータ(<code>?tag=spring&amp;page=0</code>)を受け取る。検索条件・フィルタ・ページングなど、任意/省略可能な値に使うことが多い。</p>
+    <p>クエリパラメータ(<code>?category=book&amp;page=0</code>)を受け取る。検索条件・フィルタ・ページングなど、任意/省略可能な値に使うことが多い。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">// GET /api/snippets?tag=spring&amp;page=0
+      <pre><code class="language-java">// GET /api/products?category=book&amp;page=0
 @GetMapping
-public ResponseEntity&lt;List&lt;SnippetReviewDto&gt;&gt; search(
-        @RequestParam(required = false) String tag,
+public ResponseEntity&lt;List&lt;ProductResponse&gt;&gt; search(
+        @RequestParam(required = false) String category,
         @RequestParam(defaultValue = "0") int page) {
-    return ResponseEntity.ok(snippetService.search(tag, page));
+    return ResponseEntity.ok(productService.search(category, page));
 }</code></pre>
+    </div>
+
+    <h3>Formクラスでまとめて受け取る</h3>
+    <p>クエリパラメータが多いときは、1つずつ <code>@RequestParam</code> で受けるかわりに、パラメータをまとめたクラス（Formクラス）で受け取れる。パラメータ名と同じ名前のフィールドに、Springが値を入れてくれる。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span><span class="editor-label">ProductSearchForm.java</span></div>
+      <pre><code class="language-java">@Data
+public class ProductSearchForm {
+    private String category;     // 指定がなければ null
+    private String keyword;      // 指定がなければ null
+    private Integer page = 0;    // 指定がなければ 0
+}</code></pre>
+    </div>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span><span class="editor-label">ProductController.java</span></div>
+      <pre><code class="language-java">// GET /api/products?category=book&amp;keyword=java&amp;page=0
+@GetMapping
+public ResponseEntity&lt;List&lt;ProductResponse&gt;&gt; search(ProductSearchForm form) {
+    return ResponseEntity.ok(productService.search(form));
+}</code></pre>
+    </div>
+    <div class="fp-list">
+      <div class="fp-card">
+        <p class="fp-title">🏷️ アノテーションは付けない</p>
+        <p>引数がFormクラスのようなオブジェクトなら、Springが自動的に <code>@ModelAttribute</code> として扱う。次の2つは同じ意味になる。</p>
+        <div class="fp-codes">
+          <code>search(ProductSearchForm form)</code>
+          <span class="fp-eq">＝</span>
+          <code>search(@ModelAttribute ProductSearchForm form)</code>
+        </div>
+        <p class="fp-warn">⚠️ <code>@RequestBody</code> を付けると、クエリパラメータではなくリクエストボディのJSONを読みにいってしまう。</p>
+      </div>
+
+      <div class="fp-card">
+        <p class="fp-title">🔢 省略されたパラメータは初期値のまま</p>
+        <p>送られてこなかったパラメータのフィールドには値が入らない。<code>@RequestParam</code> の <code>defaultValue</code> のかわりに、フィールドに初期値を書いておく。</p>
+        <table>
+          <tr><th>リクエスト</th><th><code>category</code></th><th><code>keyword</code></th><th><code>page</code></th></tr>
+          <tr><td><code>?category=book</code></td><td><code>"book"</code></td><td><code>null</code></td><td><code>0</code>（初期値）</td></tr>
+          <tr><td><code>?category=book&amp;page=2</code></td><td><code>"book"</code></td><td><code>null</code></td><td><code>2</code></td></tr>
+        </table>
+      </div>
+
+      <div class="fp-card">
+        <p class="fp-title">⚖️ <code>@RequestParam</code> との使い分け</p>
+        <div class="fp-choice">
+          <div class="fp-option">
+            <p class="fp-when">パラメータが1〜2個</p>
+            <p class="fp-pick">→ <code>@RequestParam</code></p>
+            <p class="fp-why">必須・デフォルト値もアノテーションだけで指定できる</p>
+          </div>
+          <div class="fp-option">
+            <p class="fp-when">パラメータが多い・今後増えそう</p>
+            <p class="fp-pick">→ Formクラス</p>
+            <p class="fp-why">Controllerの引数が1つで済み、Serviceにもそのまま渡せる</p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <h3><code>@RequestBody</code></h3>
     <p>リクエストボディのJSONを、Jacksonを介してJavaオブジェクト(DTO)に変換する。作成・更新系のPOST/PUTでよく使う。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">// POST /api/snippets
+      <pre><code class="language-java">// POST /api/products
 @PostMapping
-public ResponseEntity&lt;SnippetReviewDto&gt; create(@Valid @RequestBody SyncRequestDto request) {
-    SnippetReviewDto created = snippetService.create(request);
+public ResponseEntity&lt;ProductResponse&gt; create(@Valid @RequestBody ProductCreateRequest request) {
+    ProductResponse created = productService.create(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(created);
 }</code></pre>
     </div>
@@ -220,17 +285,17 @@ public ResponseEntity&lt;SnippetReviewDto&gt; create(@Valid @RequestBody SyncReq
       <div class="guide-card">
         <p class="q">そのリソースを特定するためのIDか?</p>
         <p class="a"><span class="arrow">→</span><code>@PathVariable</code></p>
-        <p class="req"><code>GET /api/snippets/42</code></p>
+        <p class="req"><code>GET /api/products/42</code></p>
       </div>
       <div class="guide-card">
         <p class="q">絞り込み・並び替え・省略可能なオプションか?</p>
-        <p class="a"><span class="arrow">→</span><code>@RequestParam</code></p>
-        <p class="req"><code>GET /api/snippets?tag=spring&amp;page=0</code></p>
+        <p class="a"><span class="arrow">→</span><code>@RequestParam</code>（数が多ければFormクラス）</p>
+        <p class="req"><code>GET /api/products?category=book&amp;page=0</code></p>
       </div>
       <div class="guide-card">
         <p class="q">作成・更新するデータ本体か?</p>
         <p class="a"><span class="arrow">→</span><code>@RequestBody</code></p>
-        <p class="req"><code>POST /api/snippets</code><br>Body: <code>{ "title": "...", "code": "..." }</code></p>
+        <p class="req"><code>POST /api/products</code><br>Body: <code>{ "name": "...", "price": 1200 }</code></p>
       </div>
     </div>
   </section>
@@ -240,30 +305,30 @@ public ResponseEntity&lt;SnippetReviewDto&gt; create(@Valid @RequestBody SyncReq
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">@RestController
-@RequestMapping("/api/snippets")
-public class SnippetController {
+@RequestMapping("/api/products")
+public class ProductController {
 
-    private final SnippetService snippetService;
+    private final ProductService productService;
 
-    public SnippetController(SnippetService snippetService) {
-        this.snippetService = snippetService;
+    public ProductController(ProductService productService) {
+        this.productService = productService;
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity&lt;SnippetReviewDto&gt; getById(@PathVariable Long id) {
-        return ResponseEntity.ok(snippetService.findById(id));
+    public ResponseEntity&lt;ProductResponse&gt; getById(@PathVariable Long id) {
+        return ResponseEntity.ok(productService.findById(id));
     }
 
     @GetMapping
-    public ResponseEntity&lt;List&lt;SnippetReviewDto&gt;&gt; search(
-            @RequestParam(required = false) String tag,
+    public ResponseEntity&lt;List&lt;ProductResponse&gt;&gt; search(
+            @RequestParam(required = false) String category,
             @RequestParam(defaultValue = "0") int page) {
-        return ResponseEntity.ok(snippetService.search(tag, page));
+        return ResponseEntity.ok(productService.search(category, page));
     }
 
     @PostMapping
-    public ResponseEntity&lt;SnippetReviewDto&gt; create(@Valid @RequestBody SyncRequestDto request) {
-        SnippetReviewDto created = snippetService.create(request);
+    public ResponseEntity&lt;ProductResponse&gt; create(@Valid @RequestBody ProductCreateRequest request) {
+        ProductResponse created = productService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 }</code></pre>
@@ -273,41 +338,52 @@ public class SnippetController {
     <ol class="walkthrough">
       <li>
         <pre class="snippet"><code class="language-java">@RestController
-@RequestMapping("/api/snippets")
-public class SnippetController {</code></pre>
-        <p><code>@RestController</code>でこのクラスをREST用のコントローラーとして登録し、各メソッドの戻り値をJSONとしてレスポンスボディに書き込む。<code>@RequestMapping("/api/snippets")</code>でクラス全体の共通パスを固定し、以降の各メソッドのパスはこれに追加される形になる。</p>
+@RequestMapping("/api/products")
+public class ProductController {</code></pre>
+        <p><code>@RestController</code>でこのクラスをREST用のコントローラーとして登録し、各メソッドの戻り値をJSONとしてレスポンスボディに書き込む。<code>@RequestMapping("/api/products")</code>でクラス全体の共通パスを固定し、以降の各メソッドのパスはこれに追加される形になる。</p>
       </li>
       <li>
-        <pre class="snippet"><code class="language-java">private final SnippetService snippetService;
+        <pre class="snippet"><code class="language-java">private final ProductService productService;
 
-public SnippetController(SnippetService snippetService) {
-    this.snippetService = snippetService;
+public ProductController(ProductService productService) {
+    this.productService = productService;
 }</code></pre>
-        <p>ビジネスロジックを担う<code>SnippetService</code>をフィールドとして保持し、コンストラクタインジェクションでSpringに注入してもらう。</p>
+        <p>ビジネスロジックを担う<code>ProductService</code>をフィールドとして保持し、コンストラクタインジェクションでSpringに注入してもらう。</p>
       </li>
       <li>
         <pre class="snippet"><code class="language-java">@GetMapping("/{id}")
-public ResponseEntity&lt;SnippetReviewDto&gt; getById(@PathVariable Long id) {
-    return ResponseEntity.ok(snippetService.findById(id));
+public ResponseEntity&lt;ProductResponse&gt; getById(@PathVariable Long id) {
+    return ResponseEntity.ok(productService.findById(id));
 }</code></pre>
-        <p><code>GET /api/snippets/{id}</code>宛のリクエストを割り当てる。URLパスの<code>{id}</code>部分を<code>@PathVariable</code>で<code>Long id</code>として受け取り、取得したデータをステータス200(OK)とともに返す。</p>
+        <p><code>GET /api/products/{id}</code>宛のリクエストを割り当てる。URLパスの<code>{id}</code>部分を<code>@PathVariable</code>で<code>Long id</code>として受け取り、取得したデータをステータス200(OK)とともに返す。</p>
       </li>
       <li>
         <pre class="snippet"><code class="language-java">@GetMapping
-public ResponseEntity&lt;List&lt;SnippetReviewDto&gt;&gt; search(
-        @RequestParam(required = false) String tag,
+public ResponseEntity&lt;List&lt;ProductResponse&gt;&gt; search(
+        @RequestParam(required = false) String category,
         @RequestParam(defaultValue = "0") int page) {
-    return ResponseEntity.ok(snippetService.search(tag, page));
+    return ResponseEntity.ok(productService.search(category, page));
 }</code></pre>
-        <p>ベースパス<code>/api/snippets</code>そのものへのGETリクエスト(検索用)を割り当てる。クエリパラメータ<code>?tag=...</code>は<code>@RequestParam(required = false)</code>で省略可能な値として、<code>?page=...</code>は<code>@RequestParam(defaultValue = "0")</code>で省略時に<code>0</code>となる値として受け取り、検索結果を一覧(<code>List</code>)で200とともに返す。</p>
+        <p><code>GET /api/products</code>（パスの後ろに何も付かない）へのリクエストを受け取る、検索用のメソッド。クエリパラメータは2つとも省略できる。</p>
+        <ul class="param-list">
+          <li><code>?category=...</code>: <code>required = false</code> なので、省略すると <code>null</code></li>
+          <li><code>?page=...</code>: <code>defaultValue = "0"</code> なので、省略すると <code>0</code></li>
+        </ul>
+        <p>検索結果は一覧（<code>List</code>）にして、<code>200 OK</code> で返す。</p>
       </li>
       <li>
         <pre class="snippet"><code class="language-java">@PostMapping
-public ResponseEntity&lt;SnippetReviewDto&gt; create(@Valid @RequestBody SyncRequestDto request) {
-    SnippetReviewDto created = snippetService.create(request);
+public ResponseEntity&lt;ProductResponse&gt; create(@Valid @RequestBody ProductCreateRequest request) {
+    ProductResponse created = productService.create(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(created);
 }</code></pre>
-        <p><code>POST /api/snippets</code>宛のリクエスト(新規作成)を割り当てる。リクエストボディのJSONを<code>@RequestBody</code>で<code>SyncRequestDto</code>に変換し、<code>@Valid</code>でバリデーションを実行してからサービスに登録処理を委譲し、作成成功を表すステータス201(CREATED)とともに作成されたリソースを返す。</p>
+        <p><code>POST /api/products</code> へのリクエストを受け取る、新規作成用のメソッド。次の順番で処理が進む。</p>
+        <ol class="param-list">
+          <li><code>@RequestBody</code>: リクエストボディのJSONを <code>ProductCreateRequest</code> に変換する</li>
+          <li><code>@Valid</code>: 中身が入力ルールに合っているかチェックする（合っていなければ、ここで <code>400 Bad Request</code>）</li>
+          <li><code>productService.create(request)</code>: 登録処理は Service に任せる</li>
+          <li>作成した商品を、<code>201 Created</code> で返す</li>
+        </ol>
       </li>
     </ol>
   </section>
