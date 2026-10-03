@@ -22,6 +22,7 @@
     --accent-3: #06b6d4;
     --accent-4: #f59e0b;
     --shadow: 0 8px 24px rgba(124, 58, 237, 0.08);
+    --accent-text: #6d28d9;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -33,6 +34,7 @@
       --code-bg: #0f0c1a;
       --code-fg: #e6e1fa;
       --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      --accent-text: #c4b5fd;
     }
   }
   * { box-sizing: border-box; }
@@ -122,7 +124,6 @@
   .sec-overview .icon   { background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); }
   .sec-usecase .icon    { background: linear-gradient(135deg, var(--accent-3), #22d3ee); }
   .sec-code .icon       { background: linear-gradient(135deg, #312e81, #1e1b2e); }
-  .sec-explain .icon    { background: linear-gradient(135deg, var(--accent-4), #f97316); }
   .sec-reference .icon  { background: linear-gradient(135deg, #10b981, #06b6d4); }
 
   h3 {
@@ -180,7 +181,7 @@
     font-family: "Fira Code", "SFMono-Regular", Consolas, monospace;
     font-size: 0.88rem;
   }
-  p code, li code, td code, th code, h3 code {
+  p code, li code, td code, th code, h3 code, h4 code, dd code, .callout-label code {
     background: var(--border);
     color: var(--fg);
     padding: 0.15em 0.4em;
@@ -210,12 +211,167 @@
   }
   a:hover { border-bottom-color: currentColor; }
 
-  .footer-note {
-    text-align: center;
-    color: var(--muted);
-    font-size: 0.9rem;
-    margin-top: 2rem;
+  /* コードセクションの見出し */
+  .sec-code h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 1.05rem;
+    margin: 2.25rem 0 0.9rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px dashed var(--border);
   }
+  .sec-code h2 + h3 { margin-top: 0.5rem; }
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    background: var(--accent-1);
+    color: #fff;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+  .sub-head {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--accent-text);
+    margin: 1.4rem 0 0.5rem;
+  }
+
+  /* 用語 */
+  .terms {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.75rem;
+    margin: 1rem 0 0;
+  }
+  .term {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+  }
+  .term dt { font-weight: 700; color: var(--accent-text); }
+  .term dd { margin: 0.2rem 0 0; font-size: 0.92rem; }
+
+  /* コードブロック */
+  .editor { margin: 0.75rem 0; }
+  .editor-bar { align-items: center; }
+  .editor-bar .editor-label {
+    margin-left: auto;
+    width: auto;
+    height: auto;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.1rem 0.6rem;
+    border-radius: 999px;
+    font-family: "Zen Maru Gothic", sans-serif;
+  }
+  .editor-bar .label-ng  { background: rgba(239, 68, 68, 0.2);  color: #fca5a5; }
+  .editor-bar .label-ok  { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+  .editor-bar .label-out { background: rgba(255, 255, 255, 0.12); color: #e6e1fa; }
+
+  /* 囲み */
+  .callout { border-radius: 10px; padding: 0.85rem 1rem; margin: 0.75rem 0 1rem; border: 1px solid; }
+  .callout p { margin: 0.3rem 0; }
+  .callout ul { margin: 0.3rem 0 0; }
+  .callout-label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 0.25rem; }
+  .callout-point { background: rgba(124, 58, 237, 0.08); border-color: rgba(124, 58, 237, 0.35); }
+  .callout-point .callout-label { color: var(--accent-text); }
+  .callout-rule { background: rgba(245, 158, 11, 0.10); border-color: rgba(245, 158, 11, 0.45); }
+  .callout-rule .callout-label { color: #d97706; }
+  .check-list { list-style: none; padding-left: 0; }
+  .check-list li { padding-left: 1.6rem; position: relative; }
+  .check-list li::before { content: "✓"; position: absolute; left: 0.2rem; color: #10b981; font-weight: 700; }
+
+  /* 利点カード */
+  .merit-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin: 0.75rem 0 1rem;
+  }
+  .merit {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.8rem 1rem;
+    background: var(--surface);
+  }
+  @media (max-width: 560px) { .merit-grid { grid-template-columns: 1fr; } }
+  .merit-title { display: block; font-weight: 700; margin-bottom: 0.2rem; }
+  .merit p { margin: 0; font-size: 0.9rem; color: var(--muted); }
+
+  /* もう一歩の解説 */
+  .deep-dive {
+    margin: 1.5rem 0 0.5rem;
+    padding: 1rem 1.1rem;
+    border: 1px dashed var(--accent-1);
+    border-radius: 12px;
+  }
+  .deep-dive-title {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    padding: 0.2rem 0.75rem;
+    border-radius: 999px;
+    margin-bottom: 0.5rem;
+  }
+  .deep-dive > h4 { font-size: 1rem; margin: 0.25rem 0 0.5rem; }
+
+  /* ビルダーの流れ */
+  .chain {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0.9rem 0;
+    padding: 0.9rem 1rem;
+    background: var(--bg);
+    border-radius: 12px;
+    font-size: 0.88rem;
+  }
+  .chain-node {
+    padding: 0.35rem 0.7rem;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    line-height: 1.4;
+    text-align: center;
+  }
+  .chain-node small { display: block; color: var(--muted); font-size: 0.75rem; }
+  .chain-node.done { border-color: #10b981; background: rgba(16, 185, 129, 0.1); }
+  .chain-step { color: var(--accent-text); font-family: "Fira Code", monospace; font-size: 0.82rem; }
+  .chain-step::after { content: " →"; }
+
+  /* コード内の番号と対応する解説 */
+  .timeline { list-style: none; padding: 0; margin: 0.75rem 0 1rem; position: relative; }
+  .timeline::before { content: ""; position: absolute; left: 0.95rem; top: 0.5rem; bottom: 0.5rem; width: 2px; background: var(--border); }
+  .timeline > li { position: relative; padding: 0.15rem 0 0.75rem 2.75rem; margin: 0; }
+  .timeline-num {
+    position: absolute; left: 0; top: 0.1rem;
+    width: 1.9rem; height: 1.9rem; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--surface); border: 2px solid var(--accent-3); color: var(--accent-3);
+    font-weight: 700; font-size: 0.9rem;
+  }
+
+  /* ステータスコードの比較 */
+  .status-compare {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.75rem;
+    margin: 0.75rem 0 1rem;
+  }
+  .status-card { border-radius: 12px; padding: 0.85rem 1rem; border: 1px solid var(--border); }
+  .status-card.weak   { background: var(--bg); }
+  .status-card.strong { background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.45); }
+  .status-code { font-family: "Fira Code", monospace; font-weight: 500; font-size: 1.05rem; }
+  .status-card.strong .status-code { color: #10b981; }
+  .status-card p { margin: 0.3rem 0 0; font-size: 0.9rem; }
 </style>
 </head>
 <body>
@@ -226,15 +382,28 @@
     <h1>ResponseEntity.created() - リソース作成レスポンスの便利メソッド</h1>
     <ul class="meta">
       <li>📅 作成日: 2026-02-14</li>
-      <li>🔄 更新日: 2026-09-21</li>
+      <li>🔄 更新日: 2026-10-03</li>
     </ul>
   </header>
 
   <section class="sec-overview">
     <h2><span class="icon">🎯</span>概要</h2>
     <p>REST APIでリソース作成時に <code>201 Created</code> レスポンスと <code>Location</code> ヘッダーを返す際、Springの <code>ResponseEntity.created()</code> を使って簡潔に記述する方法。</p>
-    <p>REST設計では「作成に成功したら <code>200 OK</code> ではなく <code>201 Created</code> を返し、<code>Location</code> ヘッダーで作成された新しいリソースのURIをクライアントに教える」のが慣習になっている。<code>ResponseEntity.created()</code> はこの2つ（ステータスコード + ヘッダー）をまとめて設定してくれる専用メソッド。</p>
-    <p><strong>リソース</strong>＝データのまとまり、<strong>URL</strong>＝そのリソースの場所を一意に指し示す住所（例: <code>/cashcards/123</code>）。</p>
+    <div class="callout callout-rule">
+      <span class="callout-label">📏 REST設計の慣習</span>
+      <p>作成に成功したら <code>200 OK</code> ではなく <strong><code>201 Created</code></strong> を返し、<strong><code>Location</code> ヘッダー</strong>で作成された新しいリソースのURIをクライアントに教える。</p>
+    </div>
+    <p><code>ResponseEntity.created()</code> は、この2つ（ステータスコード + ヘッダー）をまとめて設定してくれる専用メソッド。</p>
+    <dl class="terms">
+      <div class="term">
+        <dt>リソース</dt>
+        <dd>データのまとまり（例: 1件の商品）</dd>
+      </div>
+      <div class="term">
+        <dt>URL</dt>
+        <dd>そのリソースの場所を一意に指し示す住所（例: <code>/products/123</code>）</dd>
+      </div>
+    </dl>
   </section>
 
   <section class="sec-usecase">
@@ -248,75 +417,128 @@
 
   <section class="sec-code">
     <h2><span class="icon">💻</span>コード</h2>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">// ✅ Spring提供の便利メソッド（推奨）
-return ResponseEntity
-        .created(uriOfCashCard)
-        .build();
 
-// ❌ 手動で全部指定する方法（冗長）
-return ResponseEntity
+    <h3><span class="step-num">1</span><code>created()</code> と手動指定の比較</h3>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span><b class="editor-label label-ok">✓ 推奨: 便利メソッド</b></div>
+      <pre><code class="language-java">return ResponseEntity
+        .created(location)
+        .build();</code></pre>
+    </div>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span><b class="editor-label label-ng">✕ 冗長: 手動で全部指定</b></div>
+      <pre><code class="language-java">return ResponseEntity
         .status(HttpStatus.CREATED)
         .header(HttpHeaders.LOCATION,
-                uriOfCashCard.toASCIIString())
+                location.toASCIIString())
         .build();</code></pre>
     </div>
 
-    <h3>実際の使用例</h3>
+    <div class="callout callout-point">
+      <span class="callout-label">⚙️ <code>created()</code> メソッドが自動で行うこと</span>
+      <ul class="check-list">
+        <li>ステータスコードを <code>201 Created</code> に設定</li>
+        <li><code>Location</code> ヘッダーにURIを追加</li>
+        <li>URIの形式チェック（バリデーション）</li>
+      </ul>
+    </div>
+
+    <p class="sub-head">手動指定に対する利点</p>
+    <div class="merit-grid">
+      <div class="merit">
+        <span class="merit-title">✂️ コードが短い</span>
+        <p>1行で済む</p>
+      </div>
+      <div class="merit">
+        <span class="merit-title">🛡️ ミスが減る</span>
+        <p>ステータスコードやヘッダー名の間違いを防げる（例: <code>HttpHeaders.LOCATION</code> のスペルミスや、ステータスコードの数値取り違え）</p>
+      </div>
+      <div class="merit">
+        <span class="merit-title">🔍 URI検証</span>
+        <p>URIが正しい形式かチェックしてくれる</p>
+      </div>
+      <div class="merit">
+        <span class="merit-title">💬 意図が明確</span>
+        <p><code>created</code> という名前で何をしているか一目瞭然</p>
+      </div>
+    </div>
+
+    <div class="deep-dive">
+      <span class="deep-dive-title">🔎 もう一歩</span>
+      <h4>末尾の <code>.build()</code> は何をしているか</h4>
+      <p><code>ResponseEntity.created(location)</code> が返すのは <code>ResponseEntity</code> そのものではなく、設定を溜めておく<strong>ビルダー</strong>（<code>ResponseEntity.BodyBuilder</code>）。<code>.header(...)</code> などで設定をつないでいき、最後に <code>.build()</code> を呼ぶと、それまでの設定で <code>ResponseEntity</code> が完成する（ビルダーパターン）。</p>
+      <div class="chain" aria-label="ビルダーからResponseEntityが完成するまでの流れ">
+        <span class="chain-step">created(location)</span>
+        <span class="chain-node">BodyBuilder<small>201 + Location 設定済み</small></span>
+        <span class="chain-step">.build()</span>
+        <span class="chain-node done">ResponseEntity<small>完成したレスポンス</small></span>
+      </div>
+      <p><code>.build()</code> を呼ばないと <code>ResponseEntity</code> として返せないので、コンパイルエラーになる。</p>
+
+      <p class="sub-head">ビルダーの締め方は2通り</p>
+      <table>
+        <tr><th>メソッド</th><th>結果</th></tr>
+        <tr><td><code>.build()</code></td><td>レスポンスボディなしのレスポンス</td></tr>
+        <tr><td><code>.body(obj)</code></td><td><code>obj</code> をボディ（JSONなど）として返すレスポンス</td></tr>
+      </table>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-java">// ボディなし: ステータスと Location ヘッダーだけ返す（このスニペットの例）
+// → ResponseEntity&lt;Void&gt;
+return ResponseEntity.created(location).build();
+
+// ボディあり: 作成した商品もJSONで返す
+// → ResponseEntity&lt;Product&gt;
+return ResponseEntity.created(location).body(saved);</code></pre>
+      </div>
+    </div>
+
+    <h3><span class="step-num">2</span>実際の使用例</h3>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">@PostMapping
-public ResponseEntity&lt;Void&gt; createCashCard(@RequestBody CashCard newCard) {
-    CashCard saved = repository.save(newCard);
+public ResponseEntity&lt;Void&gt; createProduct(@RequestBody Product newProduct) {
+    // ① DBに保存（IDが採番される）
+    Product saved = repository.save(newProduct);
 
-    // 作成したリソースのURI: /cashcards/123
-    URI location = URI.create("/cashcards/" + saved.getId());
+    // ② 作成したリソースのURI: /products/123
+    URI location = URI.create("/products/" + saved.getId());
 
-    // 便利メソッドで一発
+    // ③ ボディなしで 201 + Location を返す
     return ResponseEntity.created(location).build();
 }</code></pre>
     </div>
+    <ol class="timeline">
+      <li><span class="timeline-num">①</span><code>repository.save(newProduct)</code> でDBに保存すると、自動採番されたIDを持つエンティティが返ってくる。このIDがあって初めて作成先URIが確定する。</li>
+      <li><span class="timeline-num">②</span><code>URI.create("/products/" + saved.getId())</code> で、保存後に確定したIDをもとにURIを組み立てている。<code>URI.create()</code> は文字列が不正なURI形式だと <code>IllegalArgumentException</code> を投げるため、単純な文字列連結よりも安全。</li>
+      <li><span class="timeline-num">③</span>戻り値の型が <code>ResponseEntity&lt;Void&gt;</code> になっているのは、レスポンスボディを返さず、ステータスコードと <code>Location</code> ヘッダーだけでクライアントに情報を伝えているため。</li>
+    </ol>
 
-    <h3>レスポンス例</h3>
-    <p>クライアントはレスポンスボディを見なくても、<code>Location</code> ヘッダーの値だけで「どこに何が作られたか」がわかる。</p>
+    <h3><span class="step-num">3</span>レスポンス例</h3>
     <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <div class="editor-bar"><span></span><span></span><span></span><b class="editor-label label-out">HTTPレスポンス</b></div>
       <pre><code class="language-http">HTTP/1.1 201 Created
-Location: /cashcards/123</code></pre>
+Location: /products/123</code></pre>
     </div>
-  </section>
+    <p>クライアントはレスポンスボディを見なくても、<code>Location</code> ヘッダーの値だけで「どこに何が作られたか」がわかる。</p>
 
-  <section class="sec-explain">
-    <h2><span class="icon">💡</span>説明</h2>
+    <p class="sub-head">なぜ <code>200 OK</code> ではなく <code>201 Created</code> なのか</p>
+    <div class="status-compare">
+      <div class="status-card weak">
+        <span class="status-code">200 OK</span>
+        <p>「リクエストが成功した」ことしか表さない汎用的なステータス。</p>
+      </div>
+      <div class="status-card strong">
+        <span class="status-code">201 Created</span>
+        <p>「新しいリソースがサーバー上に作成された」ことまで明示する。クライアント（や間に入るキャッシュ・監視ツールなど）が意味を正しく解釈できる。</p>
+      </div>
+    </div>
+    <p>REST APIでは「操作の結果として何が起きたか」をステータスコードで正確に伝えることが重要視される。</p>
 
-    <h3>なぜ <code>200 OK</code> ではなく <code>201 Created</code> なのか</h3>
-    <p><code>200 OK</code> は「リクエストが成功した」ことしか表さない汎用的なステータス。一方 <code>201 Created</code> は「新しいリソースがサーバー上に作成された」ことまで明示するので、クライアント（や間に入るキャッシュ・監視ツールなど）が意味を正しく解釈できる。REST APIでは「操作の結果として何が起きたか」をステータスコードで正確に伝えることが重要視される。</p>
-
-    <h3>なぜ <code>Location</code> ヘッダーが必要なのか</h3>
-    <p>作成したリソースのIDやURLは、サーバー側で採番されることが多く、リクエストを送ったクライアントはあらかじめ知らない。<code>Location</code> ヘッダーにURIを入れて返すことで、クライアントは「作成されたリソースが具体的にどこにあるか」を後続の処理（詳細取得・画面遷移など）にそのまま使える。</p>
-
-    <h3><code>created()</code> メソッドが自動で行うこと</h3>
-    <ul>
-      <li>ステータスコードを <code>201 Created</code> に設定</li>
-      <li><code>Location</code> ヘッダーにURIを追加</li>
-      <li>URIの形式チェック（バリデーション）</li>
-    </ul>
-
-    <h3>手動指定に対する利点</h3>
-    <ul>
-      <li><strong>コードが短い</strong>: 1行で済む</li>
-      <li><strong>ミスが減る</strong>: ステータスコードやヘッダー名の間違いを防げる（例: <code>HttpHeaders.LOCATION</code> のスペルミスや、ステータスコードの数値取り違え）</li>
-      <li><strong>URI検証</strong>: URIが正しい形式かチェックしてくれる</li>
-      <li><strong>意図が明確</strong>: <code>created</code> という名前で何をしているか一目瞭然</li>
-    </ul>
-
-    <h3>使用例のポイント</h3>
-    <ul>
-      <li><code>repository.save(newCard)</code> でDBに保存すると、自動採番されたIDを持つエンティティが返ってくる。このIDがあって初めて作成先URIが確定する。</li>
-      <li><code>URI.create("/cashcards/" + saved.getId())</code> で、保存後に確定したIDをもとにURIを組み立てている。<code>URI.create()</code> は文字列が不正なURI形式だと <code>IllegalArgumentException</code> を投げるため、単純な文字列連結よりも安全。</li>
-      <li>戻り値の型が <code>ResponseEntity&lt;Void&gt;</code> になっているのは、レスポンスボディを返さず、ステータスコードと <code>Location</code> ヘッダーだけでクライアントに情報を伝えているため。</li>
-    </ul>
+    <div class="callout callout-point">
+      <span class="callout-label">📍 なぜ <code>Location</code> ヘッダーが必要なのか</span>
+      <p>作成したリソースのIDやURLは、サーバー側で採番されることが多く、リクエストを送ったクライアントはあらかじめ知らない。<code>Location</code> ヘッダーにURIを入れて返すことで、クライアントは「作成されたリソースが具体的にどこにあるか」を後続の処理（詳細取得・画面遷移など）にそのまま使える。</p>
+    </div>
   </section>
 
   <section class="sec-reference">
@@ -325,8 +547,6 @@ Location: /cashcards/123</code></pre>
       <li><a href="https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/http/ResponseEntity.html">ResponseEntity - Spring公式ドキュメント</a></li>
     </ul>
   </section>
-
-  <p class="footer-note">✨ 学びを積み重ねよう ✨</p>
 
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
