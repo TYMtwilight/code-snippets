@@ -104,6 +104,28 @@
   .dep-note { margin: 0.6rem 0 0; padding: 0.75rem 0.9rem; background: var(--bg); border-radius: 10px; font-size: 0.92rem; }
   .dep-note strong { color: var(--fg); }
 
+  .vflow { counter-reset: vstep; list-style: none; margin: 0.9rem 0 0; padding: 0; }
+  .vflow > li { counter-increment: vstep; position: relative; margin: 0; padding: 0.1rem 0 1rem 2.6rem; }
+  .vflow > li::before { content: counter(vstep); position: absolute; left: 0; top: 0; width: 1.8rem; height: 1.8rem; border-radius: 50%; background: var(--accent-1); color: #fff; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .vflow > li::after { content: ""; position: absolute; left: calc(0.9rem - 1px); top: 1.9rem; bottom: 0.1rem; width: 2px; background: var(--accent-1); opacity: 0.3; }
+  .vflow p { margin: 0; }
+  .vflow-title { font-weight: 700; line-height: 1.6; }
+  .vflow-desc { font-size: 0.88rem; color: var(--muted); margin: 0.15rem 0 0; }
+  .vflow-branch { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin: 0 0 0.75rem; }
+  .branch { border: 1px solid; border-radius: 12px; padding: 0.75rem 0.95rem; }
+  .branch p { margin: 0; }
+  .branch-ok { background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.45); }
+  .branch-ng { background: rgba(239, 68, 68, 0.07); border-color: rgba(239, 68, 68, 0.4); }
+  .branch-tag { display: inline-block; font-size: 0.75rem; font-weight: 700; color: #fff; padding: 0.05rem 0.6rem; border-radius: 999px; margin-bottom: 0.45rem; }
+  .branch-ok .branch-tag { background: #10b981; }
+  .branch-ng .branch-tag { background: #ef4444; }
+  .branch-title { font-weight: 700; line-height: 1.7; }
+  .branch-title code { overflow-wrap: anywhere; }
+  .branch-num { vertical-align: 0.1em; margin-right: 0.4rem; display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: #10b981; color: #fff; font-size: 0.8rem; flex-shrink: 0; }
+  .branch .vflow-desc { margin-top: 0.35rem; }
+  .branch .nw { white-space: nowrap; }
+  .vflow-title code, .branch-title code, .vflow-desc code { background: var(--border); color: var(--fg); padding: 0.15em 0.4em; border-radius: 5px; font-family: "Fira Code", monospace; font-size: 0.85em; }
+  @media (max-width: 560px) { .vflow-branch { grid-template-columns: 1fr; } }
   .deep-dive { margin-top: 1rem; padding: 1rem 1.1rem; border: 1px dashed var(--accent-1); border-radius: 12px; }
   .deep-dive-title { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 700; color: var(--accent-1); margin: 0 0 0.75rem; }
   .deep-dive h4 { margin-top: 1.1rem; }
@@ -137,7 +159,7 @@
     <div class="deep-dive">
       <p class="deep-dive-title">🔍 用語ノート: @RequestMapping</p>
       <p class="dep-note">
-        URLパスをControllerのクラス/メソッドに紐付けるアノテーション。クラスに付けると、そのControllerが担当する共通のベースパスを指定できる(例: <code>@RequestMapping("/api/todos")</code>を付けたクラス内の<code>@GetMapping</code>は実際には<code>GET /api/todos</code>になる)。<br><br>
+        URLパスをControllerのクラス/メソッドに紐付けるアノテーション。クラスに付けると、そのControllerが担当する共通のベースパスを指定できる(例: <code>@RequestMapping("/api/products")</code>を付けたクラス内の<code>@GetMapping</code>は実際には<code>GET /api/products</code>になる)。<br><br>
         <code>@GetMapping</code>、<code>@PostMapping</code>などは<code>@RequestMapping(method = RequestMethod.GET)</code>等のショートカット(合成アノテーション)。メソッド単体に<code>@RequestMapping</code>を付けてパスとHTTPメソッドを指定することも技術的には可能だが、今は<code>@GetMapping</code>等を使うのが主流。「クラスに<code>@RequestMapping</code>、メソッドに<code>@GetMapping</code>等」という組み合わせが最も一般的。
       </p>
       <div class="editor">
@@ -154,7 +176,7 @@
   <section class="sec-usecase">
     <h2><span class="icon">📌</span>使用場面</h2>
     <ul>
-      <li>リソース(例: TODO、ユーザー、商品)のCRUD APIを設計する時</li>
+      <li>リソース(例: 商品、ユーザー、注文)のCRUD APIを設計する時</li>
       <li>Bean Validation(<code>@Valid</code>)でリクエストを検証したい時</li>
       <li>Service層に処理を委譲し、Controllerをシンプルに保ちたい時</li>
     </ul>
@@ -167,51 +189,51 @@
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">@RestController
-@RequestMapping("/api/todos")
-public class TodoController {
+@RequestMapping("/api/products")
+public class ProductController {
 
-  private final TodoService todoService;
+  private final ProductService productService;
 
   // コンストラクタインジェクション
-  public TodoController(TodoService todoService) {
-    this.todoService = todoService;
+  public ProductController(ProductService productService) {
+    this.productService = productService;
   }
 
-  // GET /api/todos?status=ALL|ACTIVE|COMPLETED
+  // GET /api/products?status=ALL|ON_SALE|OFF_SALE
   @GetMapping
-  public ResponseEntity&lt;List&lt;TodoResponse&gt;&gt; getAll(
+  public ResponseEntity&lt;List&lt;ProductResponse&gt;&gt; getAll(
       @RequestParam(name = "status", defaultValue = "ALL") String status) {
-    return ResponseEntity.ok(todoService.findAll(status));
+    return ResponseEntity.ok(productService.findAll(status));
   }
 
-  // POST /api/todos → 201 Created
+  // POST /api/products → 201 Created
   @PostMapping
-  public ResponseEntity&lt;TodoResponse&gt; create(
-      @Valid @RequestBody TodoRequest request) {
-    TodoResponse created = todoService.create(request);
+  public ResponseEntity&lt;ProductResponse&gt; create(
+      @Valid @RequestBody ProductRequest request) {
+    ProductResponse created = productService.create(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(created);
   }
 
-  // PUT /api/todos/{id} → 200 OK
+  // PUT /api/products/{id} → 200 OK
   @PutMapping("/{id}")
-  public ResponseEntity&lt;TodoResponse&gt; update(
+  public ResponseEntity&lt;ProductResponse&gt; update(
       @PathVariable("id") Long id,
-      @Valid @RequestBody TodoRequest request) {
-    TodoResponse updated = todoService.update(id, request);
+      @Valid @RequestBody ProductRequest request) {
+    ProductResponse updated = productService.update(id, request);
     return ResponseEntity.ok(updated);
   }
 
-  // PATCH /api/todos/{id}/toggle → 200 OK(部分更新)
+  // PATCH /api/products/{id}/toggle → 200 OK(部分更新: 販売中⇔販売停止を切り替え)
   @PatchMapping("/{id}/toggle")
-  public ResponseEntity&lt;TodoResponse&gt; toggle(@PathVariable("id") Long id) {
-    TodoResponse toggled = todoService.toggleComplete(id);
+  public ResponseEntity&lt;ProductResponse&gt; toggle(@PathVariable("id") Long id) {
+    ProductResponse toggled = productService.toggleOnSale(id);
     return ResponseEntity.ok(toggled);
   }
 
-  // DELETE /api/todos/{id} → 204 No Content
+  // DELETE /api/products/{id} → 204 No Content
   @DeleteMapping("/{id}")
   public ResponseEntity&lt;Void&gt; delete(@PathVariable("id") Long id) {
-    todoService.delete(id);
+    productService.delete(id);
     return ResponseEntity.noContent().build();
   }
 }</code></pre>
@@ -226,7 +248,7 @@ public class TodoController {
     </div>
     <ul>
       <li>クエリパラメータ未指定時に<code>"ALL"</code>が使われる</li>
-      <li><code>?status=ACTIVE</code>のように渡すと<code>"ACTIVE"</code>になる</li>
+      <li><code>?status=ON_SALE</code>のように渡すと<code>"ON_SALE"</code>になる</li>
     </ul>
 
     <h4>@PathVariable の明示的な name 指定</h4>
@@ -242,10 +264,10 @@ public class TodoController {
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">@PostMapping
-public ResponseEntity&lt;TodoResponse&gt; create(@Valid @RequestBody TodoRequest request) {</code></pre>
+public ResponseEntity&lt;ProductResponse&gt; create(@Valid @RequestBody ProductRequest request) {</code></pre>
     </div>
     <ul>
-      <li><code>@Valid</code>を付けると<code>TodoRequest</code>のBean Validationアノテーション(<code>@NotBlank</code>、<code>@Size</code>など)が実行される</li>
+      <li><code>@Valid</code>を付けると<code>ProductRequest</code>のBean Validationアノテーション(<code>@NotBlank</code>、<code>@Size</code>など)が実行される</li>
       <li>バリデーション失敗時は<code>MethodArgumentNotValidException</code>がスローされる</li>
       <li><code>@RestControllerAdvice</code>で一括ハンドリングするのが定石</li>
     </ul>
@@ -253,28 +275,43 @@ public ResponseEntity&lt;TodoResponse&gt; create(@Valid @RequestBody TodoRequest
     <div class="deep-dive">
       <p class="deep-dive-title">🔍 なぜ create() に throws が書かれていないのに例外が飛ぶのか</p>
 
-      <h4>throws が必要なのはチェック例外だけ</h4>
+      <h4>throws が必要なのは、メソッドの中から検査例外が出ていくときだけ</h4>
       <p class="dep-note">
-        Javaの例外には「チェック例外」と「非チェック例外」の2種類がある。<code>IOException</code>のようなチェック例外は<code>throws</code>を書かないとコンパイルエラーになるが、<code>RuntimeException</code>を継承した非チェック例外はコンパイラが一切チェックしない。<code>MethodArgumentNotValidException</code>は<code>RuntimeException</code>系(<code>BindException</code>経由)なので、<code>throws</code>を書かなくてもコンパイルは通る。「<code>throws</code>が書かれていない = 例外が起きない」わけではなく、単に「Javaがそのチェックを強制していない」だけ。
+        Javaの例外には「検査例外」と「非検査例外」の2種類がある。<code>IOException</code>のような検査例外は、メソッドの中の処理から投げられる可能性があると、<code>catch</code>するか<code>throws</code>を書かないとコンパイルエラーになる。一方、<code>RuntimeException</code>を継承した非検査例外はコンパイラがチェックしない。<code>MethodArgumentNotValidException</code>は<code>BindException</code>(<code>Exception</code>のサブクラス)を継承した<strong>検査例外</strong>だが、<code>create()</code>の中の処理から投げられるわけではないので、<code>throws</code>は不要。「<code>throws</code>が書かれていない = 例外が起きない」わけではない。
       </p>
 
       <h4>例外は create() の中身が実行される前に発生する</h4>
       <p class="dep-note">
-        より重要なのは、この例外が<code>create()</code>メソッドの処理が始まる<strong>前</strong>に発生している点。<code>@Valid @RequestBody TodoRequest request</code>という引数を見つけると、Springは実際に<code>create()</code>を呼び出す前に、引数を準備する段階(<code>HandlerMethodArgumentResolver</code>という内部の仕組み)でJSONの変換とバリデーションを済ませてしまう。ここで失敗すると、Spring自身が<code>MethodArgumentNotValidException</code>を投げ、<code>create()</code>の中身は1行も実行されない。
+        では誰が投げているのか。この例外は、<code>create()</code>メソッドの処理が始まる<strong>前</strong>に発生している。<code>@Valid @RequestBody ProductRequest request</code>という引数を見つけると、Springは実際に<code>create()</code>を呼び出す前に、引数を準備する段階(<code>HandlerMethodArgumentResolver</code>という内部の仕組み)でJSONの変換とバリデーションを済ませてしまう。ここで失敗すると、Spring自身が<code>MethodArgumentNotValidException</code>を投げ、<code>create()</code>の中身は1行も実行されない。
       </p>
-      <div class="editor">
-        <div class="editor-bar"><span></span><span></span><span></span></div>
-        <pre><code>① リクエスト受信 (POST /api/todos, JSON body)
-        ↓
-② JSONを TodoRequest オブジェクトに変換 (デシリアライズ)
-        ↓
-③ @Valid が付いているのを見つける
-        ↓
-④ TodoRequest の中身をバリデーションルールと照合
-        ↓
-   ┌─ OK なら ──────────────→ ⑤ create(request) を実際に呼び出す
-   └─ NG なら ──→ MethodArgumentNotValidException を投げて
-                  ⑤には絶対に到達しない(即座に処理が中断される)</code></pre>
+      <ol class="vflow">
+        <li>
+          <p class="vflow-title">リクエストを受信</p>
+          <p class="vflow-desc"><code>POST /api/products</code>（ボディはJSON）</p>
+        </li>
+        <li>
+          <p class="vflow-title">JSONを <code>ProductRequest</code> に変換</p>
+          <p class="vflow-desc">デシリアライズ。JSONの各項目が、同じ名前のフィールドに入る</p>
+        </li>
+        <li>
+          <p class="vflow-title"><code>@Valid</code> が付いているのを見つける</p>
+        </li>
+        <li>
+          <p class="vflow-title"><code>ProductRequest</code> の中身をバリデーションルールと照合</p>
+          <p class="vflow-desc"><code>@NotBlank</code> や <code>@Size</code> などのルールに合っているかを確かめる</p>
+        </li>
+      </ol>
+      <div class="vflow-branch">
+        <div class="branch branch-ok">
+          <span class="branch-tag">OK なら</span>
+          <p class="branch-title"><span class="branch-num">5</span><code>create(request)</code> を実際に呼び出す</p>
+          <p class="vflow-desc">ここで初めて Controller のコードが動く。<code>request</code> の中身はすでにルールを満たしている</p>
+        </div>
+        <div class="branch branch-ng">
+          <span class="branch-tag">NG なら</span>
+          <p class="branch-title">Spring が <code>MethodArgumentNotValidException</code> <span class="nw">を投げる</span></p>
+          <p class="vflow-desc">その場で処理が中断され、5 には絶対に到達しない。<code>create()</code> の中身は1行も実行されない</p>
+        </div>
       </div>
       <p class="dep-note">
         つまり「<code>create()</code>メソッドが例外を投げている」のではなく、「Springが<code>create()</code>を呼ぶ前にチェックして、ダメならSpring自身が例外を投げる」という流れ。だからコントローラー側には<code>throws</code>はおろか、例外に関するコードが一切登場しない。捕まえたい場合は<code>@RestControllerAdvice</code>で一括ハンドリングする。
@@ -285,7 +322,7 @@ public ResponseEntity&lt;TodoResponse&gt; create(@Valid @RequestBody TodoRequest
     <p>Entityをそのまま受け取って返すのではなく、DTO(Data Transfer Object)に変換して受け渡しする。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code>Request JSON → TodoRequest (DTO) → todoService.create() → Entity → TodoResponse (DTO) → Response JSON</code></pre>
+      <pre><code>Request JSON → ProductRequest (DTO) → productService.create() → Entity → ProductResponse (DTO) → Response JSON</code></pre>
     </div>
     <p><strong>理由:</strong></p>
     <ul>
@@ -304,49 +341,49 @@ public ResponseEntity&lt;TodoResponse&gt; create(@Valid @RequestBody TodoRequest
       <div class="editor">
         <div class="editor-bar"><span></span><span></span><span></span></div>
         <pre><code class="language-java">@PostMapping
-public ResponseEntity&lt;Todo&gt; create(@RequestBody Todo todo) {
+public ResponseEntity&lt;Product&gt; create(@RequestBody Product product) {
     // Controllerの中でチェックを書く羽目になる
-    if (todo.getTitle() == null || todo.getTitle().isBlank()) {
+    if (product.getName() == null || product.getName().isBlank()) {
         return ResponseEntity.badRequest().build();
     }
-    if (todo.getTitle().length() &gt; 100) {
+    if (product.getName().length() &gt; 100) {
         return ResponseEntity.badRequest().build();
     }
     // ...他のフィールドのチェックも続く
-    todoService.save(todo);
-    return ResponseEntity.ok(todo);
+    productService.save(product);
+    return ResponseEntity.ok(product);
 }</code></pre>
       </div>
       <ul>
         <li>チェックのロジックがControllerに散らばる</li>
         <li>同じEntityを使う別のControllerやメソッドがあれば、そこにも同じif文をコピペすることになる</li>
-        <li>「タイトルのルールは何文字までだっけ?」を知りたい時、Controllerのコードを読まないと分からない</li>
+        <li>「商品名のルールは何文字までだっけ?」を知りたい時、Controllerのコードを読まないと分からない</li>
       </ul>
 
       <h4>DTOパターンを使う場合(良い例)</h4>
       <div class="editor">
         <div class="editor-bar"><span></span><span></span><span></span></div>
-        <pre><code class="language-java">public class TodoRequest {
-    @NotBlank(message = "タイトルは必須です")
-    @Size(max = 100, message = "タイトルは100文字以内で入力してください")
-    private String title;
+        <pre><code class="language-java">public class ProductRequest {
+    @NotBlank(message = "商品名は必須です")
+    @Size(max = 100, message = "商品名は100文字以内で入力してください")
+    private String name;
     // getter / setter
 }</code></pre>
       </div>
       <div class="editor">
         <div class="editor-bar"><span></span><span></span><span></span></div>
         <pre><code class="language-java">@PostMapping
-public ResponseEntity&lt;TodoResponse&gt; create(@Valid @RequestBody TodoRequest request) {
+public ResponseEntity&lt;ProductResponse&gt; create(@Valid @RequestBody ProductRequest request) {
     // if文が一切ない。ここに来た時点でルールは全て満たされている
-    TodoResponse created = todoService.create(request);
+    ProductResponse created = productService.create(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(created);
 }</code></pre>
       </div>
       <ul>
-        <li>ルール(<code>@NotBlank</code>、<code>@Size</code>など)が<code>TodoRequest</code>クラスのフィールド定義そのものに書かれている</li>
+        <li>ルール(<code>@NotBlank</code>、<code>@Size</code>など)が<code>ProductRequest</code>クラスのフィールド定義そのものに書かれている</li>
         <li>Controller側は<code>@Valid</code>を付けるだけで、ルールの中身を一切知らなくていい</li>
-        <li>別のControllerや別の場所で同じ<code>TodoRequest</code>を受け取れば、自動的に同じチェックが効く(コピペ不要)</li>
-        <li>ルールを変更したい時(例: 最大文字数を200に変える)も、<code>TodoRequest</code>クラスの1箇所を直せば、使っている全箇所に反映される</li>
+        <li>別のControllerや別の場所で同じ<code>ProductRequest</code>を受け取れば、自動的に同じチェックが効く(コピペ不要)</li>
+        <li>ルールを変更したい時(例: 最大文字数を200に変える)も、<code>ProductRequest</code>クラスの1箇所を直せば、使っている全箇所に反映される</li>
       </ul>
       <p class="dep-note">
         つまり「ロジックをDTOに閉じ込める」= チェックのルールをDTOという1つの箱にしまい込んで、使う側はその箱を渡すだけで済むようにする、というイメージ。カプセル化と同じ発想。
@@ -356,28 +393,28 @@ public ResponseEntity&lt;TodoResponse&gt; create(@Valid @RequestBody TodoRequest
     <h3>② レスポンスを返す</h3>
 
     <div class="deep-dive">
-      <p class="deep-dive-title">🔍 用語ノート: ResponseEntity&lt;List&lt;TodoResponse&gt;&gt; の意味</p>
+      <p class="deep-dive-title">🔍 用語ノート: ResponseEntity&lt;List&lt;ProductResponse&gt;&gt; の意味</p>
       <p class="dep-note">
         ジェネリクスが入れ子になっているだけで、分解すると難しくない。
       </p>
       <div class="editor">
         <div class="editor-bar"><span></span><span></span><span></span></div>
-        <pre><code>ResponseEntity&lt; List&lt; TodoResponse &gt; &gt;
+        <pre><code>ResponseEntity&lt; List&lt; ProductResponse &gt; &gt;
      ↑              ↑        ↑
-  レスポンス全体   複数件の  TodoResponse
+  レスポンス全体   複数件の  ProductResponse
   (ステータス+     リスト    という具体的な型
    ボディ)</code></pre>
       </div>
       <p class="dep-note">
-        <strong>List&lt;TodoResponse&gt;</strong><br>
-        「<code>TodoResponse</code>型の要素だけを持つリスト」という意味。<code>List</code>だけだと中身が何型か分からないが、<code>&lt;TodoResponse&gt;</code>と書くことで中身の型をコンパイラに教えている。
+        <strong>List&lt;ProductResponse&gt;</strong><br>
+        「<code>ProductResponse</code>型の要素だけを持つリスト」という意味。<code>List</code>だけだと中身が何型か分からないが、<code>&lt;ProductResponse&gt;</code>と書くことで中身の型をコンパイラに教えている。
       </p>
       <p class="dep-note">
         <strong>ResponseEntity&lt;T&gt;</strong><br>
-        <code>ResponseEntity</code>自体もジェネリクスを使ったクラスで、「レスポンスのボディに何を入れるか」を<code>&lt;T&gt;</code>の部分で指定する。<code>ResponseEntity&lt;TodoResponse&gt;</code>ならボディは1件、<code>ResponseEntity&lt;List&lt;TodoResponse&gt;&gt;</code>ならボディは複数件のリストになる。
+        <code>ResponseEntity</code>自体もジェネリクスを使ったクラスで、「レスポンスのボディに何を入れるか」を<code>&lt;T&gt;</code>の部分で指定する。<code>ResponseEntity&lt;ProductResponse&gt;</code>ならボディは1件、<code>ResponseEntity&lt;List&lt;ProductResponse&gt;&gt;</code>ならボディは複数件のリストになる。
       </p>
       <p class="dep-note">
-        <code>getAll()</code>は一覧取得(複数件)なので<code>List</code>で包み、<code>create()</code>や<code>update()</code>は1件だけ返すので<code>ResponseEntity&lt;TodoResponse&gt;</code>(<code>List</code>なし)になっている。
+        <code>getAll()</code>は一覧取得(複数件)なので<code>List</code>で包み、<code>create()</code>や<code>update()</code>は1件だけ返すので<code>ResponseEntity&lt;ProductResponse&gt;</code>(<code>List</code>なし)になっている。
       </p>
     </div>
 
