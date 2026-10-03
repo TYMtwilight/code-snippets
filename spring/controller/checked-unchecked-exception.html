@@ -645,7 +645,6 @@ orderService.markAsPaid(order);        // ❌ お金を受け取っていない�
       <p>例外が Controller の外へ飛び出すと、Spring は次の順に受け皿を試し、最初に当てはまったものでレスポンスを返す。</p>
       <ol class="flow">
         <li><strong>対応する <code>@ExceptionHandler</code> はある?</strong><br>→ あれば、そのメソッドがレスポンスを作る(ここで終わり)</li>
-        <li><strong>例外クラスに <code>@ResponseStatus</code> が付いている?</strong><br>→ 付いていれば、そのステータスで返す</li>
         <li><strong>Spring 自身が定義している「よくある例外」?</strong><br>→ Spring が決めたステータスで返す</li>
         <li><strong>どれにも当てはまらない</strong><br>→ Spring Boot の既定エラー処理が 500 を返す</li>
       </ol>
@@ -670,18 +669,9 @@ public class GlobalExceptionHandler {
     }
 }</code></pre>
       </div>
-      <p><code>ReportNotFoundException</code> はどちらのハンドラにも当てはまるが、型が近い <code>handleNotFound()</code> が選ばれる。なお、<code>@ExceptionHandler(Exception.class)</code> を用意していると、ほぼすべての例外が①で受け止められるので、②〜④には進まない。</p>
+      <p><code>ReportNotFoundException</code> はどちらのハンドラにも当てはまるが、型が近い <code>handleNotFound()</code> が選ばれる。なお、<code>@ExceptionHandler(Exception.class)</code> を用意していると、ほぼすべての例外が①で受け止められるので、②・③には進まない。</p>
 
-      <h4>② <code>@ResponseStatus</code> が付いた例外</h4>
-      <p>例外クラスにステータスを書いておくと、ハンドラがなくてもその番号で返る。</p>
-      <div class="editor">
-        <div class="editor-bar"><span></span><span></span><span></span></div>
-        <pre><code class="language-java">@ResponseStatus(HttpStatus.NOT_FOUND)
-public class ReportNotFoundException extends RuntimeException { ... }
-// → @ExceptionHandler がなくても 404 になる</code></pre>
-      </div>
-
-      <h4>③ Spring が扱い方を知っている例外(一部)</h4>
+      <h4>② Spring が扱い方を知っている例外(一部)</h4>
       <table>
         <tr><th>例外</th><th>起きる場面</th><th>ステータス</th></tr>
         <tr><td><code>MethodArgumentNotValidException</code></td><td><code>@Valid</code> の入力チェックに失敗</td><td>400</td></tr>
@@ -690,12 +680,12 @@ public class ReportNotFoundException extends RuntimeException { ... }
         <tr><td><code>HttpRequestMethodNotSupportedException</code></td><td>GET用のURLにPOSTした</td><td>405</td></tr>
       </table>
       <p>これらは、Controller のメソッドを呼ぶ前後で <strong>Spring 自身が投げる例外</strong>。リクエストの JSON を読み取ったり、<code>@Valid</code> で入力をチェックしたりするのは Spring の仕事なので、そこで失敗したときにどのステータスを返すかも、Spring があらかじめ決めている。</p>
-      <p>たとえば <code>@Valid</code> のチェックに失敗すると、Spring が <code>MethodArgumentNotValidException</code> を投げ、上の表のとおり 400 を返す。JSON は④と同じ形なので、<strong>どの項目がダメだったかは含まれない</strong>。詳細を返したい場合は、この例外用の <code>@ExceptionHandler</code> を自分で書く。</p>
+      <p>たとえば <code>@Valid</code> のチェックに失敗すると、Spring が <code>MethodArgumentNotValidException</code> を投げ、上の表のとおり 400 を返す。JSON は③と同じ形なので、<strong>どの項目がダメだったかは含まれない</strong>。詳細を返したい場合は、この例外用の <code>@ExceptionHandler</code> を自分で書く。</p>
 
-      <h4>④ どれにも当てはまらない例外</h4>
-      <p>①〜③のどれにも当てはまらない例外は、Spring Boot がまとめて 500 で返す。たとえば次のような例外がここに来る。</p>
+      <h4>③ どれにも当てはまらない例外</h4>
+      <p>①・②のどちらにも当てはまらない例外は、Spring Boot がまとめて 500 で返す。たとえば次のような例外がここに来る。</p>
       <ul>
-        <li><code>@ResponseStatus</code> を付けていない自作例外</li>
+        <li>対応する <code>@ExceptionHandler</code> がない自作例外</li>
         <li><code>NullPointerException</code> のようなバグ</li>
       </ul>
       <p>このとき、サーバーとクライアントには次のものが残る。</p>
