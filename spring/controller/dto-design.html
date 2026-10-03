@@ -273,7 +273,7 @@ public UserCreateRequest(String name, String email) {
     this.email = email;
 }</code></pre>
         </div>
-        <p>そのため<code>new UserCreateRequest("山田太郎", "yamada@example.com")</code>のように、ヘッダーと同じ順番・型で引数を渡せばインスタンスを作れる。普通の<code>class</code>で自動生成されるのは「引数なし」のデフォルトコンストラクタだが、<code>record</code>では「全フィールドを受け取る」コンストラクタになる、と考えるとわかりやすい。</p>
+        <p>そのため<code>new UserCreateRequest("山田太郎", "yamada@example.com")</code>のように、ヘッダーと同じ順番・型で引数を渡せばインスタンスを作れる。普通の<code>class</code>で自動生成されるのは「引数なし」のデフォルトコンストラクタだが、<strong><code>record</code>では「全フィールドを受け取る」コンストラクタになる</strong>、と考えるとわかりやすい。</p>
       </span>
     </div>
     <p><strong><code>record</code>は必ず不変(immutable)になる。</strong>理由は次の3つ。</p>
