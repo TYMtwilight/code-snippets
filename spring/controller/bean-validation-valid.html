@@ -128,9 +128,16 @@
   h3 {
     font-size: 1rem;
     font-weight: 700;
-    margin-top: 1.25rem;
+    margin-top: 2.5rem;
   }
   h3:first-child { margin-top: 0; }
+  h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 1.75rem 0 0.5rem;
+    padding-left: 0.6rem;
+    border-left: 3px solid var(--accent-1);
+  }
   p, li { color: var(--fg); }
   ul { padding-left: 1.3rem; margin: 0.5rem 0; }
   li { margin: 0.3rem 0; }
@@ -221,6 +228,7 @@
   .note p { margin: 0.4rem 0; }
   .note p:first-child { margin-top: 0; }
   .note p:last-child { margin-bottom: 0; }
+  .note table { background: var(--surface); }
   .note-title {
     font-weight: 700;
     color: var(--accent-4);
@@ -242,28 +250,53 @@
     <h1>@Valid とBean Validation</h1>
     <ul class="meta">
       <li>📅 作成日: 2026-09-20</li>
-      <li>🔄 更新日: 2026-09-20</li>
+      <li>🔄 更新日: 2026-10-03</li>
     </ul>
   </header>
 
   <section class="sec-overview">
     <h2><span class="icon">🎯</span>概要</h2>
-    <p><code>@Valid</code>は、DTOに宣言された入力チェックのルール(Bean Validation)を「今チェックしろ」と実行させるアノテーション。ルールの「定義」(DTO側の<code>@NotBlank</code>等)と「チェックの実行」(Controller引数の<code>@Valid</code>)を分離することで、Controllerにif文だらけのチェックコードを書かずに済む。</p>
-  </section>
+    <p><code>@Valid</code>は、DTOに定義した入力チェックのルール(Bean Validation)を、実際に実行させるためのアノテーション。ルールの「定義」はDTO側(<code>@NotBlank</code>など)、「チェックの実行」はController側(引数の<code>@Valid</code>)と役割を分けることで、Controllerにif文でチェック処理を書き並べる必要がなくなる。</p>
 
-  <section class="sec-usecase">
-    <h2><span class="icon">📌</span>使用場面</h2>
+    <h3>どの層の、どこに書くのか</h3>
+    <p><code>@Valid</code>は主に<strong>Controller層</strong>で使い、<strong>Controllerメソッドの引数(DTOの前)</strong>に書く。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@RestController
+@RequestMapping("/todos")
+public class TodoController {
+
+    @PostMapping
+    public ResponseEntity&lt;TodoResponse&gt; create(
+            @Valid @RequestBody TodoRequest request) {   // ← ここ
+        ...
+    }
+}</code></pre>
+    </div>
+    <p>クラスの上やメソッドの上には書かない。書くのは<strong>チェックしたい引数の直前</strong>だけ。</p>
+
+    <h3>なぜControllerの引数なのか</h3>
+    <table>
+      <tr><th>役割</th><th>書く場所</th></tr>
+      <tr><td>ルールの定義(<code>@NotBlank</code>, <code>@Size</code>など)</td><td>DTOクラスのフィールド</td></tr>
+      <tr><td>「今そのルールでチェックしろ」という指示(<code>@Valid</code>)</td><td>DTOを受け取る側＝Controllerメソッドの引数</td></tr>
+    </table>
     <ul>
-      <li>リクエストボディ(<code>@RequestBody</code>)の必須項目チェック・文字数制限・数値範囲チェックなどをControllerに書きたくないとき</li>
-      <li>入力チェックのルールをDTOクラス側に集約し、使い回したいとき</li>
-      <li><code>@ExceptionHandler(MethodArgumentNotValidException.class)</code>と組み合わせて、バリデーションエラーのレスポンス形式を統一したいとき</li>
+      <li>外部から来たリクエストは、Controllerがアプリの入口で最初に受け取る。不正な入力はService層に渡す前にここで止めるのが基本</li>
+      <li><code>@RequestBody</code>でJSONをDTOに変換した直後に、Springがバリデーションを実行する。違反があると<code>MethodArgumentNotValidException</code>が投げられ、メソッド本体は実行されない</li>
     </ul>
   </section>
 
   <section class="sec-code">
     <h2><span class="icon">💻</span>コード</h2>
 
-    <h3>DTOにルールを定義する</h3>
+    <h3>1. そもそも何を解決したいのか</h3>
+    <ul>
+      <li>APIでは「タイトルが空でないか」「長すぎないか」などの入力チェックが必要</li>
+      <li>これをif文で書くと、Controllerのコードが長く読みにくくなる</li>
+    </ul>
+
+    <h3>2. DTOにルールを定義する</h3>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">public class TodoRequest {
@@ -275,8 +308,12 @@
     // getter / setter
 }</code></pre>
     </div>
+    <ul>
+      <li>Bean Validationでは、<code>@NotBlank</code>や<code>@Size</code>のようなアノテーションでDTO側に「ルール」を宣言できる</li>
+      <li>これらは<strong>ルールを定義しているだけ</strong>で、この時点ではまだ何もチェックしていない</li>
+    </ul>
 
-    <h3>Controllerでチェックを実行する</h3>
+    <h3>3. Controllerでチェックを実行する</h3>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">@PostMapping
@@ -285,8 +322,16 @@ public ResponseEntity&lt;TodoResponse&gt; create(
     // ここに到達した時点で、バリデーションは通過済み
 }</code></pre>
     </div>
+    <ul>
+      <li><code>@Valid</code>をControllerのメソッド引数に付けると、Springが「リクエストボディをDTOに変換する際、そのクラスに書かれたルールを実際にチェックしろ」と実行してくれる</li>
+    </ul>
 
-    <h3>違反時にキャッチする(@ExceptionHandler)</h3>
+    <div class="note">
+      <p class="note-title">⚠️ @Valid はどこに付ける？</p>
+      <p><code>@Valid</code>はDTOクラス(<code>TodoRequest</code>)ではなく、<strong>DTOを受け取る側</strong>(Controllerのメソッド引数)に付ける。DTOの役割はルールを定義するところまでで、チェックの実行を指示するのは受け取る側の役割になる。</p>
+    </div>
+
+    <h3>4. 違反時にキャッチする(@ExceptionHandler)</h3>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">@ExceptionHandler(MethodArgumentNotValidException.class)
@@ -298,44 +343,73 @@ public ResponseEntity&lt;ErrorResponse&gt; handleValidation(MethodArgumentNotVal
             .body(new ErrorResponse("VALIDATION_ERROR", message));
 }</code></pre>
     </div>
-  </section>
-
-  <section class="sec-explain">
-    <h2><span class="icon">💡</span>説明</h2>
-
-    <h3>1. そもそも何を解決したいのか</h3>
-    <ul>
-      <li>APIがリクエストを受け取るとき、「タイトルが空じゃないか」「文字数が長すぎないか」といった入力チェックが必要</li>
-      <li>これを手動でif文だらけにすると、Controllerがどんどん汚くなる</li>
-    </ul>
-
-    <h3>2. 「ルールの定義」と「チェックの実行」を分離する</h3>
-    <ul>
-      <li>Bean Validationでは、<code>@NotBlank</code>や<code>@Size</code>のようなアノテーションでDTO側に「ルール」を宣言できる</li>
-      <li>これらは<strong>ルールを定義しているだけ</strong>で、この時点ではまだ何もチェックしていない</li>
-      <li><code>@Valid</code>をControllerのメソッド引数に付けると、Springが「リクエストボディをDTOに変換する際、そのクラスに書かれたルールを実際にチェックしろ」と実行してくれる</li>
-    </ul>
-
-    <table>
-      <tr><th>何を書くか</th><th>どこに書くか</th></tr>
-      <tr><td>ルールの定義(<code>@NotBlank</code>, <code>@Size</code>など)</td><td>DTOクラスのフィールド</td></tr>
-      <tr><td>ルールを今チェックしろという指示(<code>@Valid</code>)</td><td>そのDTOを使う側(Controllerのメソッド引数)</td></tr>
-    </table>
-
-    <div class="note">
-      <p class="note-title">⚠️ @Valid はどこに付ける？</p>
-      <p><code>TodoRequest</code>クラス自体には<code>@Valid</code>を付けない。<code>@NotBlank</code>/<code>@Size</code>は「制約(ルール)」を定義するだけのもので、<code>@Valid</code>は「このルールを今チェックしろ」という指示だから、<strong>DTOを使う側</strong>(Controllerのメソッド引数)に付ける。</p>
-    </div>
-
-    <h3>3. チェックに引っかかったらどうなるか</h3>
     <ul>
       <li>ルール違反があると、Springは自動的に<code>MethodArgumentNotValidException</code>という例外を投げる。Controller内でif文を書く必要は一切ない</li>
-      <li><code>@ExceptionHandler(MethodArgumentNotValidException.class)</code>がこの例外をキャッチし、<code>ex.getBindingResult().getFieldErrors()</code>で「どのフィールドがどう違反したか」の一覧を取り出す</li>
-      <li>各フィールドの<code>@NotBlank(message = "...")</code>などで指定したメッセージを結合してレスポンスに詰める</li>
+      <li><code>@ExceptionHandler(MethodArgumentNotValidException.class)</code>がこの例外をキャッチし、違反内容のメッセージをまとめて400エラーとして返す(処理の中身は5.で解説)</li>
     </ul>
 
-    <h3>4. handleValidation() のコードを1行ずつ読む</h3>
-    <p><code>ex.getBindingResult()</code>には、「どのフィールドが」「どんなルール違反をしたか」という情報が全部詰まっている。以下はその中身を取り出してレスポンス用の文字列に変換する処理。</p>
+    <div class="note">
+      <p class="note-title">💡 補足: Controllerに throws も書かなくてよい</p>
+      <p><code>MethodArgumentNotValidException</code>は検査例外なので、通常なら投げるメソッドに<code>throws</code>を書く必要がある。しかし、この例外を投げるのはControllerではなくSpringなので、Controllerには書かなくてよい。</p>
+      <p>Springは、Controllerのメソッドを呼び出す<strong>前</strong>にチェックを行う。違反があればその場で例外を投げ、Controllerのメソッドはそもそも呼ばれない。</p>
+    </div>
+
+    <h3>5. handleValidation() のコードを1行ずつ読む</h3>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@ExceptionHandler(MethodArgumentNotValidException.class)
+public ResponseEntity&lt;ErrorResponse&gt; handleValidation(MethodArgumentNotValidException ex) {
+    // 5-2. エラーメッセージを組み立てる
+    String message = ex.getBindingResult().getFieldErrors().stream()
+            .map(FieldError::getDefaultMessage)
+            .collect(Collectors.joining(", "));
+
+    // 5-3. レスポンスを返す
+    return ResponseEntity.badRequest()
+            .body(new ErrorResponse("VALIDATION_ERROR", message));
+}</code></pre>
+    </div>
+    <p><code>handleValidation()</code>がしていることは、次の2つだけ。その前提として、まず<code>BindingResult</code>を理解しておく。</p>
+    <ol>
+      <li>違反内容から、エラーメッセージの文字列を組み立てる(5-2)</li>
+      <li>そのメッセージを入れて、400エラーのレスポンスを返す(5-3)</li>
+    </ol>
+
+    <h4>5-1. 前提: BindingResult とは</h4>
+    <p><code>BindingResult</code>は、<strong>リクエストの値をDTOに詰めてチェックした結果を記録しておく「成績表」</strong>のようなオブジェクト。Springが用意しているインターフェース。</p>
+    <p>名前は2つの言葉に分けると分かりやすい。</p>
+    <ul>
+      <li><strong>Binding(バインド)</strong>: リクエストの値(JSONやフォームの値)を、DTOのフィールドに結びつけて詰めること</li>
+      <li><strong>Result(結果)</strong>: その詰め込みと、ルールによるチェックの結果</li>
+    </ul>
+    <p>中で何が起きているか:</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code>リクエスト {"title": ""}
+   ↓ ① Springが TodoRequest に値を詰める(バインド)
+   ↓ ② @Valid によって、@NotBlank などのルールでチェックする
+   ↓ ③ 違反があれば、その内容を BindingResult に記録する
+BindingResult
+  └ FieldError(field="title", rejectedValue="", defaultMessage="タイトルは必須です")</code></pre>
+    </div>
+    <ul>
+      <li>違反が1件あれば<code>FieldError</code>が1つ、3件あれば3つ記録される</li>
+      <li><code>MethodArgumentNotValidException</code>は、この<code>BindingResult</code>を持った状態で投げられる。<code>ex.getBindingResult()</code>は、例外の中からそれを取り出すメソッド</li>
+    </ul>
+    <div class="note">
+      <p class="note-title">💡 補足: BindingResult / FieldError のよく使うメソッド</p>
+      <table>
+        <tr><th>メソッド</th><th>取れるもの</th></tr>
+        <tr><td><code>bindingResult.getFieldErrors()</code></td><td>違反した<code>FieldError</code>の一覧</td></tr>
+        <tr><td><code>bindingResult.hasErrors()</code></td><td>違反が1件でもあるかどうか(<code>true</code>/<code>false</code>)</td></tr>
+        <tr><td><code>fieldError.getField()</code></td><td>違反したフィールド名(例: <code>"title"</code>)</td></tr>
+        <tr><td><code>fieldError.getRejectedValue()</code></td><td>送られてきた値(例: <code>""</code>)</td></tr>
+        <tr><td><code>fieldError.getDefaultMessage()</code></td><td><code>message = "..."</code>で指定したメッセージ</td></tr>
+      </table>
+    </div>
+
+    <h4>5-2. エラーメッセージを組み立てる</h4>
+    <p><code>BindingResult</code>から違反メッセージだけを取り出し、1つの文字列にまとめる。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">String message = ex.getBindingResult()      // ① チェック結果を取得
@@ -352,11 +426,21 @@ public ResponseEntity&lt;ErrorResponse&gt; handleValidation(MethodArgumentNotVal
       <tr><td><code>map(FieldError::getDefaultMessage)</code></td><td>各<code>FieldError</code>を、そのメッセージ文字列だけに変換する。<code>message = "..."</code>で指定した文言が返る</td></tr>
       <tr><td><code>collect(Collectors.joining(", "))</code></td><td>変換後の複数の文字列を、カンマ区切りの1つの文字列にまとめる</td></tr>
     </table>
-    <ul>
-      <li><code>FieldError::getDefaultMessage</code>は<strong>メソッド参照</strong>という書き方。<code>fieldError -&gt; fieldError.getDefaultMessage()</code>というラムダ式と全く同じ意味で、「各要素を受け取ってそのメソッドを呼んだ結果を返す」処理を短く書ける</li>
-      <li>例: <code>title</code>が空文字かつ100文字超で送られてきた場合、<code>["タイトルは必須です", "タイトルは100文字以内で入力してください"]</code> → 結合後は <code>"タイトルは必須です, タイトルは100文字以内で入力してください"</code></li>
-    </ul>
-    <p>最後にレスポンスを組み立てる部分:</p>
+    <p><strong>例:</strong> <code>title</code>に空白だけの101文字が送られてきた場合(<code>@NotBlank</code>と<code>@Size</code>の両方に違反)</p>
+    <p><code>getFieldErrors()</code> + <code>map(...)</code> の結果<br>
+      <code>["タイトルは必須です", "タイトルは100文字以内で入力してください"]</code></p>
+    <p>↓ <code>joining(", ")</code> で結合</p>
+    <p><code>message</code> の中身<br>
+      <code>"タイトルは必須です, タイトルは100文字以内で入力してください"</code></p>
+    <p>※ メッセージの並び順は保証されない。</p>
+
+    <div class="note">
+      <p class="note-title">💡 補足: FieldError::getDefaultMessage はメソッド参照</p>
+      <p><code>FieldError::getDefaultMessage</code>は<strong>メソッド参照</strong>という書き方。<code>fieldError -&gt; fieldError.getDefaultMessage()</code>というラムダ式と全く同じ意味で、「各要素を受け取ってそのメソッドを呼んだ結果を返す」処理を短く書ける。</p>
+    </div>
+
+    <h4>5-3. レスポンスを返す</h4>
+    <p>組み立てたメッセージを入れて、400エラーのレスポンスを返す。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">return ResponseEntity.badRequest()
@@ -367,7 +451,7 @@ public ResponseEntity&lt;ErrorResponse&gt; handleValidation(MethodArgumentNotVal
       <li><code>.body(new ErrorResponse("VALIDATION_ERROR", message))</code>で、レスポンスボディに自作DTOをセットする。第1引数はエラー種別コード、第2引数が先ほど組み立てたメッセージ</li>
     </ul>
 
-    <h3>5. 全体の流れ</h3>
+    <h3>6. 全体の流れ</h3>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code>クライアントが不正なリクエスト送信
@@ -376,7 +460,7 @@ public ResponseEntity&lt;ErrorResponse&gt; handleValidation(MethodArgumentNotVal
   → @ExceptionHandler(MethodArgumentNotValidException.class) がキャッチして 400 を返す</code></pre>
     </div>
 
-    <h3>6. よく使う制約アノテーション</h3>
+    <h3>7. よく使う制約アノテーション</h3>
     <table>
       <tr><th>アノテーション</th><th>意味</th></tr>
       <tr><td><code>@NotNull</code></td><td><code>null</code>を許さない</td></tr>
@@ -394,8 +478,6 @@ public ResponseEntity&lt;ErrorResponse&gt; handleValidation(MethodArgumentNotVal
       <li><a href="https://beanvalidation.org/">Bean Validation - 公式仕様</a></li>
     </ul>
   </section>
-
-  <p class="footer-note">✨ 学びを積み重ねよう ✨</p>
 
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
