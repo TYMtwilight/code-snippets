@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pageable - ページネーション・ソート付きの一覧を返す</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<style>
+  :root {
+    --bg: #f5f3ff;
+    --surface: #ffffff;
+    --fg: #221d3d;
+    --muted: #6b6580;
+    --border: #e6e1fa;
+    --code-bg: #1e1b2e;
+    --code-fg: #e6e1fa;
+    --accent-1: #7c3aed;
+    --accent-2: #ec4899;
+    --accent-3: #06b6d4;
+    --accent-4: #f59e0b;
+    --shadow: 0 8px 24px rgba(124, 58, 237, 0.08);
+    --pm-page: #0891b2;
+    --pm-size: #d97706;
+    --pm-sort: #db2777;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14111f;
+      --surface: #1c1830;
+      --fg: #efe9ff;
+      --muted: #a79fc4;
+      --border: #322b4e;
+      --code-bg: #0f0c1a;
+      --code-fg: #e6e1fa;
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      --pm-page: #67e8f9;
+      --pm-size: #fcd34d;
+      --pm-sort: #f9a8d4;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 2.5rem 1rem 5rem;
+    background:
+      radial-gradient(circle at 15% -10%, rgba(124,58,237,0.15), transparent 40%),
+      radial-gradient(circle at 100% 0%, rgba(6,182,212,0.12), transparent 35%),
+      var(--bg);
+    color: var(--fg);
+    font-family: "Zen Maru Gothic", -apple-system, "Hiragino Kaku Gothic ProN", sans-serif;
+    line-height: 1.75;
+  }
+  main {
+    max-width: 780px;
+    margin: 0 auto;
+  }
+
+  .hero {
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    border-radius: 20px;
+    padding: 2rem 1.75rem;
+    color: #fff;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .eyebrow {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: rgba(255,255,255,0.2);
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    margin-bottom: 0.75rem;
+  }
+  h1 {
+    font-size: 1.9rem;
+    font-weight: 900;
+    margin: 0 0 0.75rem;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .meta li {
+    background: rgba(255,255,255,0.18);
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem 1.75rem;
+    margin-top: 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  section h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0 0 1rem;
+  }
+  .icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    flex-shrink: 0;
+  }
+  .sec-overview .icon   { background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); }
+  .sec-usecase .icon    { background: linear-gradient(135deg, var(--accent-3), #22d3ee); }
+  .sec-code .icon       { background: linear-gradient(135deg, #312e81, #1e1b2e); }
+  .sec-explain .icon    { background: linear-gradient(135deg, var(--accent-4), #f97316); }
+  .sec-reference .icon  { background: linear-gradient(135deg, #10b981, #06b6d4); }
+  .sec-related .icon    { background: linear-gradient(135deg, #7c3aed, #06b6d4); }
+
+  h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-top: 1.25rem;
+  }
+  h3:first-child { margin-top: 0; }
+  p, li { color: var(--fg); }
+  p.placeholder, li.placeholder { color: var(--muted); font-style: italic; }
+  ul { padding-left: 1.3rem; margin: 0.5rem 0; }
+  li { margin: 0.3rem 0; }
+
+  .editor {
+    background: var(--code-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+  }
+  .editor + h3 { margin-top: 1.5rem; }
+  .editor + .editor, p + .editor { margin-top: 0.75rem; }
+  .editor-bar {
+    display: flex;
+    gap: 0.4rem;
+    padding: 0.65rem 0.85rem;
+    background: rgba(255,255,255,0.05);
+  }
+  .editor-bar span {
+    width: 0.65rem;
+    height: 0.65rem;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .editor-bar span:nth-child(1) { background: #ff5f57; }
+  .editor-bar span:nth-child(2) { background: #febc2e; }
+  .editor-bar span:nth-child(3) { background: #28c840; }
+  pre {
+    margin: 0;
+    padding: 1.1rem 1.25rem;
+    overflow-x: auto;
+  }
+  code {
+    font-family: "Fira Code", "SFMono-Regular", Consolas, monospace;
+    font-size: 0.88rem;
+    color: var(--code-fg);
+  }
+  /* Prism.js: 見た目はテーマのまま、背景・余白だけ .editor に合わせる */
+  pre[class*="language-"],
+  pre[class*="language-"] > code {
+    background: transparent;
+    text-shadow: none;
+  }
+  pre[class*="language-"] {
+    margin: 0;
+    padding: 1.1rem 1.25rem;
+  }
+  code[class*="language-"] {
+    font-family: "Fira Code", "SFMono-Regular", Consolas, monospace;
+    font-size: 0.88rem;
+  }
+  p code, li code, td code, th code, h3 code, h4 code, .map-row code {
+    background: var(--border);
+    color: var(--fg);
+    padding: 0.15em 0.4em;
+    border-radius: 5px;
+    font-family: "Fira Code", monospace;
+    font-size: 0.85em;
+    overflow-wrap: anywhere;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.75rem 0;
+    font-size: 0.92rem;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+  }
+  th { background: var(--bg); }
+
+  a {
+    color: var(--accent-1);
+    font-weight: 500;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  a:hover { border-bottom-color: currentColor; }
+
+  /* 詳しい解説ブロック */
+  .deep-dive { margin: 1.5rem 0 1.75rem; }
+  .deep-dive-title {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    padding: 0.2rem 0.75rem;
+    border-radius: 999px;
+    margin-bottom: 0.75rem;
+  }
+  .deep-dive h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 1.75rem 0 0.75rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 2px dashed var(--border);
+  }
+  .deep-dive h4:first-of-type { margin-top: 1rem; }
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    background: var(--accent-1);
+    color: #fff;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+
+  /* コードの見出し */
+  .code-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1.75rem 0 0.75rem;
+  }
+  .code-head:first-of-type { margin-top: 0; }
+  .code-head-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fff;
+    background: var(--accent-3);
+    padding: 0.1rem 0.6rem;
+    border-radius: 999px;
+  }
+
+  /* 囲み */
+  .callout { border-radius: 10px; padding: 0.85rem 1rem; margin: 0.75rem 0 1rem; border: 1px solid; }
+  .callout p { margin: 0.3rem 0; }
+  .callout ul { margin: 0.25rem 0; }
+  .callout .editor { margin: 0.5rem 0; }
+  .callout-label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 0.25rem; }
+  .callout-point { background: rgba(124, 58, 237, 0.08); border-color: rgba(124, 58, 237, 0.35); }
+  .callout-point .callout-label { color: var(--accent-1); }
+  .callout-rule { background: rgba(245, 158, 11, 0.10); border-color: rgba(245, 158, 11, 0.45); }
+  .callout-rule .callout-label { color: #d97706; }
+  .callout-ng { background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.40); }
+  .callout-ng .callout-label { color: #ef4444; }
+
+  /* コードブロックのラベル */
+  .editor-bar { align-items: center; }
+  .editor-label { margin-left: auto; font-size: 0.75rem; font-weight: 700; padding: 0.1rem 0.6rem; border-radius: 999px; font-family: "Zen Maru Gothic", sans-serif; }
+  .editor-bar .editor-label { width: auto; height: auto; border-radius: 999px; }
+  .editor-bar .label-out { background: rgba(255, 255, 255, 0.12); color: #e6e1fa; }
+  .editor-bar .label-ng { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+  .callout .table-wrap, .callout table { margin: 0.5rem 0; }
+  h4 { font-size: 0.98rem; font-weight: 700; margin: 1.5rem 0 0.6rem; color: var(--accent-1); }
+  .deep-dive h4 { color: var(--fg); }
+
+  /* 処理の流れ */
+  .timeline { list-style: none; padding: 0; margin: 0.75rem 0 1rem; position: relative; }
+  .timeline::before { content: ""; position: absolute; left: 0.95rem; top: 0.5rem; bottom: 0.5rem; width: 2px; background: var(--border); }
+  .timeline > li { position: relative; padding: 0.15rem 0 0.75rem 2.75rem; margin: 0; }
+  .timeline-num {
+    position: absolute; left: 0; top: 0.1rem;
+    width: 1.9rem; height: 1.9rem; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--surface); border: 2px solid var(--accent-3); color: var(--accent-3);
+    font-weight: 700; font-size: 0.9rem;
+  }
+  .timeline-sub { display: block; color: var(--muted); font-size: 0.9rem; }
+
+  .table-wrap { overflow-x: auto; }
+
+  /* 理由カード */
+  .why { border: 1px solid rgba(245, 158, 11, 0.45); background: rgba(245, 158, 11, 0.06); border-radius: 12px; padding: 1rem 1.1rem; margin: 0.75rem 0 1.25rem; }
+  .why-title { font-weight: 900; color: #d97706; margin: 0 0 0.75rem; }
+  .reason { display: flex; gap: 0.8rem; align-items: flex-start; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.8rem 1rem; margin-bottom: 0.6rem; }
+  .reason-num { display: inline-flex; align-items: center; justify-content: center; width: 1.7rem; height: 1.7rem; border-radius: 50%; background: #f59e0b; color: #fff; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .reason-body { min-width: 0; flex: 1; }
+  .reason-body p { margin: 0.3rem 0; }
+  .reason-body .editor { margin-top: 0.5rem; }
+  .reason-head { font-weight: 700; margin-top: 0 !important; }
+  .reason-note { font-size: 0.9rem; color: var(--muted); }
+  .reason-note::before { content: "→ "; }
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin: 0.5rem 0; }
+  .flow-step { display: inline-flex; flex-direction: column; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.7rem; font-size: 0.9rem; }
+  .flow-step code { background: none; padding: 0; color: var(--fg); font-family: "Fira Code", monospace; font-size: 0.85em; }
+  .flow-step small { color: var(--muted); font-size: 0.78rem; }
+  .flow-arrow { color: #d97706; font-weight: 900; }
+  .why-foot { margin: 0.75rem 0 0; font-size: 0.92rem; }
+  .why-foot p { margin: 0 0 0.5rem; }
+
+  .footer-note {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-top: 2rem;
+  }
+
+  /* クエリパラメータとPageableの対応図 */
+  .req-line {
+    background: var(--code-bg);
+    color: var(--code-fg);
+    font-family: "Fira Code", monospace;
+    font-size: 0.9rem;
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .req-line .pm { padding: 0.1rem 0.35rem; border-radius: 6px; font-weight: 500; }
+  .req-line .pm-page { background: rgba(6, 182, 212, 0.22); color: #67e8f9; }
+  .req-line .pm-size { background: rgba(245, 158, 11, 0.22); color: #fcd34d; }
+  .req-line .pm-sort { background: rgba(236, 72, 153, 0.22); color: #f9a8d4; }
+  .map-rows { display: grid; gap: 0.5rem; margin: 0.75rem 0 1rem; }
+  .map-row {
+    display: grid;
+    grid-template-columns: 8.5rem auto minmax(0, 14rem) minmax(0, 1fr);
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--c);
+    border-radius: 10px;
+    padding: 0.6rem 0.85rem;
+  }
+  .map-row.row-page { --c: var(--pm-page); }
+  .map-row.row-size { --c: var(--pm-size); }
+  .map-row.row-sort { --c: var(--pm-sort); }
+  .map-param { font-family: "Fira Code", monospace; font-size: 0.9rem; font-weight: 500; color: var(--c); }
+  .map-arrow { color: var(--muted); }
+  .map-method { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+  .map-method code { align-self: flex-start; }
+  .map-value { font-size: 0.8rem; color: var(--muted); }
+  .map-value strong { color: var(--c); font-family: "Fira Code", monospace; }
+  .map-meaning { font-size: 0.92rem; }
+  @media (max-width: 600px) {
+    .map-row { grid-template-columns: auto minmax(0, 1fr); row-gap: 0.4rem; }
+    .map-method, .map-meaning { grid-column: 1 / -1; }
+    .map-meaning { padding-top: 0.35rem; border-top: 1px dashed var(--border); }
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <header class="hero">
+    <span class="eyebrow">Code Snippet</span>
+    <h1>Pageable - ページネーション・ソート付きの一覧を返す</h1>
+    <ul class="meta">
+      <li>📅 作成日: 2026-02-14</li>
+      <li>🔄 更新日: 2026-10-03</li>
+    </ul>
+  </header>
+
+  <section class="sec-overview">
+    <h2><span class="icon">🎯</span>概要</h2>
+    <p><code>@GetMapping</code>と<code>Pageable</code>パラメータを組み合わせて、ページネーション・ソート付きのGET一覧エンドポイントを実装するパターン。</p>
+  </section>
+
+  <section class="sec-usecase">
+    <h2><span class="icon">📌</span>使用場面</h2>
+    <ul>
+      <li>REST APIで一覧取得エンドポイントを実装する場合</li>
+      <li>大量データをページ分割して返却する場合</li>
+      <li>クライアントにソート順を指定させたい場合</li>
+    </ul>
+    <p>例: ECサイトの商品一覧画面。「1ページに20件ずつ表示」「2ページ目へ移動」「価格の安い順に並べ替え」といった操作を、APIのクエリパラメータで受け取る。並べ替えの指定がなければ新着順で表示する。</p>
+  </section>
+
+  <section class="sec-code">
+    <h2><span class="icon">💻</span>コード</h2>
+
+    <h3 class="code-head"><span class="code-head-badge">1</span>NG例: CrudRepository.findAll() で全件返す</h3>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span><span class="editor-label label-ng">本番では非推奨</span></div>
+      <pre><code class="language-java">@GetMapping()
+private ResponseEntity&lt;Iterable&lt;Product&gt;&gt; findAll() {
+   return ResponseEntity.ok(productRepository.findAll());
+}</code></pre>
+    </div>
+    <div class="callout callout-ng">
+      <span class="callout-label">🚫 全件をまとめて返してしまう</span>
+      <p>件数の上限もソートもないため、商品が増えるほどレスポンスとメモリ使用量が膨らむ。</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>観点</th><th>NG例 (findAll())</th><th>ページネーション版</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>レスポンスサイズ</td><td>無制限</td><td>ページサイズで制御</td></tr>
+          <tr><td>ソート</td><td>なし</td><td>指定可能（デフォルト付き）</td></tr>
+          <tr><td>メモリ使用量</td><td>全件ロード</td><td>ページ分のみ</td></tr>
+          <tr><td>本番適用</td><td>❌ 危険</td><td>✅ 推奨</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="code-head"><span class="code-head-badge">2</span>Repository: PagingAndSortingRepositoryを継承</h3>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span><span class="editor-label label-out">ProductRepository.java</span></div>
+      <pre><code class="language-java">public interface ProductRepository
+        extends CrudRepository&lt;Product, Long&gt;, PagingAndSortingRepository&lt;Product, Long&gt; {
+}</code></pre>
+    </div>
+    <div class="callout callout-point">
+      <span class="callout-label">💡 ポイント</span>
+      <p><code>PagingAndSortingRepository</code>を継承すると、ページ指定を受け取る<code>findAll</code>が使えるようになる。</p>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span><span class="editor-label label-out">PagingAndSortingRepository</span></div>
+        <pre><code class="language-java">Page&lt;T&gt; findAll(Pageable pageable);</code></pre>
+      </div>
+    </div>
+
+    <h3 class="code-head"><span class="code-head-badge">3</span>Controller: ページネーション・ソート付きの一覧取得</h3>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span><span class="editor-label label-out">ProductController.java</span></div>
+      <pre><code class="language-java">@GetMapping
+private ResponseEntity&lt;List&lt;Product&gt;&gt; findAll(Pageable pageable) {
+   Page&lt;Product&gt; page = productRepository.findAll(
+           PageRequest.of(
+                   pageable.getPageNumber(),
+                   pageable.getPageSize(),
+                   pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))));
+   return ResponseEntity.ok(page.getContent());
+}</code></pre>
+    </div>
+    <p>処理は次の3段階。それぞれを下の「🔍 詳しく」で順に説明する。</p>
+    <ol class="timeline">
+      <li><span class="timeline-num">1</span><strong>リクエストを<code>Pageable</code>で受け取る</strong><span class="timeline-sub"><code>?page=1&amp;size=20&amp;sort=price,asc</code> → <code>Pageable pageable</code></span></li>
+      <li><span class="timeline-num">2</span><strong><code>PageRequest.of()</code>で作り直して<code>findAll</code>に渡す</strong><span class="timeline-sub">ソートの指定がなければ新着順に差し替える</span></li>
+      <li><span class="timeline-num">3</span><strong>返ってきた<code>Page</code>からデータ本体だけ返す</strong><span class="timeline-sub"><code>page.getContent()</code></span></li>
+    </ol>
+
+    <div class="deep-dive">
+      <span class="deep-dive-title">🔍 詳しく: ① リクエストをPageableで受け取る</span>
+
+      <h4><span class="step-num">1</span>クエリパラメータとPageableの対応</h4>
+      <p><code>Pageable</code>は、ページネーション情報（ページ番号・件数・ソート条件）をひとまとめに表すSpring Dataのインターフェース。コントローラの引数に<code>Pageable pageable</code>と書くだけで、Spring MVCがクエリパラメータから自動的に組み立てる。</p>
+      <p>たとえば次のリクエストでは、色を付けた3つのパラメータがそれぞれ<code>Pageable</code>のメソッドに対応する。</p>
+      <div class="req-line">GET /products?<span class="pm pm-page">page=1</span>&amp;<span class="pm pm-size">size=20</span>&amp;<span class="pm pm-sort">sort=price,asc</span></div>
+      <div class="map-rows">
+        <div class="map-row row-page">
+          <span class="map-param">page=1</span>
+          <span class="map-arrow">→</span>
+          <span class="map-method"><code>getPageNumber()</code><span class="map-value">戻り値: <strong>1</strong></span></span>
+          <span class="map-meaning"><strong>2ページ目</strong>（0始まりなので1は2ページ目）</span>
+        </div>
+        <div class="map-row row-size">
+          <span class="map-param">size=20</span>
+          <span class="map-arrow">→</span>
+          <span class="map-method"><code>getPageSize()</code><span class="map-value">戻り値: <strong>20</strong></span></span>
+          <span class="map-meaning">1ページに<strong>20件</strong>ずつ</span>
+        </div>
+        <div class="map-row row-sort">
+          <span class="map-param">sort=price,asc</span>
+          <span class="map-arrow">→</span>
+          <span class="map-method"><code>getSortOr(...)</code><span class="map-value">戻り値: <strong>price: ASC</strong></span></span>
+          <span class="map-meaning"><strong>価格の安い順</strong>（指定がなければ<code>getSortOr</code>に渡したデフォルト＝新着順）</span>
+        </div>
+      </div>
+      <div class="callout callout-point">
+        <span class="callout-label">📖 つまり</span>
+        <p>商品を<strong>価格の安い順</strong>に並べ、<strong>20件ずつ</strong>区切ったときの<strong>2ページ目</strong>＝21〜40件目を取得する。</p>
+      </div>
+      <p>パラメータを省略したときは、次の値になる。</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>パラメータ</th><th>省略したとき</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>page</code></td><td><code>0</code>（1ページ目）</td></tr>
+            <tr><td><code>size</code></td><td><code>20</code></td></tr>
+            <tr><td><code>sort</code></td><td>並び順なし（このコードでは<code>getSortOr</code>で新着順にする）</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4><span class="step-num">2</span>@RequestParamは書かなくていい</h4>
+      <p><code>Pageable</code>は<code>@RequestParam</code>とは別の仕組みで値が詰められる。</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>仕組み</th><th>読み取るもの</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>@RequestParam</code></td><td>クエリパラメータを<strong>1つ</strong>、引数に1対1で入れる（<code>?name=Taro</code> → <code>String name</code>）</td></tr>
+            <tr><td><code>Pageable</code></td><td>Spring Dataの専用リゾルバ（<code>PageableHandlerMethodArgumentResolver</code>）が<code>page</code>・<code>size</code>・<code>sort</code>を<strong>まとめて</strong>読み、1つのオブジェクトに組み立てる</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Spring BootではSpring Data Webの自動設定でこのリゾルバが最初から有効になっているので、引数に<code>Pageable pageable</code>と書くだけでよい。</p>
+      <div class="callout callout-ng">
+        <span class="callout-label">🚫 @RequestParamを付けるとエラーになる</span>
+        <div class="editor">
+          <div class="editor-bar"><span></span><span></span><span></span><span class="editor-label label-ng">NG</span></div>
+          <pre><code class="language-java">findAll(@RequestParam Pageable pageable)</code></pre>
+        </div>
+        <p><code>pageable</code>という名前のクエリパラメータを1つ探して<code>Pageable</code>型に変換しようとする。そんなパラメータは送られてこないので、<code>400 Bad Request</code>や型変換エラーになる。</p>
+      </div>
+
+      <h4><span class="step-num">3</span>省略時の値を変える</h4>
+      <p><code>@RequestParam(defaultValue = ...)</code>の代わりに、<code>@PageableDefault</code>で指定する。</p>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-java">findAll(@PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable)</code></pre>
+      </div>
+      <p>アプリ全体で揃えたい場合は<code>application.properties</code>に書く。</p>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span><span class="editor-label label-out">application.properties</span></div>
+        <pre><code class="language-properties">spring.data.web.pageable.default-page-size=20
+spring.data.web.pageable.max-page-size=100</code></pre>
+      </div>
+      <div class="callout callout-point">
+        <span class="callout-label">💡 ポイント</span>
+        <p><code>max-page-size</code>を設定しておくと、<code>?size=100000</code>のように大きすぎる件数を指定されても上限で抑えられる。</p>
+      </div>
+    </div>
+
+    <div class="deep-dive">
+      <span class="deep-dive-title">🔍 詳しく: ② PageRequest.of()で作り直してfindAllに渡す</span>
+
+      <h4><span class="step-num">1</span>作り直す理由: ソートだけ差し替えたい</h4>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-java">Page&lt;Product&gt; page = productRepository.findAll(
+        PageRequest.of(
+                pageable.getPageNumber(),   // 1
+                pageable.getPageSize(),     // 20
+                pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))));  // price: ASC</code></pre>
+      </div>
+      <p><code>pageable</code>から3つの値を取り出し、それを材料に<code>PageRequest</code>を<strong>作り直している</strong>。ページ番号と件数は受け取った値をそのまま使い、ソートだけを差し替える。</p>
+      <ul>
+        <li><code>pageable</code>をそのまま渡すと、<code>sort</code>が指定されなかったときは「並び順なし」になる</li>
+        <li><code>getSortOr(デフォルト)</code>は、指定があればそのソート、なければ引数のデフォルト（ここでは登録日時の新しい順＝新着順）を返す</li>
+      </ul>
+      <div class="callout callout-point">
+        <span class="callout-label">💡 ソートのデフォルトは自分で決める</span>
+        <p><code>page</code>や<code>size</code>と違い、「どの項目で並べるか」はエンティティごとに違うので、Springはソートのデフォルトを用意しない。明示的に指定する。</p>
+      </div>
+
+      <h4><span class="step-num">2</span>PageableとPageRequestの関係</h4>
+      <p><code>findAll()</code>の引数の型は<code>PageRequest</code>ではなく<strong><code>Pageable</code></strong>。<code>PageRequest</code>は<code>Pageable</code>を実装したクラスなので、そのまま渡せる。</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>型</th><th>種類</th><th>作り方</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>Pageable</code></td><td>インターフェース</td><td>Controllerの引数に書くとSpringが組み立てる</td></tr>
+            <tr><td><code>PageRequest</code></td><td><code>Pageable</code>の実装クラス</td><td><code>PageRequest.of()</code>で自分で作る</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><code>PageRequest.of()</code>は<code>PageRequest</code>を作るためのstaticメソッド（ファクトリメソッド）。コンストラクタは<code>protected</code>なので、<code>new PageRequest(...)</code>ではなく<code>of()</code>を使う。</p>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-java">PageRequest.of(1, 20);                                // ページ番号, 件数
+PageRequest.of(1, 20, Sort.by("price"));              // + ソート
+PageRequest.of(1, 20, Sort.Direction.ASC, "price");   // + 方向とフィールド名</code></pre>
+      </div>
+
+      <h4><span class="step-num">3</span>作り直さずに findAll(pageable) とも書ける</h4>
+      <p>引数の型が<code>Pageable</code>なので、Controllerが受け取った<code>pageable</code>をそのまま渡すこともできる。</p>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-java">productRepository.findAll(pageable);</code></pre>
+      </div>
+      <p>デフォルトのソートを<code>@PageableDefault</code>で決めておけば（上の「① リクエストをPageableで受け取る」の「3. 省略時の値を変える」）、<code>PageRequest.of()</code>で作り直す必要はない。</p>
+    </div>
+
+    <div class="deep-dive">
+      <span class="deep-dive-title">🔍 詳しく: ③ 返ってきたPageからデータ本体だけ返す</span>
+      <p>以下、商品が<strong>全部で95件</strong>あり、<code>?page=1&amp;size=20&amp;sort=price,asc</code>でリクエストされた場合で説明する。</p>
+
+      <h4><span class="step-num">1</span>findAllの裏で動くSQL</h4>
+      <p>リポジトリは裏で次の2本のSQLを実行する。</p>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-sql">-- データ本体：価格の安い順に並べて、20件飛ばして20件取る
+SELECT * FROM product ORDER BY price ASC LIMIT 20 OFFSET 20;
+
+-- 総件数：全部で何件あるか数える
+SELECT COUNT(*) FROM product;</code></pre>
+      </div>
+
+      <h4><span class="step-num">2</span>Page&lt;Product&gt;の中身</h4>
+      <p>この2本の結果をまとめた箱が<code>Page&lt;Product&gt;</code>。中身は<strong><code>Page</code>型のメソッド</strong>で取り出す。コードでは<code>findAll()</code>の戻り値を変数<code>page</code>で受けているので、<code>page.getContent()</code>のように呼ぶ。</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th><code>Page</code>のメソッド</th><th>値</th><th>意味</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>page.getContent()</code></td><td>商品20件のリスト</td><td><strong>データ本体</strong>（21〜40件目）</td></tr>
+            <tr><td><code>page.getTotalElements()</code></td><td><code>95</code></td><td>総件数</td></tr>
+            <tr><td><code>page.getTotalPages()</code></td><td><code>5</code></td><td>総ページ数（95 ÷ 20 を切り上げ）</td></tr>
+            <tr><td><code>page.getNumber()</code></td><td><code>1</code></td><td>今が何ページ目か（0始まり）</td></tr>
+            <tr><td><code>page.hasNext()</code></td><td><code>true</code></td><td>次のページがあるか</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><code>page.getContent()</code>以外の総件数やページ数を<strong>メタ情報</strong>と呼ぶ。画面で「全95件」「1 2 <strong>3</strong> 4 5」のようなページ送りを作るときに使う。</p>
+
+      <h4><span class="step-num">3</span>getContent()でデータ本体だけ返す</h4>
+      <p>このコードは<code>return ResponseEntity.ok(page.getContent());</code>で、<code>Page</code>オブジェクト全体ではなくデータのリスト部分だけを返す。レスポンスの形をシンプルに保てる。</p>
+      <div class="callout callout-rule">
+        <span class="callout-label">⚠️ メタ情報はクライアントに届かない</span>
+        <p>クライアントに返るのは商品20件のリストだけで、総件数やページ数は捨てている。ページ送りの画面を作るなら、メタ情報も返す必要がある。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec-reference">
+    <h2><span class="icon">📚</span>参考</h2>
+    <ul>
+      <li><a href="https://docs.spring.io/spring-data/commons/docs/current/reference/html/#repositories.paging-and-sorting">Spring Data - PagingAndSortingRepository</a></li>
+      <li><a href="https://docs.spring.io/spring-data/commons/docs/current/reference/html/#core.web.basic.paging-and-sorting">Spring MVC - Pageable resolver</a></li>
+    </ul>
+  </section>
+
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script>
+  Prism.plugins.autoloader.languages_path = "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/";
+</script>
+</body>
+</html>
