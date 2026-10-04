@@ -234,6 +234,74 @@
     color: var(--accent-4);
   }
 
+  /* 重要ポイント */
+  .key-points { display: flex; flex-direction: column; gap: 0.9rem; margin: 1.25rem 0 0; }
+  .key-card { border: 2px solid rgba(124, 58, 237, 0.35); background: rgba(124, 58, 237, 0.05); border-radius: 14px; padding: 1rem 1.15rem; }
+  .key-card p { margin: 0.5rem 0; }
+  .key-card .key-head { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 0.6rem; font-size: 1.02rem; font-weight: 700; }
+  .key-badge { font-size: 0.72rem; font-weight: 700; color: #fff; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); padding: 0.1rem 0.6rem; border-radius: 999px; white-space: nowrap; }
+  .key-card strong { background: linear-gradient(transparent 60%, rgba(245, 158, 11, 0.35) 60%); }
+  .key-list { margin: 0.5rem 0 0; }
+  .key-list li { margin: 0.4rem 0; font-size: 0.93rem; }
+  .gate-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin: 0.75rem 0; padding: 0.8rem 0.9rem; background: var(--surface); border-radius: 10px; font-size: 0.88rem; }
+  .gate-node { padding: 0.3rem 0.7rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); text-align: center; line-height: 1.35; }
+  .gate-node small { display: block; font-size: 0.72rem; font-weight: 700; }
+  .gate-stop { border: 2px solid #ef4444; background: rgba(239, 68, 68, 0.08); font-weight: 700; }
+  .gate-stop small { color: #ef4444; }
+  .gate-arrow { color: var(--muted); font-weight: 700; }
+
+  /* 番号付きの縦の流れ */
+  .flow-start { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin: 0.75rem 0 0.6rem; }
+  .flow-chip { font-size: 0.75rem; font-weight: 700; color: #fff; background: var(--accent-3); padding: 0.1rem 0.6rem; border-radius: 999px; }
+  .flow-start code { background: var(--border); color: var(--fg); padding: 0.15em 0.5em; border-radius: 5px; font-size: 0.85rem; }
+  .steps { counter-reset: step; list-style: none; padding: 0; margin: 0.5rem 0 0.75rem; }
+  .steps > li { counter-increment: step; position: relative; margin: 0; padding: 0.15rem 0 0.95rem 2.5rem; }
+  .steps > li::before { content: counter(step); position: absolute; left: 0; top: 0.05rem; width: 1.7rem; height: 1.7rem; border-radius: 50%; background: var(--accent-1); color: #fff; font-size: 0.82rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .steps > li:not(:last-child)::after { content: ""; position: absolute; left: calc(0.85rem - 1px); top: 1.85rem; bottom: 0.15rem; width: 2px; background: var(--accent-1); opacity: 0.3; }
+  .steps > li:last-child { padding-bottom: 0.2rem; }
+  .steps .step-sub { display: block; font-size: 0.85rem; color: var(--muted); }
+  .steps .step-ng::before { background: #ef4444; }
+  .status-400 { display: inline-block; margin: 0 0.3rem; font-family: "Fira Code", monospace; font-size: 0.8rem; font-weight: 500; color: #fff; background: #ef4444; padding: 0.05rem 0.55rem; border-radius: 999px; }
+
+  /* BindingResult の中身 */
+  .br-card { border: 2px dashed var(--accent-1); border-radius: 12px; padding: 0.8rem 1rem; margin: 0 0 1rem; }
+  .br-card p { margin: 0; }
+  .br-title { font-weight: 700; color: var(--accent-1); margin-bottom: 0.5rem !important; }
+  .br-error { background: rgba(239, 68, 68, 0.06); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 10px; padding: 0.6rem 0.85rem; }
+  .br-error-name { font-family: "Fira Code", monospace; font-size: 0.85rem; font-weight: 500; color: #ef4444; margin-bottom: 0.35rem !important; }
+  .br-fields { display: grid; gap: 0.3rem; margin: 0; }
+  .br-fields > div { display: grid; grid-template-columns: 8.5rem 1fr; gap: 0.5rem; align-items: center; }
+  .br-fields dt { font-family: "Fira Code", monospace; font-size: 0.8rem; color: var(--muted); }
+  .br-fields dd { margin: 0; }
+  .br-fields code, .steps code { background: var(--border); color: var(--fg); padding: 0.15em 0.4em; border-radius: 5px; font-family: "Fira Code", monospace; font-size: 0.85em; }
+  @media (max-width: 560px) { .br-fields > div { grid-template-columns: 1fr; gap: 0; } }
+
+  /* @Valid の有無の比較 */
+  .cmp-lead { margin: 2rem 0 0.5rem; font-weight: 700; }
+  .case-head { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; margin: 1.25rem 0 0.5rem; padding: 0.4rem 0.75rem; border-radius: 8px; }
+  .case-ng { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+  .case-ok { background: rgba(16, 185, 129, 0.1); color: #10b981; margin-top: 2rem; }
+  .case-badge { display: inline-flex; align-items: center; justify-content: center; width: 1.4rem; height: 1.4rem; border-radius: 50%; color: #fff; font-size: 0.8rem; flex-shrink: 0; }
+  .case-ng .case-badge { background: #ef4444; }
+  .case-ok .case-badge { background: #10b981; }
+  .case-head code, .cmp-lead code { background: var(--border); color: var(--fg); padding: 0.15em 0.4em; border-radius: 5px; font-family: "Fira Code", monospace; font-size: 0.85em; }
+  .case-head code { background: none; color: inherit; padding: 0; }
+  .trace { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin: -0.5rem 0 0.6rem; padding: 0.75rem 0.9rem; border-radius: 10px; font-size: 0.86rem; }
+  .trace-ng { background: rgba(239, 68, 68, 0.06); }
+  .trace-ok { background: rgba(16, 185, 129, 0.07); }
+  .trace-node { padding: 0.3rem 0.65rem; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); text-align: center; line-height: 1.35; }
+  .trace-node small { display: block; font-size: 0.72rem; font-weight: 700; color: var(--muted); }
+  .trace-node code { background: none; color: var(--fg); padding: 0; font-family: "Fira Code", monospace; font-size: 0.82rem; }
+  .trace-bad { border: 2px solid #ef4444; }
+  .trace-bad small { color: #ef4444; }
+  .trace-stop { border: 2px solid #10b981; font-weight: 700; }
+  .trace-stop small { color: #10b981; }
+  .trace-400 { border-color: rgba(239, 68, 68, 0.45); background: rgba(239, 68, 68, 0.08); }
+  .trace-400 code { color: #ef4444; font-weight: 500; }
+  .trace-arrow { color: var(--muted); font-weight: 700; }
+  table.no-need { margin-top: 1.25rem; }
+  table.no-need th:first-child, table.no-need td:first-child { white-space: nowrap; }
+
   .footer-note {
     text-align: center;
     color: var(--muted);
@@ -250,7 +318,7 @@
     <h1>@Valid とBean Validation</h1>
     <ul class="meta">
       <li>📅 作成日: 2026-09-20</li>
-      <li>🔄 更新日: 2026-10-03</li>
+      <li>🔄 更新日: 2026-10-04</li>
     </ul>
   </header>
 
@@ -281,10 +349,30 @@ public class TodoController {
       <tr><td>ルールの定義(<code>@NotBlank</code>, <code>@Size</code>など)</td><td>DTOクラスのフィールド</td></tr>
       <tr><td>「今そのルールでチェックしろ」という指示(<code>@Valid</code>)</td><td>DTOを受け取る側＝Controllerメソッドの引数</td></tr>
     </table>
-    <ul>
-      <li>外部から来たリクエストは、Controllerがアプリの入口で最初に受け取る。不正な入力はService層に渡す前にここで止めるのが基本</li>
-      <li><code>@RequestBody</code>でJSONをDTOに変換した直後に、Springがバリデーションを実行する。違反があると<code>MethodArgumentNotValidException</code>が投げられ、メソッド本体は実行されない</li>
-    </ul>
+    <div class="key-points">
+      <div class="key-card">
+        <p class="key-head"><span class="key-badge">重要 1</span>🚪 Controllerはアプリの入口。不正な入力はここで止める</p>
+        <p>外部から来たリクエストは、Controllerがアプリの入口で最初に受け取る。<strong>不正な入力は、Service層に渡す前にここで止めるのが基本</strong>。</p>
+        <div class="gate-flow" aria-label="リクエストがControllerで止められる流れ">
+          <span class="gate-node">リクエスト</span>
+          <span class="gate-arrow">→</span>
+          <span class="gate-node gate-stop">Controller<small>ここで止める</small></span>
+          <span class="gate-arrow">→</span>
+          <span class="gate-node">Service</span>
+          <span class="gate-arrow">→</span>
+          <span class="gate-node">Repository / DB</span>
+        </div>
+        <p>入口で止めておけば、Service より奥の処理は「データの中身は正しい」という前提で書ける。チェックが漏れると、不正なデータがDBまで届いてしまう。</p>
+      </div>
+      <div class="key-card">
+        <p class="key-head"><span class="key-badge">重要 2</span>⏱️ チェックはメソッド本体が動く前に終わる</p>
+        <p><code>@RequestBody</code>でJSONをDTOに変換した直後に、<strong>Springが</strong>バリデーションを実行する。違反があると<code>MethodArgumentNotValidException</code>が投げられ、<strong>メソッド本体は実行されない</strong>。</p>
+        <ul class="key-list">
+          <li>メソッド本体に入れた時点で、<code>request</code>の中身はルールを満たしている。本体にチェック用のif文は要らない</li>
+          <li>例外を投げるのはControllerではなくSpringなので、Controllerに<code>try-catch</code>や<code>throws</code>は書かない。違反時の処理は<code>@ExceptionHandler</code>に任せる(→ 4.)</li>
+        </ul>
+      </div>
+    </div>
   </section>
 
   <section class="sec-code">
@@ -331,6 +419,61 @@ public ResponseEntity&lt;TodoResponse&gt; create(
       <p><code>@Valid</code>はDTOクラス(<code>TodoRequest</code>)ではなく、<strong>DTOを受け取る側</strong>(Controllerのメソッド引数)に付ける。DTOの役割はルールを定義するところまでで、チェックの実行を指示するのは受け取る側の役割になる。</p>
     </div>
 
+    <p class="cmp-lead">🔍 <code>@Valid</code> がない場合とある場合で、同じ不正なリクエスト <code>{"title": ""}</code> の行き先を比べる。</p>
+
+    <p class="case-head case-ng"><span class="case-badge">✕</span><code>@Valid</code> を付け忘れた場合</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@PostMapping
+public ResponseEntity&lt;TodoResponse&gt; create(
+        @RequestBody TodoRequest request) {          // @Valid がない
+    // title が "" のまま、ここまで来てしまう
+    TodoResponse created = todoService.create(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(created);
+}</code></pre>
+    </div>
+    <div class="trace trace-ng">
+      <span class="trace-node"><code>{"title": ""}</code></span>
+      <span class="trace-arrow">→</span>
+      <span class="trace-node">Controller<small>素通り</small></span>
+      <span class="trace-arrow">→</span>
+      <span class="trace-node">Service</span>
+      <span class="trace-arrow">→</span>
+      <span class="trace-node trace-bad">DB<small>空のタイトルで保存処理へ</small></span>
+    </div>
+    <p>DTOにルールが書いてあっても、チェックは実行されない。不正なデータが入口を通り抜けて、奥の処理まで届いてしまう。</p>
+
+    <p class="case-head case-ok"><span class="case-badge">✓</span><code>@Valid</code> を付けた場合</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@PostMapping
+public ResponseEntity&lt;TodoResponse&gt; create(
+        @Valid @RequestBody TodoRequest request) {
+    // ↑ メソッドが呼ばれる前に、Spring が次の2つを済ませている
+    //   ① JSON を TodoRequest に変換する
+    //   ② TodoRequest のルールでチェックする（違反なら例外を投げ、ここには来ない）
+
+    // ここに来た request は、必ずルールを満たしている
+    TodoResponse created = todoService.create(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(created);
+}</code></pre>
+    </div>
+    <div class="trace trace-ok">
+      <span class="trace-node"><code>{"title": ""}</code></span>
+      <span class="trace-arrow">→</span>
+      <span class="trace-node trace-stop">Spring がチェック<small>ここで止まる</small></span>
+      <span class="trace-arrow">→</span>
+      <span class="trace-node trace-400"><code>400 Bad Request</code></span>
+    </div>
+    <p>Controllerのメソッド本体も、Service も DB も、一度も呼ばれない。</p>
+
+    <table class="no-need">
+      <tr><th>Controllerに書かなくてよいもの</th><th>理由</th></tr>
+      <tr><td>チェック用の if文</td><td>本体に来た時点で、ルールのチェックは終わっている</td></tr>
+      <tr><td><code>try-catch</code></td><td>例外は本体が動く前に、Spring が投げる。違反時の処理は <code>@ExceptionHandler</code> に任せる(→ 4.)</td></tr>
+      <tr><td><code>throws</code></td><td>例外を投げるのは Controller ではなく Spring だから(→ 4. の補足)</td></tr>
+    </table>
+
     <h3>4. 違反時にキャッチする(@ExceptionHandler)</h3>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
@@ -350,8 +493,8 @@ public ResponseEntity&lt;ErrorResponse&gt; handleValidation(MethodArgumentNotVal
 
     <div class="note">
       <p class="note-title">💡 補足: Controllerに throws も書かなくてよい</p>
-      <p><code>MethodArgumentNotValidException</code>は検査例外なので、通常なら投げるメソッドに<code>throws</code>を書く必要がある。しかし、この例外を投げるのはControllerではなくSpringなので、Controllerには書かなくてよい。</p>
-      <p>Springは、Controllerのメソッドを呼び出す<strong>前</strong>にチェックを行う。違反があればその場で例外を投げ、Controllerのメソッドはそもそも呼ばれない。</p>
+      <p><code>MethodArgumentNotValidException</code>は検査例外なので、通常なら投げるメソッドに<code>throws</code>を書く必要がある。</p>
+      <p>しかし、この例外を投げるのはSpringで、そのタイミングは<strong>Controllerのメソッドが呼ばれる前</strong>。違反があった時点で、Controllerのメソッドは呼ばれないまま処理が終わる。そのため、Controllerに<code>throws</code>を書く必要はない。</p>
     </div>
 
     <h3>5. handleValidation() のコードを1行ずつ読む</h3>
@@ -383,14 +526,22 @@ public ResponseEntity&lt;ErrorResponse&gt; handleValidation(MethodArgumentNotVal
       <li><strong>Result(結果)</strong>: その詰め込みと、ルールによるチェックの結果</li>
     </ul>
     <p>中で何が起きているか:</p>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code>リクエスト {"title": ""}
-   ↓ ① Springが TodoRequest に値を詰める(バインド)
-   ↓ ② @Valid によって、@NotBlank などのルールでチェックする
-   ↓ ③ 違反があれば、その内容を BindingResult に記録する
-BindingResult
-  └ FieldError(field="title", rejectedValue="", defaultMessage="タイトルは必須です")</code></pre>
+    <div class="flow-start"><span class="flow-chip">リクエスト</span><code>{"title": ""}</code></div>
+    <ol class="steps">
+      <li>Springが<code>TodoRequest</code>に値を詰める(バインド)</li>
+      <li><code>@Valid</code>によって、<code>@NotBlank</code>などのルールでチェックする</li>
+      <li>違反があれば、その内容を<code>BindingResult</code>に記録する</li>
+    </ol>
+    <div class="br-card">
+      <p class="br-title">📋 BindingResult</p>
+      <div class="br-error">
+        <p class="br-error-name">FieldError</p>
+        <dl class="br-fields">
+          <div><dt>field</dt><dd><code>"title"</code></dd></div>
+          <div><dt>rejectedValue</dt><dd><code>""</code></dd></div>
+          <div><dt>defaultMessage</dt><dd><code>"タイトルは必須です"</code></dd></div>
+        </dl>
+      </div>
     </div>
     <ul>
       <li>違反が1件あれば<code>FieldError</code>が1つ、3件あれば3つ記録される</li>
@@ -437,6 +588,13 @@ BindingResult
     <div class="note">
       <p class="note-title">💡 補足: FieldError::getDefaultMessage はメソッド参照</p>
       <p><code>FieldError::getDefaultMessage</code>は<strong>メソッド参照</strong>という書き方。<code>fieldError -&gt; fieldError.getDefaultMessage()</code>というラムダ式と全く同じ意味で、「各要素を受け取ってそのメソッドを呼んだ結果を返す」処理を短く書ける。</p>
+      <p>メソッド参照では、メソッド名の後ろに<code>()</code>を付けない。<code>::</code>は「このメソッドを使ってね」と<strong>メソッドを指定するだけ</strong>で、その場では呼び出さないから。実際に呼び出すのは<code>map()</code>の側で、要素を1件ずつ渡しながら呼んでくれる。</p>
+      <table>
+        <tr><th>書き方</th><th>結果</th></tr>
+        <tr><td><code>.map(FieldError::getDefaultMessage)</code></td><td>正しい(メソッド参照)</td></tr>
+        <tr><td><code>.map(fieldError -&gt; fieldError.getDefaultMessage())</code></td><td>正しい(ラムダ式。ここでは呼び出すので<code>()</code>が付く)</td></tr>
+        <tr><td><code>.map(FieldError::getDefaultMessage())</code></td><td>コンパイルエラー</td></tr>
+      </table>
     </div>
 
     <h4>5-3. レスポンスを返す</h4>
@@ -452,13 +610,12 @@ BindingResult
     </ul>
 
     <h3>6. 全体の流れ</h3>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code>クライアントが不正なリクエスト送信
-  → @Valid が TodoRequest をチェック
-  → NG なら MethodArgumentNotValidException が発生
-  → @ExceptionHandler(MethodArgumentNotValidException.class) がキャッチして 400 を返す</code></pre>
-    </div>
+    <ol class="steps steps-whole">
+      <li>クライアントが不正なリクエストを送信</li>
+      <li><code>@Valid</code>が<code>TodoRequest</code>をチェック</li>
+      <li class="step-ng">NGなら<code>MethodArgumentNotValidException</code>が発生<span class="step-sub">Controllerのメソッド本体は実行されない</span></li>
+      <li><code>@ExceptionHandler(MethodArgumentNotValidException.class)</code>がキャッチして<span class="status-400">400</span>を返す</li>
+    </ol>
 
     <h3>7. よく使う制約アノテーション</h3>
     <table>
