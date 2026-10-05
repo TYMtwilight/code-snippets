@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spring Data JPA カスタムクエリの作り方</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<style>
+  :root {
+    --bg: #f5f3ff;
+    --surface: #ffffff;
+    --fg: #221d3d;
+    --muted: #6b6580;
+    --border: #e6e1fa;
+    --code-bg: #1e1b2e;
+    --code-fg: #e6e1fa;
+    --accent-1: #7c3aed;
+    --accent-2: #ec4899;
+    --accent-3: #06b6d4;
+    --accent-4: #f59e0b;
+    --shadow: 0 8px 24px rgba(124, 58, 237, 0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14111f;
+      --surface: #1c1830;
+      --fg: #efe9ff;
+      --muted: #a79fc4;
+      --border: #322b4e;
+      --code-bg: #0f0c1a;
+      --code-fg: #e6e1fa;
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 2.5rem 1rem 5rem;
+    background:
+      radial-gradient(circle at 15% -10%, rgba(124,58,237,0.15), transparent 40%),
+      radial-gradient(circle at 100% 0%, rgba(6,182,212,0.12), transparent 35%),
+      var(--bg);
+    color: var(--fg);
+    font-family: "Zen Maru Gothic", -apple-system, "Hiragino Kaku Gothic ProN", sans-serif;
+    line-height: 1.75;
+  }
+  main { max-width: 780px; margin: 0 auto; }
+
+  .hero {
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    border-radius: 20px;
+    padding: 2rem 1.75rem;
+    color: #fff;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  h1 { font-size: 1.9rem; font-weight: 900; margin: 0 0 0.75rem; }
+  .meta { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+  .meta li { background: rgba(255,255,255,0.18); padding: 0.3rem 0.75rem; border-radius: 999px; font-size: 0.85rem; font-weight: 500; }
+
+  section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem 1.75rem;
+    margin-top: 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  section h2 { display: flex; align-items: center; gap: 0.55rem; font-size: 1.35rem; font-weight: 900; margin: 0 0 1rem; }
+  .icon { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 10px; font-size: 1.05rem; flex-shrink: 0; }
+  .sec-overview .icon  { background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); }
+  .sec-code .icon      { background: linear-gradient(135deg, #312e81, #1e1b2e); }
+  .sec-reference .icon { background: linear-gradient(135deg, #10b981, #06b6d4); }
+
+  h3 { font-size: 1.15rem; font-weight: 700; margin: 2.5rem 0 1rem; padding: 0.15rem 0 0.45rem 0.7rem; border-left: 4px solid var(--accent-1); border-bottom: 1px solid var(--border); }
+  section h2 + h3 { margin-top: 1.25rem; }
+  h4 { display: flex; align-items: baseline; gap: 0.45rem; font-size: 1rem; font-weight: 700; color: var(--fg); margin: 1.75rem 0 0.6rem; }
+  h4::before { content: ""; flex-shrink: 0; width: 0.5rem; height: 0.5rem; border-radius: 2px; background: var(--accent-2); transform: translateY(-0.1rem); }
+  p, li { color: var(--fg); }
+  ul { padding-left: 1.3rem; margin: 0.5rem 0; }
+  li { margin: 0.3rem 0; }
+
+  .editor { background: var(--code-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 6px 16px rgba(0,0,0,0.25); }
+  .editor + p, .editor + ul { margin-top: 0.85rem; }
+  .editor-bar { display: flex; gap: 0.4rem; padding: 0.65rem 0.85rem; background: rgba(255,255,255,0.05); }
+  .editor-bar span { width: 0.65rem; height: 0.65rem; border-radius: 50%; display: inline-block; }
+  .editor-bar span:nth-child(1) { background: #ff5f57; }
+  .editor-bar span:nth-child(2) { background: #febc2e; }
+  .editor-bar span:nth-child(3) { background: #28c840; }
+  pre { margin: 0; padding: 1.1rem 1.25rem; overflow-x: auto; }
+  code { font-family: "Fira Code", "SFMono-Regular", Consolas, monospace; font-size: 0.88rem; color: var(--code-fg); }
+  pre[class*="language-"], pre[class*="language-"] > code { background: transparent; text-shadow: none; }
+  pre[class*="language-"] { margin: 0; padding: 1.1rem 1.25rem; }
+  code[class*="language-"] { font-family: "Fira Code", "SFMono-Regular", Consolas, monospace; font-size: 0.88rem; }
+  p code, li code, td code, th code, .cond-row code { background: var(--border); color: var(--fg); padding: 0.15em 0.4em; border-radius: 5px; font-family: "Fira Code", monospace; font-size: 0.85em; }
+
+  .dep-list { display: flex; flex-direction: column; gap: 1.1rem; margin: 0.75rem 0; padding: 0; list-style: none; }
+  .dep-list > li { padding-left: 0; }
+  .dep-name { display: block; font-weight: 700; margin-bottom: 0.25rem; }
+  .dep-desc { margin: 0; color: var(--muted); }
+  .dep-note { margin: 0.6rem 0 0; padding: 0.75rem 0.9rem; background: var(--bg); border-radius: 10px; font-size: 0.92rem; }
+  .dep-note strong { color: var(--fg); }
+
+  .deep-dive { margin-top: 1rem; padding: 1rem 1.1rem; border: 1px dashed var(--accent-1); border-radius: 12px; }
+  .deep-dive-title { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 700; color: var(--accent-1); margin: 0 0 0.75rem; }
+  .deep-dive h4 { margin-top: 1.5rem; }
+  .deep-dive > h4:first-child { margin-top: 0; }
+
+  .callout { margin: 1.25rem 0; padding: 0.9rem 1.1rem; border-left: 4px solid var(--accent-3); background: rgba(6,182,212,0.08); border-radius: 0 12px 12px 0; }
+  .callout-title { font-weight: 700; margin: 0 0 0.4rem; }
+  .callout p { margin: 0.5rem 0; }
+  .callout .editor { margin: 0.6rem 0; }
+
+  .compare-label { display: inline-block; margin: 1rem 0 0.5rem; padding: 0.15rem 0.7rem; border-radius: 999px; font-size: 0.85rem; font-weight: 700; color: #fff; }
+  .label-bad { background: #e11d48; }
+  .label-good { background: #059669; }
+
+  .name-parts { display: flex; flex-wrap: wrap; gap: 0.3rem; margin: 0.75rem 0; padding: 0; list-style: none; }
+  .name-parts li { margin: 0; padding: 0.35rem 0.7rem; border-radius: 8px; background: var(--bg); border: 1px solid var(--border); text-align: center; line-height: 1.4; }
+  .name-parts code { background: none; padding: 0; font-weight: 500; }
+  .name-parts small { display: block; font-size: 0.75rem; color: var(--muted); }
+  .name-parts .part-kw { border-color: var(--accent-2); }
+
+  .ordinal-compare { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.75rem; align-items: start; margin: 0.75rem 0; }
+  .oc-card { padding: 0.75rem 0.9rem; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; }
+  .oc-title { margin: 0 0 0.4rem; font-size: 0.85rem; font-weight: 700; color: var(--muted); }
+  .oc-table { margin: 0; font-size: 0.88rem; }
+  .oc-table td { padding: 0.3rem 0.6rem; background: var(--surface); }
+  .oc-table td:first-child { width: 2.5rem; text-align: center; font-family: "Fira Code", monospace; }
+  .oc-table .oc-hit td { background: rgba(225,29,72,0.12); font-weight: 700; }
+  .oc-arrow { align-self: center; font-size: 1.4rem; color: var(--muted); }
+  .oc-result { margin: 0.75rem 0; padding: 0.75rem 0.95rem; border-left: 4px solid #e11d48; background: rgba(225,29,72,0.07); border-radius: 0 10px 10px 0; }
+  .oc-result p { margin: 0.25rem 0; }
+  .oc-result-title { font-weight: 700; }
+  @media (max-width: 560px) {
+    .ordinal-compare { grid-template-columns: 1fr; }
+    .oc-arrow { text-align: center; transform: rotate(90deg); }
+  }
+
+  .kw-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin: 0.75rem 0; }
+  .kw-card { padding: 0.8rem 0.95rem; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+  .kw-wide { grid-column: 1 / -1; }
+  .kw-badge { display: inline-block; padding: 0.05rem 0.6rem; border-radius: 999px; background: var(--accent-1); color: #fff; font-family: "Fira Code", monospace; font-size: 0.8rem; font-weight: 500; }
+  .kw-method { margin: 0.5rem 0 0.25rem; font-family: "Fira Code", monospace; font-size: 0.9rem; overflow-wrap: anywhere; }
+  .kw-method mark, mark.kw-legend { padding: 0 0.15rem; border-radius: 3px; background: rgba(236,72,153,0.2); color: inherit; font-weight: 700; }
+  .kw-desc { margin: 0; font-size: 0.92rem; }
+  .kw-jpql { margin-top: 0.5rem; padding: 0.3rem 0.6rem; border-radius: 6px; background: var(--code-bg); color: var(--code-fg); font-family: "Fira Code", monospace; font-size: 0.8rem; overflow-wrap: anywhere; }
+  .kw-type { display: inline-block; margin-left: 0.4rem; padding: 0.05rem 0.5rem; border-radius: 999px; font-size: 0.72rem; font-weight: 700; vertical-align: middle; }
+  .kw-type-abstract { background: rgba(225,29,72,0.15); color: #e11d48; }
+  .kw-type-default { background: rgba(6,182,212,0.15); color: #0891b2; }
+  .kw-type-static { background: rgba(5,150,105,0.15); color: #059669; }
+
+  .cond-list { display: flex; flex-direction: column; gap: 0.5rem; margin: 0.85rem 0; }
+  .cond-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; padding: 0.6rem 0.85rem; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; font-size: 0.92rem; }
+  .cond-icon { flex-shrink: 0; width: 1.3rem; text-align: center; }
+  .cond-row.skip { opacity: 0.55; }
+  .cond-row.hit { background: rgba(5,150,105,0.1); border-color: rgba(5,150,105,0.35); }
+  .cond-arrow { color: var(--muted); }
+  @media (max-width: 560px) {
+    .kw-grid { grid-template-columns: 1fr; }
+  }
+
+  .elem-list { display: flex; flex-direction: column; gap: 0.9rem; margin: 0.75rem 0; }
+  .elem-card { padding: 0.9rem 1.05rem; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+  .elem-card > p { margin: 0.6rem 0 0; }
+  .elem-head { display: flex; align-items: center; gap: 0.55rem; margin: 0 0 0.6rem !important; font-weight: 700; }
+  .elem-num { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--accent-1); color: #fff; font-size: 0.8rem; }
+  .elem-code { padding: 0.45rem 0.75rem; border-radius: 8px; background: var(--code-bg); color: var(--code-fg); font-family: "Fira Code", monospace; font-size: 0.85rem; overflow-wrap: anywhere; }
+  .elem-code mark { padding: 0 0.15rem; border-radius: 3px; background: rgba(236,72,153,0.4); color: #fff; }
+  .elem-points { margin: 0.6rem 0 0; }
+  .elem-points li { margin: 0.2rem 0; }
+  .icon-list { list-style: none; padding: 0; margin: 0.75rem 0; display: flex; flex-direction: column; gap: 0.6rem; }
+  .icon-list li { display: flex; gap: 0.7rem; align-items: flex-start; padding: 0.6rem 0.8rem; background: var(--bg); border-radius: 10px; }
+  .icon-list-emoji { flex-shrink: 0; width: 1.8rem; height: 1.8rem; border-radius: 8px; background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+  .icon-list-head { display: block; font-weight: 700; }
+  .icon-list-body { display: block; margin-top: 0.15rem; color: var(--muted); font-size: 0.92rem; }
+  .signature-label { display: inline-block; margin: 0.9rem 0 0.4rem; font-size: 0.78rem; font-weight: 700; color: var(--muted); letter-spacing: 0.02em; }
+  .param-map { display: flex; flex-direction: column; gap: 0.3rem; }
+  .pm-label { display: block; margin-bottom: 0.25rem; font-size: 0.78rem; font-weight: 700; color: var(--muted); }
+  .pm-arrow { display: flex; align-items: center; gap: 0.4rem; padding-left: 1rem; font-size: 1.2rem; color: var(--accent-2); line-height: 1.2; }
+  .pm-arrow span { font-size: 0.7rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+  .elem-sub { margin-top: 0.9rem; padding-top: 0.2rem; border-top: 1px dashed var(--border); }
+  .elem-sub .compare-label { margin-top: 0.6rem; }
+  .elem-sub-title { margin: 0.7rem 0 0.2rem; font-weight: 700; font-size: 0.92rem; }
+  .elem-sub > p:not(.elem-sub-title) { margin: 0.3rem 0 0; }
+  .elem-sub table { background: var(--surface); }
+
+  table { border-collapse: collapse; width: 100%; margin: 0.75rem 0; font-size: 0.92rem; }
+  th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+  th { background: var(--bg); }
+  .table-wrap { overflow-x: auto; }
+
+  a { color: var(--accent-1); font-weight: 500; text-decoration: none; border-bottom: 1px solid transparent; }
+  a:hover { border-bottom-color: currentColor; }
+
+</style>
+</head>
+<body>
+<main>
+
+  <header class="hero">
+    <h1>Spring Data JPA カスタムクエリの作り方</h1>
+    <ul class="meta">
+      <li>📅 作成日: 2026-10-05</li>
+      <li>🔄 更新日: 2026-10-06</li>
+    </ul>
+  </header>
+
+
+  <section class="sec-overview">
+    <h2><span class="icon">🎯</span>概要</h2>
+    <p><code>JpaRepository</code> の標準メソッド（<code>findById</code> / <code>findAll</code> など）だけでは足りない検索は、リポジトリに自分でメソッドを追加して作る。作り方は主に 4 つあり、<strong>検索の複雑さに応じて使い分ける</strong>。クエリを自分で書く場合は、SQL ではなく <strong>JPQL</strong> という JPA 用のクエリ言語で書くのが基本。</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>作り方</th><th>向いている場面</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1. クエリメソッド</td><td>条件が 2〜3 個までの単純な検索</td></tr>
+          <tr><td>2. <code>@Query</code></td><td>条件が多い・JOIN や集計を使うなど、複雑な検索</td></tr>
+          <tr><td>3. <code>@Modifying</code> + <code>@Query</code></td><td>条件に合うデータの一括更新・一括削除</td></tr>
+          <tr><td>4. <code>Specification</code> など</td><td>検索画面のように、入力によって条件が変わる検索</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="deep-dive">
+      <p class="deep-dive-title">🔍 用語ノート: JPQL</p>
+      <p class="dep-note">
+        JPA で使うクエリ言語。SQL とよく似ているが、<strong>テーブル名・カラム名ではなく、エンティティ名・フィールド名で書く</strong>。JPA が実行時に SQL へ変換してくれるので、DB の種類（MySQL、PostgreSQL など）に依存しない。
+      </p>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-sql">-- SQL：テーブル名 products、カラム名 created_at
+SELECT * FROM products p WHERE p.price &gt; 1000 ORDER BY p.created_at;
+
+-- JPQL：エンティティ名 Product、フィールド名 createdAt
+SELECT p FROM Product p WHERE p.price &gt; 1000 ORDER BY p.createdAt</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec-code">
+    <h2><span class="icon">💻</span>コード</h2>
+
+    <p>以下の例では、次の <code>Product</code> エンティティを使う。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Entity
+@Table(name = "products")
+public class Product {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+
+    private Integer price;
+
+    @Enumerated(EnumType.STRING)
+    private ProductStatus status;  // ON_SALE / SOLD_OUT など
+
+    private LocalDateTime createdAt;
+
+    // getter / setter は省略
+}</code></pre>
+    </div>
+
+    <div class="deep-dive">
+      <p class="deep-dive-title">🔍 用語ノート: @Enumerated(EnumType.STRING)</p>
+      <p class="dep-note">
+        enum 型のフィールドを DB に保存するとき、<strong>enum の名前（文字列）で保存する</strong>ための指定。
+      </p>
+
+      <h4>保存される値の違い</h4>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-java">public enum ProductStatus {
+    ON_SALE,   // 販売中
+    SOLD_OUT   // 売り切れ
+}</code></pre>
+      </div>
+      <p><code>status</code> に <code>ProductStatus.SOLD_OUT</code> を入れて保存すると、DB の <code>status</code> カラムには次の値が入る。</p>
+      <table>
+        <thead>
+          <tr><th>指定</th><th>DB に入る値</th><th>中身</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>EnumType.STRING</code></td><td><code>'SOLD_OUT'</code></td><td>enum の名前（文字列）</td></tr>
+          <tr><td><code>EnumType.ORDINAL</code><br>（指定しない場合のデフォルト）</td><td><code>1</code></td><td>enum の並び順（0 始まりの番号）</td></tr>
+        </tbody>
+      </table>
+
+      <h4>なぜ STRING を指定するのか</h4>
+      <p>デフォルトの <code>ORDINAL</code> には、<strong>enum の並び順を変えるとデータが壊れる</strong>という問題がある。</p>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-java">public enum ProductStatus {
+    PREPARING, // 準備中 ← 先頭に追加した
+    ON_SALE,
+    SOLD_OUT
+}</code></pre>
+      </div>
+      <p>DB に保存されている値が <code>1</code> の商品は、次のように読まれ方が変わる。</p>
+      <div class="ordinal-compare">
+        <div class="oc-card">
+          <p class="oc-title">追加する前</p>
+          <table class="oc-table">
+            <tbody>
+              <tr><td>0</td><td><code>ON_SALE</code></td></tr>
+              <tr class="oc-hit"><td>1</td><td><code>SOLD_OUT</code>（売り切れ）</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="oc-arrow">→</div>
+        <div class="oc-card">
+          <p class="oc-title">追加した後</p>
+          <table class="oc-table">
+            <tbody>
+              <tr><td>0</td><td><code>PREPARING</code></td></tr>
+              <tr class="oc-hit"><td>1</td><td><code>ON_SALE</code>（販売中）</td></tr>
+              <tr><td>2</td><td><code>SOLD_OUT</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="oc-result">
+        <p class="oc-result-title">💥 DB の値は <code>1</code> のままなのに、意味が「売り切れ」から「販売中」に変わる</p>
+        <p>売り切れの商品が、すべて販売中として扱われてしまう。しかも<strong>エラーは出ないので気づきにくい</strong>。</p>
+      </div>
+      <p><code>STRING</code> なら DB には <code>'SOLD_OUT'</code> という名前が入っているので、並び順を変えても影響を受けない。DB を直接見たときに値の意味がわかるのもメリット。<strong>実務では、ほぼ必ず <code>EnumType.STRING</code> を指定する</strong>。</p>
+
+      <div class="callout">
+        <p class="callout-title">⚠️ STRING でも注意すること</p>
+        <p>enum の<strong>名前を変える</strong>と（<code>SOLD_OUT</code> → <code>OUT_OF_STOCK</code> など）、DB に入っている既存のデータと一致しなくなる。名前を変えるときは、DB のデータも合わせて更新する必要がある。</p>
+      </div>
+    </div>
+
+    <h3>1. クエリメソッド（メソッド名から自動生成）</h3>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">public interface ProductRepository extends JpaRepository&lt;Product, Long&gt; {
+
+    // name と status が両方一致する商品
+    List&lt;Product&gt; findByNameAndStatus(String name, ProductStatus status);
+
+    // price が指定した金額より高い商品
+    List&lt;Product&gt; findByPriceGreaterThan(Integer price);
+
+    // 登録日時が新しい順に先頭 10 件
+    List&lt;Product&gt; findTop10ByOrderByCreatedAtDesc();
+}</code></pre>
+    </div>
+    <p>決められたルールでメソッド名を付けるだけで、<strong>Spring Data がメソッド名を解析してクエリを自動生成する</strong>。実装もクエリも書かなくてよい。</p>
+
+    <h4>メソッド名の読み方</h4>
+    <p><code>findByNameAndStatus</code> は、次のように分解して読まれる。</p>
+    <ul class="name-parts">
+      <li><code>findBy</code><small>検索する</small></li>
+      <li><code>Name</code><small>name が</small></li>
+      <li class="part-kw"><code>And</code><small>かつ</small></li>
+      <li><code>Status</code><small>status が一致</small></li>
+    </ul>
+    <p>生成されるクエリ（JPQL）のイメージ：</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-sql">SELECT p FROM Product p WHERE p.name = ?1 AND p.status = ?2</code></pre>
+    </div>
+    <p>メソッド名に書くのは<strong>エンティティのフィールド名</strong>。存在しないフィールド名を書くと、アプリの起動時にエラーになるので、間違いにすぐ気づける。</p>
+
+    <h4>よく使うキーワード</h4>
+    <p>メソッド名の中にキーワードを入れると、条件の種類が変わる（<mark class="kw-legend">色付き</mark>の部分がキーワード）。</p>
+    <div class="kw-grid">
+      <div class="kw-card">
+        <span class="kw-badge">Containing</span>
+        <div class="kw-method">findByName<mark>Containing</mark>(name)</div>
+        <p class="kw-desc">name に指定した文字を<strong>含む</strong></p>
+        <div class="kw-jpql">p.name LIKE %値%</div>
+      </div>
+      <div class="kw-card">
+        <span class="kw-badge">StartingWith</span>
+        <div class="kw-method">findByName<mark>StartingWith</mark>(name)</div>
+        <p class="kw-desc">name が指定した文字で<strong>始まる</strong></p>
+        <div class="kw-jpql">p.name LIKE 値%</div>
+      </div>
+      <div class="kw-card">
+        <span class="kw-badge">IgnoreCase</span>
+        <div class="kw-method">findByName<mark>IgnoreCase</mark>(name)</div>
+        <p class="kw-desc"><strong>大文字・小文字を区別せず</strong>に一致</p>
+        <div class="kw-jpql">UPPER(p.name) = UPPER(値)</div>
+      </div>
+      <div class="kw-card">
+        <span class="kw-badge">In</span>
+        <div class="kw-method">findByStatus<mark>In</mark>(statusList)</div>
+        <p class="kw-desc">status がリストの<strong>どれかに一致</strong></p>
+        <div class="kw-jpql">p.status IN (値1, 値2, ...)</div>
+      </div>
+      <div class="kw-card">
+        <span class="kw-badge">Between</span>
+        <div class="kw-method">findByPrice<mark>Between</mark>(min, max)</div>
+        <p class="kw-desc">price が <strong>min 以上 max 以下</strong></p>
+        <div class="kw-jpql">p.price BETWEEN min AND max</div>
+      </div>
+      <div class="kw-card">
+        <span class="kw-badge">IsNull</span>
+        <div class="kw-method">findByCreatedAt<mark>IsNull</mark>()</div>
+        <p class="kw-desc">createdAt が <strong>null</strong></p>
+        <div class="kw-jpql">p.createdAt IS NULL</div>
+      </div>
+      <div class="kw-card">
+        <span class="kw-badge">OrderBy</span>
+        <div class="kw-method">findByStatus<mark>OrderByPriceAsc</mark>(status)</div>
+        <p class="kw-desc">結果を price の<strong>昇順に並べる</strong>（降順は <code>Desc</code>）</p>
+        <div class="kw-jpql">ORDER BY p.price ASC</div>
+      </div>
+    </div>
+
+    <h4>条件が多いときは @Query に切り替える</h4>
+    <span class="compare-label label-bad">✗ 条件を全部メソッド名に詰め込む</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">List&lt;Product&gt; findByNameContainingAndStatusAndPriceBetweenOrderByCreatedAtDesc(
+        String name, ProductStatus status, Integer min, Integer max);</code></pre>
+    </div>
+    <p>動きはするが、メソッド名が長すぎて<strong>何を検索しているのか読み取りにくい</strong>。目安として<strong>条件が 2〜3 個を超えたら、次の <code>@Query</code> で書く</strong>。</p>
+
+    <h3>2. @Query（クエリを自分で書く）</h3>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">public interface ProductRepository extends JpaRepository&lt;Product, Long&gt; {
+
+    @Query("""
+            SELECT p FROM Product p
+            WHERE p.name LIKE %:keyword%
+              AND p.status = :status
+              AND p.price BETWEEN :minPrice AND :maxPrice
+            ORDER BY p.createdAt DESC
+            """)
+    List&lt;Product&gt; search(@Param("keyword") String keyword,
+                         @Param("status") ProductStatus status,
+                         @Param("minPrice") Integer minPrice,
+                         @Param("maxPrice") Integer maxPrice);
+}</code></pre>
+    </div>
+    <p>メソッド名は自由に付けられるので、<code>search</code> のように<strong>目的が伝わる短い名前</strong>にできる。クエリはテキストブロック（<code>"""</code>）で書くと、改行を入れて読みやすく書ける。</p>
+
+    <h4>各要素の意味</h4>
+    <div class="elem-list">
+
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">1</span><code>@Query</code> で実行するクエリを指定する</p>
+        <div class="elem-code"><mark>@Query("SELECT p FROM Product p WHERE ...")</mark><br>List&lt;Product&gt; search(...);</div>
+        <p>リポジトリのメソッドに <code>@Query</code> を付けると、<strong>メソッド名からの自動生成ではなく、書いたクエリがそのまま実行される</strong>。クエリメソッドと同じく、実装クラスは書かなくてよい。</p>
+        <ul class="elem-points">
+          <li>メソッド名は自由に付けられる（命名ルールに縛られない）</li>
+          <li>クエリの書き間違い（存在しないフィールド名など）は、<strong>アプリの起動時にエラー</strong>になるので気づける</li>
+        </ul>
+
+        <div class="elem-sub">
+          <p class="elem-sub-title">戻り値の型で、結果の受け取り方が決まる</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>戻り値の型</th><th>結果</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>List&lt;Product&gt;</code></td><td>複数件。0 件なら空のリスト</td></tr>
+                <tr><td><code>Optional&lt;Product&gt;</code></td><td>1 件。0 件なら空の Optional</td></tr>
+                <tr><td><code>Page&lt;Product&gt;</code></td><td>ページ単位（引数に <code>Pageable</code> を追加する）</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">2</span>クエリ本体は JPQL で書く</p>
+        <div class="elem-code">SELECT p FROM <mark>Product</mark> p ... ORDER BY p.<mark>createdAt</mark> DESC</div>
+        <ul class="elem-points">
+          <li><code>Product</code> → <strong>エンティティ名</strong>（テーブル名 <code>products</code> ではない）</li>
+          <li><code>createdAt</code> → <strong>フィールド名</strong>（カラム名 <code>created_at</code> ではない）</li>
+        </ul>
+      </div>
+
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">3</span>名前付きパラメータで値を渡す</p>
+        <div class="param-map">
+          <div class="pm-side">
+            <span class="pm-label">クエリの中</span>
+            <div class="elem-code">p.status = <mark>:status</mark></div>
+          </div>
+          <div class="pm-arrow">↕<span>同じ名前で対応</span></div>
+          <div class="pm-side">
+            <span class="pm-label">メソッドの引数</span>
+            <div class="elem-code"><mark>@Param("status")</mark> ProductStatus status</div>
+          </div>
+        </div>
+        <p>クエリ中の <code>:status</code> に、<code>@Param("status")</code> を付けた引数の値が入る。<strong>名前で対応づけるので、どの値がどこに入るかが一目でわかる</strong>。</p>
+
+        <div class="elem-sub">
+          <span class="compare-label label-bad">✗ 番号で書く方法もあるが…</span>
+          <div class="elem-code">WHERE p.name = <mark>?1</mark> AND p.status = <mark>?2</mark></div>
+          <ul class="elem-points">
+            <li>引数の<strong>順番を入れ替えると壊れる</strong></li>
+            <li><code>?3</code> と書かれても、<strong>何の値か読み取りにくい</strong></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">4</span><code>LIKE %:keyword%</code> で部分一致検索</p>
+        <div class="elem-code">p.name LIKE <mark>%</mark>:keyword<mark>%</mark></div>
+        <p>Spring Data JPA 独自の書き方で、<strong><code>keyword</code> の前後に <code>%</code> を付けた部分一致検索</strong>になる。</p>
+        <ul class="elem-points">
+          <li><code>keyword</code> に「ペン」を渡す → <code>p.name LIKE '%ペン%'</code> として実行</li>
+          <li>「ボールペン」「ペンケース」など、<strong>「ペン」を含む商品がヒット</strong>する</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <h4>SQL を直接書く（nativeQuery）</h4>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Query(value = "SELECT * FROM products WHERE price &gt; :price",
+       nativeQuery = true)
+List&lt;Product&gt; findExpensive(@Param("price") Integer price);</code></pre>
+    </div>
+    <p><code>nativeQuery = true</code> を付けると、JPQL ではなく <strong>SQL をそのまま DB に送って実行する</strong>。JPA による変換が入らないので、書いた SQL がそのまま動く。</p>
+
+    <div class="elem-list">
+
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">1</span>使うのは JPQL で書けないときだけ</p>
+        <p>基本は JPQL で書き、<strong>DB 固有の関数や構文を使いたいときだけ</strong> nativeQuery にする。たとえば PostgreSQL の <code>ILIKE</code>（大文字・小文字を区別しない LIKE）は JPQL にはないので、SQL で書く。</p>
+        <div class="editor">
+          <div class="editor-bar"><span></span><span></span><span></span></div>
+          <pre><code class="language-java">// PostgreSQL 専用：名前に keyword を含む（大文字・小文字を区別しない）
+@Query(value = """
+        SELECT * FROM products
+        WHERE name ILIKE '%' || :keyword || '%'
+        """,
+       nativeQuery = true)
+List&lt;Product&gt; searchByName(@Param("keyword") String keyword);</code></pre>
+        </div>
+        <p>このほか、MySQL の全文検索（<code>MATCH ... AGAINST</code>）や、DBA がチューニングした SQL をそのまま使いたい場合などが該当する。</p>
+      </div>
+
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">2</span>注意点</p>
+        <ul class="elem-points">
+          <li><strong>書き間違いが実行するまでわからない</strong>：テーブル名やカラム名のミスは、起動時ではなく、そのメソッドを呼んだときに初めてエラーになる。テストで必ず実行しておく</li>
+          <li><strong>エンティティで受け取るなら全カラムを返す</strong>：戻り値を <code>List&lt;Product&gt;</code> にする場合、<code>SELECT *</code> のようにエンティティのフィールドに対応するカラムをすべて返す必要がある</li>
+          <li><strong>DB の種類に依存する</strong>：開発は H2、本番は PostgreSQL のように DB が違うと、片方でしか動かないことがある</li>
+        </ul>
+
+        <div class="elem-sub">
+          <p class="elem-sub-title">「全カラムを返す」の失敗例</p>
+          <span class="compare-label label-bad">✗ 一部のカラムだけ取得して、エンティティで受け取る</span>
+          <div class="editor">
+            <div class="editor-bar"><span></span><span></span><span></span></div>
+            <pre><code class="language-java">@Query(value = "SELECT name, price FROM products",
+       nativeQuery = true)
+List&lt;Product&gt; findNameAndPrice();
+
+// 実行するとエラー：
+// 結果に id や status などのカラムがないため、Product を組み立てられない</code></pre>
+          </div>
+          <p>エンティティは「全フィールドがそろった 1 行」として作られるので、<strong>カラムが 1 つでも足りないと実行時にエラー</strong>になる。</p>
+
+          <span class="compare-label label-good">✓ 一部のカラムだけ欲しいなら、専用のインターフェースで受け取る</span>
+          <div class="editor">
+            <div class="editor-bar"><span></span><span></span><span></span></div>
+            <pre><code class="language-java">// 欲しいカラムの getter だけを持つインターフェース
+public interface ProductSummary {
+    String getName();
+    Integer getPrice();
+}
+
+@Query(value = "SELECT name, price FROM products",
+       nativeQuery = true)
+List&lt;ProductSummary&gt; findNameAndPrice();</code></pre>
+          </div>
+          <p>カラム名と getter 名（<code>name</code> → <code>getName()</code>）が対応づけられ、取得した値だけを受け取れる。全部の項目が必要なら、<code>SELECT *</code> にしてエンティティで受け取る。</p>
+        </div>
+      </div>
+
+    </div>
+
+    <h3>3. 更新・削除のクエリ（@Modifying）</h3>
+    <p>条件に合うデータをまとめて更新・削除する。次の 2 つの手順で使う。</p>
+
+    <p><strong>手順 1：リポジトリにクエリを定義する</strong></p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">public interface ProductRepository extends JpaRepository&lt;Product, Long&gt; {
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE Product p SET p.status = :status WHERE p.price &lt; :price")
+    int updateStatusByPriceLessThan(@Param("status") ProductStatus status,
+                                    @Param("price") Integer price);
+}</code></pre>
+    </div>
+    <p>条件に合うデータを、<strong>1 回の UPDATE / DELETE 文でまとめて</strong>更新・削除できる。戻り値の <code>int</code> には、更新・削除された件数が入る。</p>
+
+    <p><strong>手順 2：サービス層で、<code>@Transactional</code> を付けたメソッドから呼ぶ</strong></p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Service
+public class ProductService {
+
+    @Transactional  // ← このメソッド全体が 1 つのトランザクション
+    public void closeCheapProducts() {
+        // ① 安い商品を売り切れにする
+        productRepository.updateStatusByPriceLessThan(
+                ProductStatus.SOLD_OUT, 1000);
+
+        // ② 操作の履歴を残す（ここで失敗すると①も取り消される）
+        historyRepository.save(new History("安い商品を売り切れに変更"));
+    }
+}</code></pre>
+    </div>
+
+    <h4>各要素の意味</h4>
+    <div class="elem-list">
+
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">1</span><code>@Modifying</code>：データを書き換えるクエリだと伝える</p>
+        <div class="elem-code"><mark>@Modifying</mark>(clearAutomatically = true)</div>
+        <p>Spring Data は、<code>@Query</code> に書いたクエリを<strong>基本的に SELECT（取得）として実行する</strong>。<code>@Modifying</code> を付けると、UPDATE / DELETE として実行するように切り替わる。</p>
+        <ul class="elem-points">
+          <li>戻り値には、取得結果ではなく<strong>更新・削除された件数</strong>（<code>int</code>）が返る</li>
+          <li>付け忘れると、SELECT として実行しようとして<strong>実行時にエラー</strong>になる</li>
+        </ul>
+      </div>
+
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">2</span><code>clearAutomatically = true</code>：実行後にキャッシュを空にする</p>
+        <div class="elem-code">@Modifying(<mark>clearAutomatically = true</mark>)</div>
+        <p>クエリの実行後に<strong>永続化コンテキストを空にする</strong>設定。<strong>永続化コンテキスト</strong>とは、JPA が一度取得したエンティティを覚えておく一時的な置き場（キャッシュ）のこと。同じトランザクションの中で同じデータを取得すると、DB ではなくここから返される。</p>
+
+        <div class="elem-sub">
+          <span class="compare-label label-bad">✗ 付けないと：置き場と DB の内容がずれる</span>
+          <p><code>@Query</code> の UPDATE / DELETE は<strong>置き場を経由せず、DB を直接書き換える</strong>。そのため、すでに置き場にあるエンティティは古い値のまま残る。</p>
+          <p>次のように、ID を指定してステータスを更新するメソッドで確認する。</p>
+          <div class="editor" style="margin-top: 0.6rem;">
+            <div class="editor-bar"><span></span><span></span><span></span></div>
+            <pre><code class="language-java">// リポジトリ：clearAutomatically を付けていない
+@Modifying
+@Query("UPDATE Product p SET p.status = :status WHERE p.id = :id")
+int updateStatusById(@Param("id") Long id,
+                     @Param("status") ProductStatus status);</code></pre>
+          </div>
+          <div class="editor" style="margin-top: 0.6rem;">
+            <div class="editor-bar"><span></span><span></span><span></span></div>
+            <pre><code class="language-java">@Transactional
+public void example() {
+    // ① 取得：status = ON_SALE が置き場に残る
+    Product before = productRepository.findById(1L).orElseThrow();
+
+    // ② DB を直接更新：DB 上は SOLD_OUT になる
+    productRepository.updateStatusById(1L, ProductStatus.SOLD_OUT);
+
+    // ③ 再取得：置き場から返るので、ON_SALE のまま！
+    Product after = productRepository.findById(1L).orElseThrow();
+}</code></pre>
+          </div>
+
+          <span class="compare-label label-good">✓ 付けると：DB から読み直す</span>
+          <div class="editor" style="margin-top: 0.6rem;">
+            <div class="editor-bar"><span></span><span></span><span></span></div>
+            <pre><code class="language-java">@Modifying(clearAutomatically = true)
+@Query("UPDATE Product p SET p.status = :status WHERE p.id = :id")
+int updateStatusById(@Param("id") Long id,
+                     @Param("status") ProductStatus status);</code></pre>
+          </div>
+          <p>②の実行後に置き場が空になるので、③では DB から取り直し、正しく <code>SOLD_OUT</code> が返る。</p>
+          <ul class="elem-points">
+            <li>同じトランザクションの中で、<strong>更新後にもう一度データを取得する処理があるとき</strong>に付ける</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">3</span><code>@Transactional</code>：サービス層のメソッドに付ける</p>
+        <div class="elem-code"><mark>@Transactional</mark><br>public void closeCheapProducts() { ... }</div>
+        <p>データの書き換えは、トランザクションの中で実行する必要がある。<strong>リポジトリには付けず、呼び出し元のサービス層のメソッドに付ける</strong>。</p>
+
+        <div class="elem-sub">
+          <p class="elem-sub-title">なぜサービス層に付けるのか</p>
+          <p>トランザクションは「<strong>ここからここまでを、全部成功か全部失敗にしたい</strong>」という範囲を決めるもの。その範囲は 1 つの業務処理と一致するので、業務処理を表すサービス層で決める。</p>
+          <ul class="elem-points">
+            <li>手順 2 のコードでは、商品の更新（①）と履歴の保存（②）が<strong>まとめて成功するか、まとめて取り消される</strong>。「商品は売り切れになったのに履歴がない」という中途半端な状態にならない</li>
+            <li>サービス層に付け忘れたまま呼ぶと、トランザクションがないため<strong>実行時にエラー</strong>（<code>TransactionRequiredException</code>）になる。付け忘れにすぐ気づける</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+
+    <h3>4. 動的な検索条件（Specification）</h3>
+
+    <h4>なぜ必要か</h4>
+    <p>検索画面のように「<strong>入力された条件だけで絞り込みたい</strong>」場合、ここまでの方法では対応しにくい。</p>
+
+    <span class="compare-label label-bad">✗ クエリメソッドで対応しようとする</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">// 名前・ステータス・価格の 3 条件だと、入力の組み合わせは 8 通り
+List&lt;Product&gt; findByName(String name);
+List&lt;Product&gt; findByStatus(ProductStatus status);
+List&lt;Product&gt; findByNameAndStatus(String name, ProductStatus status);
+List&lt;Product&gt; findByNameAndPriceLessThanEqual(String name, Integer price);
+// ... 組み合わせの数だけメソッドが必要になる</code></pre>
+    </div>
+    <p>条件が増えるたびにメソッドが倍々で増え、Service 側にも「どれを呼ぶか」の分岐が必要になる。これを解決するのが <code>Specification</code>。条件を 1 つずつ部品にしておき、<strong>必要な部品だけをその場で組み合わせて</strong>検索できる。</p>
+
+    <h4>下準備：JpaSpecificationExecutor を追加する</h4>
+    <p><code>Specification</code> を使って検索するには、リポジトリに <code>JpaSpecificationExecutor</code> を追加しておく必要がある。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">public interface ProductRepository
+        extends JpaRepository&lt;Product, Long&gt;,
+                JpaSpecificationExecutor&lt;Product&gt; {
+}</code></pre>
+    </div>
+    <p><code>JpaSpecificationExecutor</code> を継承すると、そこで定義されている <code>findAll(Specification)</code> などのメソッドが使えるようになる。</p>
+
+    <div class="deep-dive">
+      <p class="deep-dive-title">🔍 補足: &lt;Product&gt; という型パラメータ</p>
+      <p class="dep-note"><code>&lt;Product&gt;</code> は「<strong>どのエンティティを検索するか</strong>」を指定する型パラメータ。<code>JpaRepository&lt;Product, Long&gt;</code> と違って型パラメータが <code>&lt;T&gt;</code> の 1 つだけなのは、<code>Specification</code> を使った検索では ID を指定するメソッドがなく、<strong>ID の型を指定する必要がない</strong>から。</p>
+    </div>
+
+    <h4>Specification とは</h4>
+    <p><code>Specification</code> は、<strong>検索条件を 1 つ表すインターフェース</strong>。<code>@Query</code> のようにクエリ全体を文字列で書くのではなく、条件を 1 つだけ Java のコードとして書く。</p>
+
+    <span class="compare-label label-bad">✗ @Query：クエリ全体を 1 つの文字列で書く</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Query("SELECT p FROM Product p WHERE p.status = :status")
+List&lt;Product&gt; findByStatus(@Param("status") ProductStatus status);</code></pre>
+    </div>
+    <p><code>findByStatus</code> は status が一致する商品を検索するメソッド。条件は <code>@Query</code> の文字列の中に直接書かれているので、「名前だけで検索したい」「価格だけで検索したい」のような<strong>別の条件を増やしたいときは、似たような検索メソッドをもう 1 つ作る必要がある</strong>。</p>
+
+    <span class="compare-label label-good">✓ Specification：条件の部分だけを Java のメソッドにする</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">// 定義：ProductSpecs クラスに条件を 1 つ生やす
+public class ProductSpecs {
+    public static Specification&lt;Product&gt; statusEquals(ProductStatus status) {
+        return (root, query, cb) -&gt; cb.equal(root.get("status"), status);
+    }
+}
+
+// 呼び出し：クラス名 + メソッド名で、定義した条件を取り出して使う
+Specification&lt;Product&gt; spec = ProductSpecs.statusEquals(ProductStatus.ON_SALE);
+List&lt;Product&gt; products = productRepository.findAll(spec);</code></pre>
+    </div>
+    <p>さっき追加した <code>JpaSpecificationExecutor</code> のおかげで、<code>findAll(Specification)</code> が使える。渡した条件に一致する商品だけが返ってくる。</p>
+
+    <p><code>ProductSpecs</code> クラスの <code>statusEquals</code> を 3 つの部分に分けて見ると、それぞれの役割がわかる。</p>
+
+    <div class="elem-list">
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">1</span>戻り値の型：<code>Specification&lt;Product&gt;</code></p>
+        <p><code>Product</code> を検索するための<strong>条件を表す型</strong>。呼び出す側は、この戻り値をそのまま <code>findAll</code> に渡せば検索できる。</p>
+      </div>
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">2</span>引数：<code>ProductStatus status</code></p>
+        <p>検索したい値を、ただのメソッド引数として受け取る。<code>@Query</code>（上の例）はクエリが文字列なので、<code>:status</code> と <code>@Param("status")</code> を名前で対応づける必要があった。<code>Specification</code> は条件も Java のコードなので、<strong><code>status</code> をそのまま変数として使える</strong>。</p>
+      </div>
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">3</span>戻り値の中身：<code>(root, query, cb) -&gt; ...</code></p>
+        <p>これは、<code>Specification</code> が持つ <strong><code>toPredicate</code></strong> というメソッドを実装した部分。<strong>条件そのものを組み立てている部分</strong>で、ラムダ式だけを取り出すと次のようになる。</p>
+        <div class="elem-code">(root, query, cb) -&gt; cb.equal(<mark>root.get("status")</mark>, status)</div>
+        <p>これは JPQL でいうと、次の色付きの部分に対応する。</p>
+        <div class="elem-code">SELECT p FROM Product <mark>p</mark> WHERE <mark>p</mark>.status = 'ON_SALE'</div>
+      </div>
+    </div>
+
+    <p>3 つの部分がそろうと、これは「<strong>status を受け取って、一致する条件を返すメソッド</strong>」になる。</p>
+
+    <h4>toPredicate をもう少し詳しく</h4>
+    <p>③ で出てきた <code>toPredicate</code> について。</p>
+    <ul class="icon-list">
+      <li>
+        <span class="icon-list-emoji">🧩</span>
+        <div>
+          <span class="icon-list-head">Specification が持つ、唯一の抽象メソッド</span>
+          <span class="icon-list-body">下の「Specification が持つもの」も参照</span>
+        </div>
+      </li>
+      <li>
+        <span class="icon-list-emoji">🔤</span>
+        <div>
+          <span class="icon-list-head">英単語 predicate の意味</span>
+          <span class="icon-list-body">（真か偽かを判定する）命題・断定</span>
+        </div>
+      </li>
+      <li>
+        <span class="icon-list-emoji">🔧</span>
+        <div>
+          <span class="icon-list-head">やること</span>
+          <span class="icon-list-body"><code>root</code> / <code>query</code> / <code>cb</code> を受け取り、Predicate（条件）に変換する</span>
+        </div>
+      </li>
+      <li>
+        <span class="icon-list-emoji">📞</span>
+        <div>
+          <span class="icon-list-head">呼び出されるタイミング</span>
+          <span class="icon-list-body">自分で直接呼び出すことはなく、<code>findAll(spec)</code> の実行時に JPA が裏側で呼び出す</span>
+        </div>
+      </li>
+    </ul>
+
+    <span class="signature-label">SIGNATURE</span>
+    <div class="elem-code">Predicate toPredicate(Root&lt;T&gt; root, CriteriaQuery&lt;?&gt; query, CriteriaBuilder cb)</div>
+    <p>返ってきた <code>Predicate</code> を使って、SQL の <code>WHERE</code> 句が組み立てられる。</p>
+
+    <div class="callout">
+      <p class="callout-title">💡 なぜ @Override が付いていないのか</p>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-java">// 匿名クラスで書くと、こうなる
+Specification&lt;Product&gt; spec = new Specification&lt;Product&gt;() {
+    @Override
+    public Predicate toPredicate(Root&lt;Product&gt; root, CriteriaQuery&lt;?&gt; query, CriteriaBuilder cb) {
+        return cb.equal(root.get("status"), status);
+    }
+};</code></pre>
+      </div>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-java">public static Specification&lt;Product&gt; statusEquals(ProductStatus status) {
+    return (root, query, cb) -&gt; cb.equal(root.get("status"), status);
+}</code></pre>
+      </div>
+      <p><code>Specification</code> は、抽象メソッドが <code>toPredicate</code> だけの<strong>関数型インターフェース</strong>。候補が 1 つしかないので、Java は「このラムダ式 = <code>toPredicate</code> の実装」と迷わず判断できる。だから、メソッド名や型を書かなくても伝わり、<code>@Override</code> を付ける場所もなくなる。</p>
+      <p>もし抽象メソッドが 2 つあったら、<strong>どちらを実装したいのか Java には決められず、コンパイルエラーになる</strong>。</p>
+    </div>
+
+    <h4>root, query, cb が何なのか</h4>
+    <div class="callout">
+      <p class="callout-title">📌 root / query / cb は自分で用意しなくてよい</p>
+      <p><code>findAll(spec)</code> を実行すると、<strong>Spring Data（JPA）がこの 3 つを自動的に用意して、ラムダ式に渡してくれる</strong>。<code>new</code> したり、自分で組み立てたりする必要は一切ない。</p>
+    </div>
+    <p>それぞれ、JPQL の次の部分に対応する。</p>
+
+    <div class="elem-list">
+      <div class="elem-card">
+        <p class="elem-head"><code>root</code>：検索対象を指す「変数」</p>
+        <p>JPQL で <code>FROM Product p</code> と書いたときの <code>p</code> にあたる。<strong>これから検索する <code>Product</code> そのもの</strong>を指している。</p>
+        <div class="elem-code">root.get("status")  <span style="color:var(--muted)">// JPQL でいう p.status</span></div>
+        <p><code>root.get("フィールド名")</code> で、そのフィールドを指定できる。</p>
+      </div>
+
+      <div class="elem-card">
+        <p class="elem-head"><code>cb</code>（CriteriaBuilder）：条件を作る道具箱</p>
+        <p class="dep-note">💬 英単語の <code>criteria</code> は「判断や評価の基準」という意味（単数形は criterion）。<code>CriteriaBuilder</code> は、その基準＝条件を組み立てるための道具箱、という名前。</p>
+        <p><code>equal</code>（一致）、<code>like</code>（部分一致）、<code>greaterThan</code>（より大きい）など、<strong>条件の種類ごとにメソッドが用意されている</strong>。</p>
+        <div class="elem-code">cb.equal(<mark>root.get("status")</mark>, <mark>ProductStatus.ON_SALE</mark>)
+<span style="color:var(--muted)">// JPQL でいう p.status = 'ON_SALE'</span></div>
+        <ul class="elem-points">
+          <li><strong>1 つ目の引数</strong>（<code>root.get("status")</code>）＝ 比べる対象</li>
+          <li><strong>2 つ目の引数</strong>（<code>ProductStatus.ON_SALE</code>）＝ 比べる値</li>
+        </ul>
+        <p>この 2 つを <code>cb.equal</code> に渡すと、<strong>「status が ON_SALE かどうかを判定する条件」が 1 つできあがる</strong>。この条件のことを <strong>Predicate</strong> と呼ぶ。</p>
+
+        <div class="elem-sub">
+          <p class="elem-sub-title">具体的には…</p>
+          <ul class="elem-points">
+            <li>商品の status が <code>ON_SALE</code> → この Predicate は <strong>true</strong></li>
+            <li>商品の status が <code>SOLD_OUT</code> → この Predicate は <strong>false</strong></li>
+          </ul>
+        </div>
+
+        <p>この <strong>Predicate が、そのまま <code>toPredicate</code> の戻り値になる</strong>。</p>
+      </div>
+
+      <div class="elem-card">
+        <p class="elem-head"><code>query</code>（CriteriaQuery）：クエリ全体の設定</p>
+        <p><code>WHERE</code> 以外の部分、たとえば重複を除く <code>DISTINCT</code> や、並び替えの <code>ORDER BY</code> を設定したいときに使う。<strong>単純な条件だけなら、ほとんど使わない</strong>。</p>
+        <div class="elem-code">query.distinct(true)  <span style="color:var(--muted)">// JPQL でいう SELECT DISTINCT p ...</span></div>
+
+        <div class="dep-note">
+          <p>💬 補足: <strong>ORDER BY は query ではなく Sort / Pageable で渡すのが一般的</strong>。並び替えは条件（<code>WHERE</code>）とは別の関心ごとなので、<code>query.orderBy()</code> で <code>Specification</code> の中に書き込むことは実務ではあまりしない。代わりに、<code>findAll</code> の <code>Sort</code> / <code>Pageable</code> 引数で渡す。</p>
+          <div class="elem-code" style="margin-top: 0.5rem;">Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
+productRepository.findAll(spec, sort);</div>
+        </div>
+      </div>
+    </div>
+
+    <p>つまり、<code>root</code> で<strong>どのフィールドを見るか</strong>を指定し、<code>cb</code> で<strong>どう判定するか</strong>を組み立てる、という役割分担になっている。<code>query</code> は特別な設定をしたいときだけ使う。</p>
+
+    <h4>Specification が持つもの</h4>
+    <p><code>Specification</code> は<strong>インターフェース</strong>なので、フィールドは持たない。自分で実装するのは <code>toPredicate</code> だけだが、条件どうしを<strong>組み合わせるためのメソッド</strong>が、あらかじめ用意されている。</p>
+
+    <div class="kw-grid">
+      <div class="kw-card kw-wide">
+        <span class="kw-badge">toPredicate(...)</span><span class="kw-type kw-type-abstract">抽象メソッド</span>
+        <p class="kw-desc"><strong>自分で実装する</strong>唯一のメソッド。条件の中身を書く</p>
+        <div class="kw-jpql">(root, query, cb) -&gt; cb.equal(root.get("status"), status)</div>
+      </div>
+
+      <div class="kw-card">
+        <span class="kw-badge">and(other)</span><span class="kw-type kw-type-default">default</span>
+        <p class="kw-desc">この条件と <code>other</code> を <strong>AND</strong> でつなぐ</p>
+        <div class="kw-jpql">Specification.where(nameContains)
+        .and(statusEquals)</div>
+      </div>
+
+      <div class="kw-card">
+        <span class="kw-badge">or(other)</span><span class="kw-type kw-type-default">default</span>
+        <p class="kw-desc">この条件と <code>other</code> を <strong>OR</strong> でつなぐ</p>
+        <div class="kw-jpql">Specification.where(nameContains)
+        .or(statusEquals)</div>
+      </div>
+
+      <div class="kw-card">
+        <span class="kw-badge">not(spec)</span><span class="kw-type kw-type-static">static</span>
+        <p class="kw-desc">条件を<strong>否定</strong>する</p>
+        <div class="kw-jpql">Specification.not(statusEquals)
+// status が一致 "しない" 商品</div>
+      </div>
+
+      <div class="kw-card">
+        <span class="kw-badge">where(spec)</span><span class="kw-type kw-type-static">static</span>
+        <p class="kw-desc">1 つの条件から書き始めるときの入口</p>
+        <div class="kw-jpql">Specification.where(nameContains)
+// ここから and / or でつなげていく</div>
+      </div>
+
+      <div class="kw-card">
+        <span class="kw-badge">allOf(spec, ...)</span><span class="kw-type kw-type-static">static</span>
+        <p class="kw-desc">複数の条件を<strong>まとめて AND</strong> でつなぐ</p>
+        <div class="kw-jpql">Specification.allOf(
+        nameContains, statusEquals)</div>
+      </div>
+
+      <div class="kw-card">
+        <span class="kw-badge">anyOf(spec, ...)</span><span class="kw-type kw-type-static">static</span>
+        <p class="kw-desc">複数の条件を<strong>まとめて OR</strong> でつなぐ</p>
+        <div class="kw-jpql">Specification.anyOf(
+        nameContains, statusEquals)</div>
+      </div>
+    </div>
+
+    <p>条件を 1 つずつつなぐ <code>and</code> と、まとめてつなぐ <code>allOf</code> は、どちらも同じ結果になる。条件の数が決まっていない動的な検索では、<code>allOf</code> の方がすっきり書ける。</p>
+
+    <h4>複数の条件を組み合わせて検索する</h4>
+    <p>ここまでを踏まえて、「入力された条件だけで絞り込む」検索を実際に作ってみる。</p>
+
+    <p><strong>① 条件を 1 つずつ部品として定義する</strong></p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">public class ProductSpecs {
+
+    // 名前に keyword を含む（未入力なら条件なし）
+    public static Specification&lt;Product&gt; nameContains(String keyword) {
+        return (root, query, cb) -&gt; keyword == null
+                ? null
+                : cb.like(root.get("name"), "%" + keyword + "%");
+    }
+
+    // ステータスが一致する（未入力なら条件なし）
+    public static Specification&lt;Product&gt; statusEquals(ProductStatus status) {
+        return (root, query, cb) -&gt; status == null
+                ? null
+                : cb.equal(root.get("status"), status);
+    }
+
+    // 価格が maxPrice 以下（未入力なら条件なし）
+    public static Specification&lt;Product&gt; priceAtMost(Integer maxPrice) {
+        return (root, query, cb) -&gt; maxPrice == null
+                ? null
+                : cb.lessThanOrEqualTo(root.get("price"), maxPrice);
+    }
+}</code></pre>
+    </div>
+    <p><code>statusEquals</code> を例に、中身を詳しく見る。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">return (root, query, cb) -&gt; status == null
+        ? null                                    // 未入力 → 条件を作らず null を返す
+        : cb.equal(root.get("status"), status);   // 入力あり → 条件を作る</code></pre>
+    </div>
+    <div class="kw-grid">
+      <div class="kw-card">
+        <span class="kw-badge">status == null</span>
+        <p class="kw-desc">条件を作らず、<strong>null をそのまま返す</strong></p>
+        <div class="kw-jpql">→ 絞り込みなし（この条件は無視される）</div>
+      </div>
+      <div class="kw-card">
+        <span class="kw-badge">status != null</span>
+        <p class="kw-desc"><code>cb.equal(...)</code> で<strong>実際の条件（Predicate）を作る</strong></p>
+        <div class="kw-jpql">→ status = 入力値 で絞り込む</div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <p class="callout-title">🔍 具体例で確認する</p>
+      <p>「ステータスだけ選んで検索した」場合（<code>name</code> と <code>maxPrice</code> は未入力）で見てみる。</p>
+
+      <div class="cond-list">
+        <div class="cond-row skip">
+          <span class="cond-icon">⊘</span>
+          <code>nameContains(null)</code>
+          <span class="cond-arrow">→</span>
+          <code>null</code>
+          <span>条件なし</span>
+        </div>
+        <div class="cond-row hit">
+          <span class="cond-icon">✅</span>
+          <code>statusEquals(ON_SALE)</code>
+          <span class="cond-arrow">→</span>
+          <code>status = 'ON_SALE'</code>
+          <span><strong>条件あり</strong></span>
+        </div>
+        <div class="cond-row skip">
+          <span class="cond-icon">⊘</span>
+          <code>priceAtMost(null)</code>
+          <span class="cond-arrow">→</span>
+          <code>null</code>
+          <span>条件なし</span>
+        </div>
+      </div>
+
+      <p><code>Specification.allOf(...)</code> は、<strong><code>null</code> になった条件を無視して組み立てる</strong>。そのため、実際に実行される <code>WHERE</code> 句は次のようになる。</p>
+      <div class="elem-code">WHERE status = 'ON_SALE'</div>
+      <p style="margin-top: 0.75rem;"><code>name</code> と <code>maxPrice</code> の条件は、<strong>最初から無かったものとして扱われる</strong>。これが「入力された条件だけで絞り込む」の実現方法。</p>
+    </div>
+
+    <p><strong>② Service で、さっきの allOf を使って組み合わせる</strong></p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">public List&lt;Product&gt; search(ProductSearchForm form) {
+    Specification&lt;Product&gt; spec = Specification.allOf(
+            ProductSpecs.nameContains(form.keyword()),
+            ProductSpecs.statusEquals(form.status()),
+            ProductSpecs.priceAtMost(form.maxPrice()));
+
+    return productRepository.findAll(spec);
+}</code></pre>
+    </div>
+    <p><code>Specification.allOf</code> で、すべての条件を AND でつなぐ。条件が増えても、<strong>部品を 1 つ追加して <code>allOf</code> に足すだけ</strong>で済む。</p>
+
+  </section>
+
+  <section class="sec-reference">
+    <h2><span class="icon">📚</span>参考</h2>
+    <ul>
+      <li><a href="https://docs.spring.io/spring-data/jpa/reference/jpa/query-methods.html">Spring Data JPA - Query Methods</a></li>
+      <li><a href="https://docs.spring.io/spring-data/jpa/reference/repositories/query-keywords-reference.html">Spring Data JPA - Repository query keywords</a></li>
+      <li><a href="https://docs.spring.io/spring-data/jpa/reference/jpa/specifications.html">Spring Data JPA - Specifications</a></li>
+    </ul>
+  </section>
+
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script>
+  Prism.plugins.autoloader.languages_path = "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/";
+</script>
+</body>
+</html>
