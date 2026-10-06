@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spring Data ページングとソート</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<style>
+  :root {
+    --bg: #f5f3ff;
+    --surface: #ffffff;
+    --fg: #221d3d;
+    --muted: #6b6580;
+    --border: #e6e1fa;
+    --code-bg: #1e1b2e;
+    --code-fg: #e6e1fa;
+    --accent-1: #7c3aed;
+    --accent-2: #ec4899;
+    --accent-3: #06b6d4;
+    --accent-4: #f59e0b;
+    --shadow: 0 8px 24px rgba(124, 58, 237, 0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14111f;
+      --surface: #1c1830;
+      --fg: #efe9ff;
+      --muted: #a79fc4;
+      --border: #322b4e;
+      --code-bg: #0f0c1a;
+      --code-fg: #e6e1fa;
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 2.5rem 1rem 5rem;
+    background:
+      radial-gradient(circle at 15% -10%, rgba(124,58,237,0.15), transparent 40%),
+      radial-gradient(circle at 100% 0%, rgba(6,182,212,0.12), transparent 35%),
+      var(--bg);
+    color: var(--fg);
+    font-family: "Zen Maru Gothic", -apple-system, "Hiragino Kaku Gothic ProN", sans-serif;
+    line-height: 1.75;
+  }
+  main { max-width: 780px; margin: 0 auto; }
+
+  .hero {
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    border-radius: 20px;
+    padding: 2rem 1.75rem;
+    color: #fff;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  h1 { font-size: 1.9rem; font-weight: 900; margin: 0 0 0.75rem; }
+  .meta { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+  .meta li { background: rgba(255,255,255,0.18); padding: 0.3rem 0.75rem; border-radius: 999px; font-size: 0.85rem; font-weight: 500; }
+
+  section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem 1.75rem;
+    margin-top: 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  section h2 { display: flex; align-items: center; gap: 0.55rem; font-size: 1.35rem; font-weight: 900; margin: 0 0 1rem; }
+  .icon { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 10px; font-size: 1.05rem; flex-shrink: 0; }
+  .sec-overview .icon  { background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); }
+  .sec-code .icon      { background: linear-gradient(135deg, #312e81, #1e1b2e); }
+  .sec-reference .icon { background: linear-gradient(135deg, #10b981, #06b6d4); }
+
+  h3 { font-size: 1.15rem; font-weight: 700; margin: 2.5rem 0 1rem; padding: 0.15rem 0 0.45rem 0.7rem; border-left: 4px solid var(--accent-1); border-bottom: 1px solid var(--border); }
+  section h2 + h3 { margin-top: 1.25rem; }
+  h4 { display: flex; align-items: baseline; gap: 0.45rem; font-size: 1rem; font-weight: 700; color: var(--fg); margin: 1.75rem 0 0.6rem; }
+  h4::before { content: ""; flex-shrink: 0; width: 0.5rem; height: 0.5rem; border-radius: 2px; background: var(--accent-2); transform: translateY(-0.1rem); }
+  p, li { color: var(--fg); }
+  ul { padding-left: 1.3rem; margin: 0.5rem 0; }
+  li { margin: 0.3rem 0; }
+
+  .editor { background: var(--code-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 6px 16px rgba(0,0,0,0.25); }
+  .editor + p, .editor + ul { margin-top: 0.85rem; }
+  .editor-bar { display: flex; gap: 0.4rem; padding: 0.65rem 0.85rem; background: rgba(255,255,255,0.05); }
+  .editor-bar span { width: 0.65rem; height: 0.65rem; border-radius: 50%; display: inline-block; }
+  .editor-bar span:nth-child(1) { background: #ff5f57; }
+  .editor-bar span:nth-child(2) { background: #febc2e; }
+  .editor-bar span:nth-child(3) { background: #28c840; }
+  pre { margin: 0; padding: 1.1rem 1.25rem; overflow-x: auto; }
+  code { font-family: "Fira Code", "SFMono-Regular", Consolas, monospace; font-size: 0.88rem; color: var(--code-fg); }
+  pre[class*="language-"], pre[class*="language-"] > code { background: transparent; text-shadow: none; }
+  pre[class*="language-"] { margin: 0; padding: 1.1rem 1.25rem; }
+  code[class*="language-"] { font-family: "Fira Code", "SFMono-Regular", Consolas, monospace; font-size: 0.88rem; }
+  p code, li code, td code, th code, .flow-step code { background: var(--border); color: var(--fg); padding: 0.15em 0.4em; border-radius: 5px; font-family: "Fira Code", monospace; font-size: 0.85em; }
+
+  .dep-note { margin: 0.6rem 0 0; padding: 0.75rem 0.9rem; background: var(--bg); border-radius: 10px; font-size: 0.92rem; }
+  .dep-note strong { color: var(--fg); }
+
+  .deep-dive { margin: 1rem 0; padding: 1rem 1.1rem; border: 1px dashed var(--accent-1); border-radius: 12px; }
+  .deep-dive-title { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 700; color: var(--accent-1); margin: 0 0 0.75rem; }
+
+  .callout { margin: 1.25rem 0; padding: 0.9rem 1.1rem; border-left: 4px solid var(--accent-3); background: rgba(6,182,212,0.08); border-radius: 0 12px 12px 0; }
+  .callout-title { font-weight: 700; margin: 0 0 0.4rem; }
+  .callout p { margin: 0.5rem 0; }
+  .callout .editor { margin: 0.6rem 0; }
+  .callout-warn { border-left-color: var(--accent-4); background: rgba(245,158,11,0.1); }
+
+  .compare-label { display: inline-block; margin: 1rem 0 0.5rem; padding: 0.15rem 0.7rem; border-radius: 999px; font-size: 0.85rem; font-weight: 700; color: #fff; }
+  .label-bad { background: #e11d48; }
+  .label-good { background: #059669; }
+
+  .flow { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 0.5rem; align-items: stretch; margin: 0.9rem 0; }
+  .flow-step { padding: 0.7rem 0.8rem; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; text-align: center; }
+  .flow-label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--muted); margin-bottom: 0.3rem; }
+  .flow-arrow { display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 1.2rem; }
+
+  .elem-list { display: flex; flex-direction: column; gap: 0.9rem; margin: 0.75rem 0; }
+  .elem-card { padding: 0.9rem 1.05rem; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+  .elem-card > p { margin: 0.6rem 0 0; }
+  .elem-head { display: flex; align-items: center; gap: 0.55rem; margin: 0 0 0.6rem !important; font-weight: 700; }
+  .elem-num { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--accent-1); color: #fff; font-size: 0.8rem; }
+  .elem-code { padding: 0.45rem 0.75rem; border-radius: 8px; background: var(--code-bg); color: var(--code-fg); font-family: "Fira Code", monospace; font-size: 0.85rem; overflow-wrap: anywhere; }
+  .elem-code mark { padding: 0 0.15rem; border-radius: 3px; background: rgba(236,72,153,0.4); color: #fff; }
+  .elem-points { margin: 0.6rem 0 0; }
+  .elem-points li { margin: 0.2rem 0; }
+
+  .kw-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin: 0.75rem 0; }
+  .kw-card { padding: 0.8rem 0.95rem; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+  .kw-badge { display: inline-block; padding: 0.05rem 0.6rem; border-radius: 999px; background: var(--accent-1); color: #fff; font-family: "Fira Code", monospace; font-size: 0.8rem; font-weight: 500; }
+  .kw-desc { margin: 0.5rem 0 0; font-size: 0.92rem; }
+  .kw-jpql { margin-top: 0.5rem; padding: 0.3rem 0.6rem; border-radius: 6px; background: var(--code-bg); color: var(--code-fg); font-family: "Fira Code", monospace; font-size: 0.8rem; overflow-wrap: anywhere; }
+
+  @media (max-width: 560px) {
+    .kw-grid { grid-template-columns: 1fr; }
+    .flow { grid-template-columns: 1fr; }
+    .flow-arrow { transform: rotate(90deg); }
+  }
+
+  table { border-collapse: collapse; width: 100%; margin: 0.75rem 0; font-size: 0.92rem; }
+  th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+  th { background: var(--bg); }
+  .table-wrap { overflow-x: auto; }
+
+  a { color: var(--accent-1); font-weight: 500; text-decoration: none; border-bottom: 1px solid transparent; }
+  a:hover { border-bottom-color: currentColor; }
+
+</style>
+</head>
+<body>
+<main>
+
+  <header class="hero">
+    <h1>Spring Data ページングとソート</h1>
+    <ul class="meta">
+      <li>📅 作成日: 2026-10-06</li>
+      <li>🔄 更新日: 2026-10-06</li>
+    </ul>
+  </header>
+
+
+  <section class="sec-overview">
+    <h2><span class="icon">🎯</span>概要</h2>
+    <p>一覧を全件まとめて取得するのではなく、「<strong>何ページ目を・何件ずつ・どの順で</strong>」取得する仕組み。登場人物は 3 つで、<strong>要求</strong>と<strong>結果</strong>に分かれている。</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>名前</th><th>種類</th><th>役割</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>Pageable</code></td><td>インターフェース</td><td><strong>要求</strong>：何ページ目を・何件ずつ・どの順で取得するか</td></tr>
+          <tr><td><code>PageRequest</code></td><td>実装クラス</td><td><code>Pageable</code> を実際に作るためのクラス</td></tr>
+          <tr><td><code>Page&lt;T&gt;</code></td><td>インターフェース</td><td><strong>結果</strong>：取得したデータ本体 + 総件数などのメタ情報</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step">
+        <span class="flow-label">① 要求を作る</span>
+        <code>PageRequest.of(0, 20)</code>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <span class="flow-label">② リポジトリに渡す</span>
+        <code>findAll(pageable)</code>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <span class="flow-label">③ 結果を受け取る</span>
+        <code>Page&lt;Product&gt;</code>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec-code">
+    <h2><span class="icon">💻</span>コード</h2>
+
+    <h3>1. なぜページングするのか</h3>
+
+    <span class="compare-label label-bad">✗ 全件まとめて取得する</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">List&lt;Product&gt; all = productRepository.findAll();</code></pre>
+    </div>
+    <p>商品が 10 万件あれば、10 万件すべてをメモリに読み込む。<strong>メモリを圧迫し、レスポンスも遅くなる</strong>。データが増えるほど悪化し、ある日突然落ちる。</p>
+
+    <span class="compare-label label-good">✓ ページ単位で取得する</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">Pageable pageable = PageRequest.of(0, 20);
+Page&lt;Product&gt; page = productRepository.findAll(pageable);</code></pre>
+    </div>
+    <p>発行される SQL に <code>LIMIT</code> / <code>OFFSET</code> が付き、<strong>20 件だけを取得する</strong>。件数が増えても、1 回に読み込む量は変わらない。</p>
+    <div class="elem-code">SELECT * FROM products LIMIT 20 OFFSET 0</div>
+
+    <h3>2. Pageable を作る（PageRequest.of）</h3>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">// 基本形：1 ページ目を 20 件
+Pageable pageable = PageRequest.of(0, 20);
+
+// ソート付き（price の昇順）
+Pageable sorted = PageRequest.of(0, 20, Sort.by("price").ascending());
+
+// 複数条件でソート（price の降順 → 同額なら id の昇順）
+Pageable multi = PageRequest.of(0, 20,
+        Sort.by("price").descending()
+            .and(Sort.by("id").ascending()));
+
+// 短縮形（Direction とフィールド名を直接渡す）
+Pageable shorthand = PageRequest.of(0, 20, Sort.Direction.DESC, "price");</code></pre>
+    </div>
+
+    <h4>引数の意味</h4>
+    <div class="elem-list">
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">1</span>第 1 引数：ページ番号</p>
+        <p><strong>0 始まり</strong>。<code>0</code> が 1 ページ目にあたる。</p>
+      </div>
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">2</span>第 2 引数：1 ページあたりの件数</p>
+        <p>SQL の <code>LIMIT</code> にあたる。この値がそのまま 1 回に読み込む件数になる。</p>
+      </div>
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">3</span>第 3 引数：<code>Sort</code>（省略可）</p>
+        <p>並び順。<code>Sort.by("フィールド名")</code> に <code>.ascending()</code>（昇順）か <code>.descending()</code>（降順）を付ける。<code>.and(...)</code> でつなぐと、複数条件の並び替えになる。</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <p class="callout-title">📌 ページ番号は 0 始まり</p>
+      <p>100 件のデータを 1 ページ 20 件で表示する場合、ページ番号と取得範囲は次のように対応する。</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ページ番号</th><th>取得される範囲</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>page = 0</code></td><td>1 〜 20 件目（画面上の 1 ページ目）</td></tr>
+            <tr><td><code>page = 1</code></td><td>21 〜 40 件目</td></tr>
+            <tr><td><code>page = 4</code></td><td>81 〜 100 件目（最後のページ）</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>このとき <code>getTotalPages()</code> は <code>5</code> を返す。<strong>画面に「1 ページ目」と表示したい場合は、<code>page + 1</code> する</strong>必要がある。</p>
+    </div>
+
+    <div class="deep-dive">
+      <p class="deep-dive-title">🔍 補足: なぜ変数の型を Pageable にするのか</p>
+      <p class="dep-note"><code>PageRequest.of(...)</code> が返すのは <code>PageRequest</code> だが、<code>PageRequest</code> は <code>Pageable</code> を実装しているので <code>Pageable</code> 型の変数で受け取れる。リポジトリ側も <code>Pageable</code> 型で受け取るため、<strong>渡す側も <code>Pageable</code> 型で扱うのが自然</strong>。</p>
+    </div>
+
+    <h3>3. リポジトリに渡す</h3>
+
+    <h4>全件検索（findAll）は、宣言しなくても使える</h4>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">public interface ProductRepository extends JpaRepository&lt;Product, Long&gt; {
+}</code></pre>
+    </div>
+    <p>この空のリポジトリでも、<code>findAll(Pageable)</code> は呼べる。<code>JpaRepository</code> が<strong>最初から持っているメソッド</strong>だから。</p>
+    <div class="elem-code">productRepository.findAll(PageRequest.of(0, 20));</div>
+
+    <p class="dep-note">💬 補足: このメソッドの出どころは <code>PagingAndSortingRepository</code>。<code>JpaRepository</code> がこれを継承しているので使える。<code>CrudRepository</code> だけを継承している場合は使えない。</p>
+
+    <h4>自分で定義した検索メソッドに足す</h4>
+    <p>「販売中の商品だけを 20 件ずつ」のように、<strong>条件を付けた検索でもページングできる</strong>。既存のメソッドに手を加える箇所は 2 つだけ。</p>
+
+    <span class="compare-label label-bad">✗ ページングなし：条件に合う商品が全件返る</span>
+    <div class="elem-code">List&lt;Product&gt; findByStatus(ProductStatus status);</div>
+
+    <span class="compare-label label-good">✓ ページングあり：色を付けた 2 か所を変えるだけ</span>
+    <div class="elem-code"><mark>Page&lt;Product&gt;</mark> findByStatus(ProductStatus status<mark>, Pageable pageable</mark>);</div>
+
+    <div class="elem-list">
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">1</span>戻り値を <code>Page&lt;Product&gt;</code> に変える</p>
+        <p>データ本体に加えて、総件数などのメタ情報も受け取れるようになる。</p>
+      </div>
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">2</span>引数の最後に <code>Pageable</code> を足す</p>
+        <p>検索条件の引数（<code>status</code>）の<strong>後ろに置く</strong>。<code>Pageable</code> は「何ページ目を・何件ずつ」という指示であって検索条件ではないため、<strong>必ず最後の引数にする決まり</strong>になっている。</p>
+      </div>
+    </div>
+
+    <p>呼び出し側は、検索条件と <code>Pageable</code> を並べて渡す。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">Page&lt;Product&gt; page = productRepository.findByStatus(
+        ProductStatus.ON_SALE,          // 検索条件
+        PageRequest.of(0, 20));         // 1 ページ目を 20 件</code></pre>
+    </div>
+
+    <h4>@Query で書いたクエリに足す</h4>
+    <p>自分でクエリを書いた場合も、同じように <code>Pageable</code> を足せる。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Query("SELECT p FROM Product p WHERE p.price &lt;= :maxPrice")
+Page&lt;Product&gt; findCheaperThan(@Param("maxPrice") Integer maxPrice,
+                              Pageable pageable);</code></pre>
+    </div>
+    <p>JPQL で書いていれば、<strong>総件数を数える COUNT のクエリは Spring Data が自動で組み立てる</strong>ので、何も書かなくてよい。</p>
+
+    <div class="callout callout-warn">
+      <p class="callout-title">⚠️ ネイティブクエリでは countQuery も自分で書く</p>
+      <p><code>nativeQuery = true</code> で素の SQL を書いた場合、Spring Data はその SQL を解析できないため、<strong>COUNT のクエリを自動では作れない</strong>。<code>countQuery</code> に自分で書く。</p>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-java">@Query(
+    value = "SELECT * FROM products WHERE price &lt;= :maxPrice",
+    countQuery = "SELECT count(*) FROM products WHERE price &lt;= :maxPrice",
+    nativeQuery = true)
+Page&lt;Product&gt; findCheaperThanNative(
+        @Param("maxPrice") Integer maxPrice,
+        Pageable pageable);</code></pre>
+      </div>
+      <p>JOIN を含むクエリでは、<strong>件数を数えるだけなら JOIN が要らない</strong>こともある。その場合も <code>countQuery</code> を自分で書くと、COUNT を軽くできる。</p>
+    </div>
+
+    <p class="dep-note">💬 補足: ページングは要らず<strong>並び替えだけしたい</strong>場合は、<code>Pageable</code> ではなく <code>Sort</code> をそのまま渡せる。戻り値は <code>List</code> になる。<br>
+    <code>productRepository.findAll(Sort.by("price").descending());</code></p>
+
+    <h3>4. Page から取り出せる情報</h3>
+    <p><code>Page</code> は<strong>データ本体とメタ情報をまとめて持っている</strong>ので、ページ送りの UI に必要な値がここからすべて取れる。</p>
+
+    <div class="callout">
+      <p class="callout-title">📋 ここからの例の前提</p>
+      <p>商品が全部で <strong>100 件</strong>。1 ページ <strong>20 件</strong>で、<strong>1 ページ目（<code>page = 0</code>）</strong>を取得したとする。</p>
+      <div class="elem-code">Page&lt;Product&gt; page = productRepository.findAll(PageRequest.of(0, 20));</div>
+    </div>
+
+    <h4>取り出せる値と、この例での結果</h4>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">// データ本体
+page.getContent();           // 20 件の Product が入った List
+
+// 全体の情報
+page.getTotalElements();     // 100
+page.getTotalPages();        // 5
+
+// このページの情報
+page.getNumber();            // 0
+page.getSize();              // 20
+page.getNumberOfElements();  // 20
+
+// 前後のページの判定
+page.hasPrevious();          // false
+page.hasNext();              // true
+page.isFirst();              // true
+page.isLast();               // false</code></pre>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>メソッド</th><th>戻り値</th><th>意味</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>getContent()</code></td><td><code>List&lt;T&gt;</code></td><td>このページのデータ本体</td></tr>
+          <tr><td><code>getTotalElements()</code></td><td><code>long</code></td><td>全体の件数</td></tr>
+          <tr><td><code>getTotalPages()</code></td><td><code>int</code></td><td>全体のページ数</td></tr>
+          <tr><td><code>getNumber()</code></td><td><code>int</code></td><td>現在のページ番号（0 始まり）</td></tr>
+          <tr><td><code>getSize()</code></td><td><code>int</code></td><td>1 ページあたりの<strong>上限</strong>件数</td></tr>
+          <tr><td><code>getNumberOfElements()</code></td><td><code>int</code></td><td>このページに<strong>実際に入っている</strong>件数</td></tr>
+          <tr><td><code>hasNext()</code> / <code>hasPrevious()</code></td><td><code>boolean</code></td><td>次 / 前のページがあるか</td></tr>
+          <tr><td><code>isFirst()</code> / <code>isLast()</code></td><td><code>boolean</code></td><td>最初 / 最後のページか</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>まぎらわしい 2 つの「件数」</h4>
+    <p>上の例ではどちらも <code>20</code> で同じ値になるが、<strong>端数が出るページでは食い違う</strong>。商品が 95 件だった場合の最後のページ（<code>page = 4</code>）で比べる。</p>
+    <div class="kw-grid">
+      <div class="kw-card">
+        <span class="kw-badge">getSize()</span>
+        <p class="kw-desc">1 ページに入る<strong>上限</strong>。どのページでも変わらない。</p>
+        <div class="kw-jpql">→ 20</div>
+      </div>
+      <div class="kw-card">
+        <span class="kw-badge">getNumberOfElements()</span>
+        <p class="kw-desc">そのページに<strong>実際に入っている</strong>件数。</p>
+        <div class="kw-jpql">→ 15（81 〜 95 件目）</div>
+      </div>
+    </div>
+
+    <h4>ページによって変わる判定メソッド</h4>
+    <p>4 つの <code>boolean</code> は、今いるページによって値が変わる。100 件を 20 件ずつ（全 5 ページ）表示した場合は次のとおり。</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>今いるページ</th><th><code>hasPrevious()</code></th><th><code>hasNext()</code></th><th><code>isFirst()</code></th><th><code>isLast()</code></th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>page = 0</code>（最初）</td><td>false</td><td>true</td><td><strong>true</strong></td><td>false</td></tr>
+          <tr><td><code>page = 2</code>（途中）</td><td>true</td><td>true</td><td>false</td><td>false</td></tr>
+          <tr><td><code>page = 4</code>（最後）</td><td>true</td><td>false</td><td>false</td><td><strong>true</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>この値をそのまま使えば、<strong>ページ送りボタンの出し分け</strong>ができる。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">if (page.hasNext()) {
+    // 「次へ」ボタンを表示する
+}</code></pre>
+    </div>
+
+    <h4>そのまま JSON で返したときの形</h4>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-json">{
+  "content": [
+    { "id": 99, "name": "ボールペン", "price": 120 },
+    { "id": 100, "name": "ノート", "price": 250 }
+  ],
+  "totalElements": 100,
+  "totalPages": 5,
+  "number": 0,
+  "size": 20,
+  "first": true,
+  "last": false
+}</code></pre>
+    </div>
+    <p><code>content</code> の中に実データが入り、その外側にページの情報が並ぶ。クライアントは <code>totalPages</code> や <code>last</code> を見て、ページ送りのボタンを作れる。</p>
+
+    <h3>5. Controller では自動で作られる</h3>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@RestController
+@RequestMapping("/products")
+public class ProductController {
+
+    private final ProductRepository productRepository;
+
+    public ProductController(ProductRepository productRepository) {
+        this.productRepository = productRepository;
+    }
+
+    // GET /products?page=0&amp;size=20&amp;sort=price,desc
+    @GetMapping
+    public Page&lt;Product&gt; findAll(Pageable pageable) {
+        return productRepository.findAll(pageable);
+    }
+}</code></pre>
+    </div>
+    <p>メソッドの引数に <code>Pageable</code> を置くだけで、<strong>Spring がクエリパラメータから <code>PageRequest</code> を組み立てて渡してくれる</strong>。<code>@RequestParam</code> は書かなくてよい。</p>
+
+    <h4>受け取れるクエリパラメータ</h4>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>パラメータ</th><th>意味</th><th>例</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>page</code></td><td>ページ番号（0 始まり）</td><td><code>page=1</code></td></tr>
+          <tr><td><code>size</code></td><td>1 ページあたりの件数</td><td><code>size=20</code></td></tr>
+          <tr><td><code>sort</code></td><td>並び順（<code>フィールド名,方向</code>）</td><td><code>sort=price,desc</code></td></tr>
+          <tr><td><code>sort</code>（複数）</td><td><code>sort</code> を 2 つ以上書くと、その順で並び替える</td><td><code>sort=price,desc&amp;sort=id,asc</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>指定がなかったときの既定値</h4>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@GetMapping
+public Page&lt;Product&gt; findAll(
+        @PageableDefault(size = 20,
+                         sort = "createdAt",
+                         direction = Sort.Direction.DESC)
+        Pageable pageable) {
+    return productRepository.findAll(pageable);
+}</code></pre>
+    </div>
+    <p><code>@PageableDefault</code> を付けると、<strong>クエリパラメータが省略されたときの値</strong>を決められる。この例では「新しい順に 20 件」が既定になる。</p>
+
+    <h4>アプリ全体の既定値（application.properties）</h4>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-properties">spring.data.web.pageable.default-page-size=20
+spring.data.web.pageable.max-page-size=100</code></pre>
+    </div>
+    <p><code>max-page-size</code> は特に重要。これがないと <code>?size=1000000</code> のような指定を受け付けてしまい、<strong>ページングしている意味がなくなる</strong>。</p>
+
+    <div class="callout callout-warn">
+      <p class="callout-title">⚠️ sort はユーザーが自由に指定できる</p>
+      <p><code>sort</code> の値はそのままフィールド名として扱われる。存在しないフィールド名を渡されると <code>PropertyReferenceException</code> が発生し、500 エラーになる。</p>
+      <div class="elem-code">GET /products?sort=notExists,desc  →  500 エラー</div>
+      <p>公開 API では、<strong>並び替えに使ってよい項目を決めておき、それ以外は弾く</strong>（ホワイトリスト方式）。</p>
+    </div>
+
+    <h3>6. 総件数が要らないなら Slice</h3>
+    <p><code>Page</code> は総件数を知るために、データ取得とは<strong>別に COUNT のクエリをもう 1 回発行している</strong>。総件数が必要ない画面では、この 1 回が無駄になる。</p>
+
+    <div class="kw-grid">
+      <div class="kw-card">
+        <span class="kw-badge">Page&lt;T&gt;</span>
+        <p class="kw-desc">総件数・総ページ数が<strong>わかる</strong>。<br>SQL は <strong>2 回</strong>（データ取得 + COUNT）。</p>
+        <div class="kw-jpql">「1 2 3 … 5」とページ番号を並べる UI 向き</div>
+      </div>
+      <div class="kw-card">
+        <span class="kw-badge">Slice&lt;T&gt;</span>
+        <p class="kw-desc">次のページがあるかだけ<strong>わかる</strong>。<br>SQL は <strong>1 回</strong>（データ取得のみ）。</p>
+        <div class="kw-jpql">「もっと見る」式の無限スクロール向き</div>
+      </div>
+    </div>
+
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">// 戻り値を Slice にするだけで、COUNT クエリが発行されなくなる
+Slice&lt;Product&gt; findByStatus(ProductStatus status, Pageable pageable);</code></pre>
+    </div>
+    <p>使えるのは <code>getContent()</code> や <code>hasNext()</code> などで、<code>getTotalElements()</code> / <code>getTotalPages()</code> は使えない。</p>
+  </section>
+
+  <section class="sec-reference">
+    <h2><span class="icon">📚</span>参考</h2>
+    <ul>
+      <li><a href="https://docs.spring.io/spring-data/commons/reference/repositories/query-methods-details.html#repositories.special-parameters">Spring Data - Paging, Iterating Large Results, Sorting</a></li>
+      <li><a href="https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/domain/Pageable.html">Pageable JavaDoc</a></li>
+      <li><a href="https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/domain/Page.html">Page JavaDoc</a></li>
+    </ul>
+  </section>
+
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script>
+  Prism.plugins.autoloader.languages_path = "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/";
+</script>
+</body>
+</html>
