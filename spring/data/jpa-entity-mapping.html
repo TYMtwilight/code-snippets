@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JPA エンティティのマッピング</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<style>
+  :root {
+    --bg: #f5f3ff;
+    --surface: #ffffff;
+    --fg: #221d3d;
+    --muted: #6b6580;
+    --border: #e6e1fa;
+    --code-bg: #1e1b2e;
+    --code-fg: #e6e1fa;
+    --accent-1: #7c3aed;
+    --accent-2: #ec4899;
+    --accent-3: #06b6d4;
+    --accent-4: #f59e0b;
+    --shadow: 0 8px 24px rgba(124, 58, 237, 0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14111f;
+      --surface: #1c1830;
+      --fg: #efe9ff;
+      --muted: #a79fc4;
+      --border: #322b4e;
+      --code-bg: #0f0c1a;
+      --code-fg: #e6e1fa;
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 2.5rem 1rem 5rem;
+    background:
+      radial-gradient(circle at 15% -10%, rgba(124,58,237,0.15), transparent 40%),
+      radial-gradient(circle at 100% 0%, rgba(6,182,212,0.12), transparent 35%),
+      var(--bg);
+    color: var(--fg);
+    font-family: "Zen Maru Gothic", -apple-system, "Hiragino Kaku Gothic ProN", sans-serif;
+    line-height: 1.75;
+  }
+  main { max-width: 780px; margin: 0 auto; }
+
+  .hero {
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    border-radius: 20px;
+    padding: 2rem 1.75rem;
+    color: #fff;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  h1 { font-size: 1.9rem; font-weight: 900; margin: 0 0 0.75rem; }
+  .meta { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+  .meta li { background: rgba(255,255,255,0.18); padding: 0.3rem 0.75rem; border-radius: 999px; font-size: 0.85rem; font-weight: 500; }
+
+  section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem 1.75rem;
+    margin-top: 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  section h2 { display: flex; align-items: center; gap: 0.55rem; font-size: 1.35rem; font-weight: 900; margin: 0 0 1rem; }
+  .icon { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 10px; font-size: 1.05rem; flex-shrink: 0; }
+  .sec-overview .icon  { background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); }
+  .sec-code .icon      { background: linear-gradient(135deg, #312e81, #1e1b2e); }
+  .sec-reference .icon { background: linear-gradient(135deg, #10b981, #06b6d4); }
+
+  h3 { font-size: 1.15rem; font-weight: 700; margin: 2.5rem 0 1rem; padding: 0.15rem 0 0.45rem 0.7rem; border-left: 4px solid var(--accent-1); border-bottom: 1px solid var(--border); }
+  section h2 + h3 { margin-top: 1.25rem; }
+  h4 { display: flex; align-items: baseline; gap: 0.45rem; font-size: 1rem; font-weight: 700; color: var(--fg); margin: 1.75rem 0 0.6rem; }
+  h4::before { content: ""; flex-shrink: 0; width: 0.5rem; height: 0.5rem; border-radius: 2px; background: var(--accent-2); transform: translateY(-0.1rem); }
+  p, li { color: var(--fg); }
+  ul { padding-left: 1.3rem; margin: 0.5rem 0; }
+  li { margin: 0.3rem 0; }
+
+  .editor { background: var(--code-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 6px 16px rgba(0,0,0,0.25); }
+  .editor + p, .editor + ul { margin-top: 0.85rem; }
+  .editor-bar { display: flex; gap: 0.4rem; padding: 0.65rem 0.85rem; background: rgba(255,255,255,0.05); }
+  .editor-bar span { width: 0.65rem; height: 0.65rem; border-radius: 50%; display: inline-block; }
+  .editor-bar span:nth-child(1) { background: #ff5f57; }
+  .editor-bar span:nth-child(2) { background: #febc2e; }
+  .editor-bar span:nth-child(3) { background: #28c840; }
+  pre { margin: 0; padding: 1.1rem 1.25rem; overflow-x: auto; }
+  code { font-family: "Fira Code", "SFMono-Regular", Consolas, monospace; font-size: 0.88rem; color: var(--code-fg); }
+  pre[class*="language-"], pre[class*="language-"] > code { background: transparent; text-shadow: none; }
+  pre[class*="language-"] { margin: 0; padding: 1.1rem 1.25rem; }
+  code[class*="language-"] { font-family: "Fira Code", "SFMono-Regular", Consolas, monospace; font-size: 0.88rem; }
+  p code, li code, td code, th code, .map-row code, .loop-step code { background: var(--border); color: var(--fg); padding: 0.15em 0.4em; border-radius: 5px; font-family: "Fira Code", monospace; font-size: 0.85em; }
+
+  .dep-note { margin: 0.6rem 0 0; padding: 0.75rem 0.9rem; background: var(--bg); border-radius: 10px; font-size: 0.92rem; }
+  .dep-note strong { color: var(--fg); }
+
+  .deep-dive { margin: 1rem 0; padding: 1rem 1.1rem; border: 1px dashed var(--accent-1); border-radius: 12px; }
+  .deep-dive-title { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 700; color: var(--accent-1); margin: 0 0 0.75rem; }
+
+  .callout { margin: 1.25rem 0; padding: 0.9rem 1.1rem; border-left: 4px solid var(--accent-3); background: rgba(6,182,212,0.08); border-radius: 0 12px 12px 0; }
+  .callout-title { font-weight: 700; margin: 0 0 0.4rem; }
+  .callout p { margin: 0.5rem 0; }
+  .callout .editor { margin: 0.6rem 0; }
+  .callout-warn { border-left-color: var(--accent-4); background: rgba(245,158,11,0.1); }
+
+  .compare-label { display: inline-block; margin: 1rem 0 0.5rem; padding: 0.15rem 0.7rem; border-radius: 999px; font-size: 0.85rem; font-weight: 700; color: #fff; }
+  .label-bad { background: #e11d48; }
+  .label-good { background: #059669; }
+
+  .map-list { display: flex; flex-direction: column; gap: 0.5rem; margin: 0.9rem 0; }
+  .map-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.6rem; align-items: center; padding: 0.6rem 0.85rem; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; font-size: 0.92rem; }
+  .map-side { text-align: center; }
+  .map-label { display: block; font-size: 0.72rem; font-weight: 700; color: var(--muted); }
+  .map-arrow { color: var(--accent-2); font-weight: 700; }
+
+  .elem-list { display: flex; flex-direction: column; gap: 0.9rem; margin: 0.75rem 0; }
+  .elem-card { padding: 0.9rem 1.05rem; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+  .elem-card > p { margin: 0.6rem 0 0; }
+  .elem-head { display: flex; align-items: center; gap: 0.55rem; margin: 0 0 0.6rem !important; font-weight: 700; }
+  .elem-num { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--accent-1); color: #fff; font-size: 0.8rem; }
+  .elem-code { padding: 0.45rem 0.75rem; border-radius: 8px; background: var(--code-bg); color: var(--code-fg); font-family: "Fira Code", monospace; font-size: 0.85rem; overflow-wrap: anywhere; }
+  .elem-code mark { padding: 0 0.15rem; border-radius: 3px; background: rgba(236,72,153,0.4); color: #fff; }
+  .elem-points { margin: 0.6rem 0 0; }
+  .elem-points li { margin: 0.2rem 0; }
+
+  .loop-trace { display: flex; flex-direction: column; gap: 0.25rem; margin: 0.75rem 0; }
+  .loop-step { padding: 0.5rem 0.8rem; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
+  .loop-step span { display: block; margin-top: 0.1rem; font-size: 0.8rem; color: var(--muted); }
+  .loop-arrow { text-align: center; color: var(--accent-2); font-weight: 700; line-height: 1.2; }
+  .loop-end { padding: 0.5rem 0.8rem; border-radius: 8px; background: rgba(225,29,72,0.12); color: #e11d48; font-weight: 700; text-align: center; }
+
+  .kw-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin: 0.75rem 0; }
+  .kw-card { padding: 0.8rem 0.95rem; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+  .kw-badge { display: inline-block; padding: 0.05rem 0.6rem; border-radius: 999px; background: var(--accent-1); color: #fff; font-family: "Fira Code", monospace; font-size: 0.8rem; font-weight: 500; }
+  .kw-desc { margin: 0.5rem 0 0; font-size: 0.92rem; }
+  .kw-jpql { margin-top: 0.5rem; padding: 0.3rem 0.6rem; border-radius: 6px; background: var(--code-bg); color: var(--code-fg); font-family: "Fira Code", monospace; font-size: 0.8rem; overflow-wrap: anywhere; }
+
+  @media (max-width: 560px) {
+    .kw-grid { grid-template-columns: 1fr; }
+    .map-row { grid-template-columns: 1fr; }
+    .map-arrow { transform: rotate(90deg); }
+  }
+
+  table { border-collapse: collapse; width: 100%; margin: 0.75rem 0; font-size: 0.92rem; }
+  th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+  th { background: var(--bg); }
+  .table-wrap { overflow-x: auto; }
+
+  a { color: var(--accent-1); font-weight: 500; text-decoration: none; border-bottom: 1px solid transparent; }
+  a:hover { border-bottom-color: currentColor; }
+
+</style>
+</head>
+<body>
+<main>
+
+  <header class="hero">
+    <h1>JPA エンティティのマッピング</h1>
+    <ul class="meta">
+      <li>📅 作成日: 2026-10-07</li>
+      <li>🔄 更新日: 2026-10-07</li>
+    </ul>
+  </header>
+
+
+  <section class="sec-overview">
+    <h2><span class="icon">🎯</span>概要</h2>
+    <p><strong>エンティティ</strong>とは、DB のテーブルに対応する Java のクラスのこと。アノテーションで「<strong>このクラスはどのテーブルに、どのフィールドはどのカラムに対応するか</strong>」を JPA に伝える。この対応づけを<strong>マッピング</strong>と呼ぶ。</p>
+
+    <div class="map-list">
+      <div class="map-row">
+        <div class="map-side"><span class="map-label">Java 側</span><code>class Product</code></div>
+        <div class="map-arrow">⇄</div>
+        <div class="map-side"><span class="map-label">DB 側</span><code>products テーブル</code></div>
+      </div>
+      <div class="map-row">
+        <div class="map-side"><span class="map-label">Java 側</span><code>String name</code></div>
+        <div class="map-arrow">⇄</div>
+        <div class="map-side"><span class="map-label">DB 側</span><code>name カラム</code></div>
+      </div>
+      <div class="map-row">
+        <div class="map-side"><span class="map-label">Java 側</span><code>Long id</code></div>
+        <div class="map-arrow">⇄</div>
+        <div class="map-side"><span class="map-label">DB 側</span><code>主キー</code></div>
+      </div>
+    </div>
+
+    <p>マッピングができていれば、SQL を書かなくても、<strong>Java のオブジェクトを保存したり取り出したりできる</strong>ようになる。</p>
+  </section>
+
+  <section class="sec-code">
+    <h2><span class="icon">💻</span>コード</h2>
+
+    <h3>1. 基本の形</h3>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">import jakarta.persistence.*;
+
+@Entity
+@Table(name = "products")
+public class Product {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 100)
+    private String name;
+
+    @Column(nullable = false)
+    private BigDecimal price;
+
+    @Enumerated(EnumType.STRING)
+    private ProductStatus status;
+
+    private LocalDateTime createdAt;
+
+    // JPA が使う引数なしコンストラクタ
+    protected Product() {
+    }
+
+    public Product(String name, BigDecimal price) {
+        this.name = name;
+        this.price = price;
+        this.status = ProductStatus.ON_SALE;
+        this.createdAt = LocalDateTime.now();
+    }
+
+    // getter は省略
+}</code></pre>
+    </div>
+
+    <h4>必ず要る 3 つ</h4>
+    <div class="elem-list">
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">1</span><code>@Entity</code></p>
+        <p>「このクラスはテーブルに対応する」という目印。<strong>これがないと、リポジトリで扱えない</strong>（アプリの起動時にエラーになる）。</p>
+      </div>
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">2</span><code>@Id</code></p>
+        <p>主キーにあたるフィールドに付ける。<strong>エンティティには必ず 1 つ必要</strong>。JPA はこの値で「どのデータか」を判断する。</p>
+      </div>
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">3</span><code>@GeneratedValue</code></p>
+        <p>主キーを<strong>誰が採番するか</strong>の指定。<code>IDENTITY</code> なら DB の自動採番に任せるので、<code>id</code> に値を入れずに保存できる。</p>
+      </div>
+    </div>
+
+    <h4>省略できる 2 つ</h4>
+    <div class="elem-list">
+      <div class="elem-card">
+        <p class="elem-head"><code>@Table(name = "products")</code></p>
+        <p>テーブル名の指定。省略すると<strong>クラス名から自動で決まる</strong>（次の「2.」で詳しく）。</p>
+      </div>
+      <div class="elem-card">
+        <p class="elem-head"><code>@Column(nullable = false, length = 100)</code></p>
+        <p>カラムの制約や名前の指定。<strong>何も指定しないならフィールドだけ書けばよく、<code>@Column</code> 自体が不要</strong>。上のコードで <code>createdAt</code> に付けていないのはそのため。</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>属性</th><th>意味</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>name</code></td><td>カラム名を変える</td></tr>
+              <tr><td><code>nullable = false</code></td><td><code>NOT NULL</code> 制約を付ける</td></tr>
+              <tr><td><code>length</code></td><td>文字列の長さ（<code>VARCHAR(100)</code> など）</td></tr>
+              <tr><td><code>unique = true</code></td><td>一意制約を付ける</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <h3>2. 名前の対応ルール</h3>
+    <p><code>@Table</code> や <code>@Column</code> で名前を指定しなかった場合、Spring Boot は<strong>キャメルケースをスネークケースに変換</strong>して対応づける。</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Java 側</th><th>省略したときの DB 側の名前</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>class Product</code></td><td><code>product</code>（単数形のまま）</td></tr>
+          <tr><td><code>String name</code></td><td><code>name</code></td></tr>
+          <tr><td><code>LocalDateTime createdAt</code></td><td><code>created_at</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>つまり、テーブル名を <strong>複数形の <code>products</code> にしたい場合は <code>@Table</code> が必要</strong>になる。逆に <code>createdAt</code> → <code>created_at</code> は自動で変換されるので、<code>@Column(name = "created_at")</code> は書かなくてよい。</p>
+
+    <div class="callout">
+      <p class="callout-title">📌 明示しておくと安全な場面</p>
+      <p>既存の DB に合わせる場合や、チームでテーブル名の規約が決まっている場合は、<strong>省略せずに書いておくほうが事故が少ない</strong>。自動変換のルールは設定で変えられるため、「書いていないが、たまたま一致していた」状態は壊れやすい。</p>
+    </div>
+
+    <h3>3. 主キーの採番（@GeneratedValue）</h3>
+    <p>よく使う戦略は 2 つ。<strong>使う DB によって選べるものが変わる</strong>。</p>
+
+    <div class="kw-grid">
+      <div class="kw-card">
+        <span class="kw-badge">IDENTITY</span>
+        <p class="kw-desc">DB の自動採番に任せる（MySQL の <code>AUTO_INCREMENT</code> など）。<strong>INSERT して初めて ID が決まる</strong>。</p>
+        <div class="kw-jpql">MySQL / PostgreSQL どちらでも使える</div>
+      </div>
+      <div class="kw-card">
+        <span class="kw-badge">SEQUENCE</span>
+        <p class="kw-desc">DB のシーケンスから採番する。<strong>INSERT する前に ID を取得できる</strong>。</p>
+        <div class="kw-jpql">PostgreSQL / Oracle 向け（MySQL は非対応）</div>
+      </div>
+    </div>
+
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">// IDENTITY：DB の自動採番に任せる
+@Id
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+private Long id;
+
+// SEQUENCE：シーケンス名を指定して使う
+@Id
+@GeneratedValue(strategy = GenerationType.SEQUENCE,
+                generator = "product_seq")
+@SequenceGenerator(name = "product_seq",
+                   sequenceName = "product_seq",
+                   allocationSize = 50)
+private Long id;</code></pre>
+    </div>
+
+    <p class="dep-note">💬 補足: <code>IDENTITY</code> は 1 件ごとに INSERT して採番するため、<strong>複数件をまとめて INSERT する最適化が効かない</strong>。大量登録の性能が問題になる場面では <code>SEQUENCE</code> が有利（<code>allocationSize</code> の分だけ ID をまとめて確保できる）。</p>
+
+    <h3>4. 引数なしコンストラクタが必要な理由</h3>
+    <p>JPA は DB からデータを取り出すとき、<strong>まず空のインスタンスを作り、そこにフィールドの値を入れていく</strong>。このとき引数なしのコンストラクタが使われる。</p>
+
+    <span class="compare-label label-bad">✗ 引数ありのコンストラクタだけを定義する</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">public class Product {
+
+    public Product(String name, BigDecimal price) {
+        this.name = name;
+        this.price = price;
+    }
+}</code></pre>
+    </div>
+    <p>コンストラクタを 1 つでも自分で書くと、<strong>暗黙の引数なしコンストラクタは作られなくなる</strong>。この状態で DB から取り出そうとすると、インスタンスを作れずにエラーになる。</p>
+
+    <span class="compare-label label-good">✓ 引数なしコンストラクタを添える</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">// JPA が使う。アプリのコードからは呼ばせたくないので protected
+protected Product() {
+}
+
+public Product(String name, BigDecimal price) {
+    this.name = name;
+    this.price = price;
+}</code></pre>
+    </div>
+    <p><code>public</code> である必要はなく、<strong><code>protected</code> で十分</strong>。こうしておくと「中身が空の <code>Product</code>」をアプリのコードから誤って作ってしまうことを防げる。</p>
+
+    <div class="callout callout-warn">
+      <p class="callout-title">⚠️ private にはできない</p>
+      <p>JPA には、関連するデータを<strong>実際に使うときまで読み込まない</strong>仕組み（遅延ロード）がある。このとき Hibernate は、本物の代わりに <code>Product</code> を<strong>継承した「身代わり」のクラス</strong>を実行時に作る。</p>
+      <p>継承したクラスは<strong>親のコンストラクタを呼ぶ</strong>が、<code>private</code> は継承先から呼べない。そのため JPA の仕様でも、<code>public</code> か <code>protected</code> にすることと決められている。</p>
+      <p>つまり <code>protected</code> は、<strong>仕様を満たせる範囲でいちばん狭い可視性</strong>ということ。</p>
+    </div>
+
+    <h3>5. フィールドの型の選び方</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>用途</th><th>使う型</th><th>避ける型</th><th>理由</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>主キー</td><td><code>Long</code></td><td><code>long</code></td><td><code>null</code> で「まだ保存していない」を表せる</td></tr>
+          <tr><td>金額</td><td><code>BigDecimal</code></td><td><code>double</code></td><td><code>double</code> は誤差が出る</td></tr>
+          <tr><td>日時</td><td><code>LocalDateTime</code></td><td><code>Date</code></td><td><code>java.time</code> のほうが扱いやすい</td></tr>
+          <tr><td>区分値</td><td><code>enum</code></td><td><code>String</code> / <code>int</code></td><td>取りうる値がコード上で決まる</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>enum は必ず EnumType.STRING で保存する</h4>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Enumerated(EnumType.STRING)
+private ProductStatus status;</code></pre>
+    </div>
+    <p>この指定がないと、enum は<strong>宣言した順番の番号</strong>で保存される。<code>ProductStatus.SOLD_OUT</code> を保存したときに、DB に何が入るかが変わる。</p>
+
+    <div class="kw-grid">
+      <div class="kw-card">
+        <span class="kw-badge">指定なし（ORDINAL）</span>
+        <p class="kw-desc"><strong>並び順の番号</strong>が入る</p>
+        <div class="kw-jpql">status 列 → 1</div>
+      </div>
+      <div class="kw-card">
+        <span class="kw-badge">EnumType.STRING</span>
+        <p class="kw-desc"><strong>enum の名前</strong>が入る</p>
+        <div class="kw-jpql">status 列 → 'SOLD_OUT'</div>
+      </div>
+    </div>
+
+    <p>番号で保存していると、<strong>あとから enum に値を足したときに意味がずれる</strong>。たとえば「準備中」を先頭に足すと、こうなる。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">public enum ProductStatus {
+    PREPARING,   // ← 先頭に追加した（0 番目）
+    ON_SALE,     // 0 番目 → 1 番目にずれた
+    SOLD_OUT     // 1 番目 → 2 番目にずれた
+}</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <p class="callout-title">⚠️ データは変わっていないのに、意味だけが変わる</p>
+      <p>DB に入っている <code>1</code> は、もともと「売り切れ（<code>SOLD_OUT</code>）」のつもりだった。しかし追加後は <code>1</code> が「販売中（<code>ON_SALE</code>）」として読まれる。</p>
+      <div class="elem-code">status = 1  →  追加前: SOLD_OUT（売り切れ）／追加後: ON_SALE（販売中）</div>
+      <p>売り切れの商品が販売中として扱われてしまうが、<strong>エラーは出ないので気づきにくい</strong>。<code>STRING</code> なら <code>'SOLD_OUT'</code> という名前で入っているので、並び順を変えても影響がない。</p>
+    </div>
+
+    <h3>6. やりがちな失敗</h3>
+
+    <h4>Lombok の @Data を付ける</h4>
+    <p><code>@Data</code> は getter / setter / <code>toString</code> / <code>equals</code> / <code>hashCode</code> を<strong>全フィールドからまとめて自動生成する</strong>。便利だが、エンティティに付けると 3 つの問題が起きる。</p>
+
+    <p>例として、<code>Product</code>（商品）と <code>Category</code>（カテゴリ）が<strong>互いを参照している</strong>状態で見ていく。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Entity
+@Data
+public class Product {
+
+    @Id
+    private Long id;
+
+    private String name;
+
+    @ManyToOne
+    private Category category;       // Product → Category
+}
+
+@Entity
+@Data
+public class Category {
+
+    @Id
+    private Long id;
+
+    @OneToMany(mappedBy = "category")
+    private List&lt;Product&gt; products;  // Category → Product
+}</code></pre>
+    </div>
+    <p>このように<strong>どちらからでも相手を辿れる状態</strong>を、双方向の関連と呼ぶ。</p>
+
+    <div class="elem-list">
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">1</span><code>toString()</code> が無限ループする</p>
+        <p><code>toString</code> は全フィールドを文字列にしようとするため、<strong>関連先も文字列にしようとする</strong>。</p>
+        <div class="loop-trace">
+          <div class="loop-step"><code>product.toString()</code><span>フィールドの category も文字列にする</span></div>
+          <div class="loop-arrow">↓</div>
+          <div class="loop-step"><code>category.toString()</code><span>フィールドの products も文字列にする</span></div>
+          <div class="loop-arrow">↓</div>
+          <div class="loop-step"><code>product.toString()</code><span>最初に戻ってしまう</span></div>
+          <div class="loop-arrow">↓</div>
+          <div class="loop-end">💥 StackOverflowError</div>
+        </div>
+      </div>
+
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">2</span><code>equals</code> / <code>hashCode</code> が全フィールドで作られる</p>
+        <p>関連フィールドまで比較の対象になるため、次の問題が起きる。</p>
+        <ul class="elem-points">
+          <li><strong>比較しただけで DB アクセスが起きる</strong>：まだ読み込んでいない関連先を、比較のために読みにいってしまう</li>
+          <li><strong>同じ商品でも「別物」と判定される</strong>：<code>id</code> が同じでも、<code>name</code> を 1 つ変えれば等しくないことになる</li>
+        </ul>
+      </div>
+
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">3</span><code>id</code> にも setter ができる</p>
+        <p>主キーは DB が採番するもので、<strong>アプリのコードから書き換えるものではない</strong>。<code>setId()</code> があると、誤って別のデータを上書きする事故につながる。</p>
+      </div>
+    </div>
+
+    <span class="compare-label label-good">✓ 必要なものだけを付ける</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Entity
+@Getter                      // setter は必要なフィールドにだけ個別に付ける
+public class Product {
+
+    @ToString.Exclude        // toString が必要な場合は、関連フィールドを除外する
+    @ManyToOne
+    private Category category;
+}</code></pre>
+    </div>
+    <p>エンティティでは <code>@Data</code> をひとまとめに付けず、<strong>必要なものを 1 つずつ選んで付ける</strong>。</p>
+
+    <h4>equals / hashCode を id だけで実装する</h4>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Override
+public boolean equals(Object o) {
+    if (!(o instanceof Product other)) return false;
+    return Objects.equals(id, other.id);   // 保存前は id が null
+}</code></pre>
+    </div>
+    <p>一見よさそうだが、<strong>保存する前のエンティティは <code>id</code> が <code>null</code></strong>。未保存のオブジェクトどうしが「等しい」と判定されたり、<code>Set</code> に入れた後で保存すると <code>hashCode</code> が変わって取り出せなくなる、といった問題が起きる。</p>
+    <p>対策としては、<strong>業務上の一意なキー（商品コードなど）で実装する</strong>か、そもそも <code>equals</code> / <code>hashCode</code> を定義しないという選択もある。</p>
+  </section>
+
+  <section class="sec-reference">
+    <h2><span class="icon">📚</span>参考</h2>
+    <ul>
+      <li><a href="https://jakarta.ee/specifications/persistence/">Jakarta Persistence (JPA) Specification</a></li>
+      <li><a href="https://hibernate.org/orm/documentation/">Hibernate ORM Documentation</a></li>
+    </ul>
+  </section>
+
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script>
+  Prism.plugins.autoloader.languages_path = "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/";
+</script>
+</body>
+</html>
