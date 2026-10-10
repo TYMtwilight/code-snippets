@@ -73,13 +73,14 @@
   section h2 { display: flex; align-items: center; gap: 0.55rem; font-size: 1.15rem; font-weight: 700; margin: 0 0 1rem; }
   .icon { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 10px; font-size: 1.05rem; flex-shrink: 0; }
   .sec-overview .icon  { background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); }
-  .sec-usecase .icon   { background: linear-gradient(135deg, var(--accent-3), #22d3ee); }
   .sec-code .icon      { background: linear-gradient(135deg, #312e81, #1e1b2e); }
   .sec-reference .icon { background: linear-gradient(135deg, #10b981, #06b6d4); }
 
   h3 { font-size: 1.05rem; font-weight: 700; margin-top: 1.75rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border); }
   h4 { font-size: 0.95rem; font-weight: 700; color: var(--muted); margin-top: 1.25rem; }
   p, li { color: var(--fg); }
+  /* 日本語を文節単位で折り返し、行末の孤立文字を減らす */
+  p, li, td, th, .dep-note, .kw-desc, .step-row { word-break: auto-phrase; text-wrap: pretty; }
   ul { padding-left: 1.3rem; margin: 0.5rem 0; }
   li { margin: 0.3rem 0; }
 
@@ -139,14 +140,6 @@
         補足として説明したい用語や前提知識をここに書く。
       </p>
     </div>
-  </section>
-
-  <section class="sec-usecase">
-    <h2><span class="icon">📌</span>使用場面</h2>
-    <ul>
-      <li>場面1</li>
-      <li>場面2</li>
-    </ul>
   </section>
 
   <section class="sec-code">

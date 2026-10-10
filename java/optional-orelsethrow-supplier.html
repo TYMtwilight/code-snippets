@@ -290,7 +290,7 @@ User user = opt.orElseGet(() -&gt; createGuest());</code></pre>
     <h3>2. UserNotFoundException(自作のカスタム例外)</h3>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">// 非チェック例外
+      <pre><code class="language-java">// 非検査例外
 public class UserNotFoundException extends RuntimeException {
     public UserNotFoundException(Long id) {
         super("User not found: id=" + id);

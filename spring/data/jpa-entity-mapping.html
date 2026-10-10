@@ -81,6 +81,8 @@
   h4 { display: flex; align-items: baseline; gap: 0.45rem; font-size: 1rem; font-weight: 700; color: var(--fg); margin: 1.75rem 0 0.6rem; }
   h4::before { content: ""; flex-shrink: 0; width: 0.5rem; height: 0.5rem; border-radius: 2px; background: var(--accent-2); transform: translateY(-0.1rem); }
   p, li { color: var(--fg); }
+  /* 日本語を文節単位で折り返し、行末の孤立文字を減らす */
+  p, li, td, th, .dep-note, .kw-desc, .step-row { word-break: auto-phrase; text-wrap: pretty; }
   ul { padding-left: 1.3rem; margin: 0.5rem 0; }
   li { margin: 0.3rem 0; }
 
@@ -190,6 +192,11 @@
         <div class="map-arrow">⇄</div>
         <div class="map-side"><span class="map-label">DB 側</span><code>主キー</code></div>
       </div>
+      <div class="map-row">
+        <div class="map-side"><span class="map-label">Java 側</span><code>インスタンス 1 個</code></div>
+        <div class="map-arrow">⇄</div>
+        <div class="map-side"><span class="map-label">DB 側</span><code>レコード 1 行</code></div>
+      </div>
     </div>
 
     <p>マッピングができていれば、SQL を書かなくても、<strong>Java のオブジェクトを保存したり取り出したりできる</strong>ようになる。</p>
@@ -242,6 +249,11 @@ public class Product {
       <div class="elem-card">
         <p class="elem-head"><span class="elem-num">1</span><code>@Entity</code></p>
         <p>「このクラスはテーブルに対応する」という目印。<strong>これがないと、リポジトリで扱えない</strong>（アプリの起動時にエラーになる）。</p>
+        <ul class="elem-points">
+          <li>リポジトリで<strong>保存・取得できる</strong>ようになる</li>
+          <li>JPQL で<strong>クラス名を使って書ける</strong>（<code>SELECT p FROM Product p</code>）</li>
+          <li>代わりに制約も付く：<code>@Id</code> が必須、引数なしコンストラクタが必要、<code>final</code> にできない</li>
+        </ul>
       </div>
       <div class="elem-card">
         <p class="elem-head"><span class="elem-num">2</span><code>@Id</code></p>
@@ -350,7 +362,8 @@ private Long id;</code></pre>
     }
 }</code></pre>
     </div>
-    <p>コンストラクタを 1 つでも自分で書くと、<strong>暗黙の引数なしコンストラクタは作られなくなる</strong>。この状態で DB から取り出そうとすると、インスタンスを作れずにエラーになる。</p>
+    <p>Java には「<strong>コンストラクタを 1 つも書かなければ、引数なしのものが自動で用意される</strong>」というルールがある。これまで JPA は、この<strong>暗黙のコンストラクタを借りて</strong>空のインスタンスを作っていた。</p>
+    <p>ところが自分でコンストラクタを書くと、<strong>この自動生成は止まる</strong>。すると JPA が使えるコンストラクタが 1 つも無くなり、DB から取り出すときにインスタンスを作れずエラーになる。</p>
 
     <span class="compare-label label-good">✓ 引数なしコンストラクタを添える</span>
     <div class="editor">
