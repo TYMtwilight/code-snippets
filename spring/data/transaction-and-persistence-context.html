@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>トランザクションと永続化コンテキスト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<style>
+  :root {
+    --bg: #f5f3ff;
+    --surface: #ffffff;
+    --fg: #221d3d;
+    --muted: #6b6580;
+    --border: #e6e1fa;
+    --code-bg: #1e1b2e;
+    --code-fg: #e6e1fa;
+    --accent-1: #7c3aed;
+    --accent-2: #ec4899;
+    --accent-3: #06b6d4;
+    --accent-4: #f59e0b;
+    --shadow: 0 8px 24px rgba(124, 58, 237, 0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14111f;
+      --surface: #1c1830;
+      --fg: #efe9ff;
+      --muted: #a79fc4;
+      --border: #322b4e;
+      --code-bg: #0f0c1a;
+      --code-fg: #e6e1fa;
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 2.5rem 1rem 5rem;
+    background:
+      radial-gradient(circle at 15% -10%, rgba(124,58,237,0.15), transparent 40%),
+      radial-gradient(circle at 100% 0%, rgba(6,182,212,0.12), transparent 35%),
+      var(--bg);
+    color: var(--fg);
+    font-family: "Zen Maru Gothic", -apple-system, "Hiragino Kaku Gothic ProN", sans-serif;
+    line-height: 1.75;
+  }
+  main { max-width: 780px; margin: 0 auto; }
+
+  .hero {
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    border-radius: 20px;
+    padding: 2rem 1.75rem;
+    color: #fff;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  h1 { font-size: 1.9rem; font-weight: 900; margin: 0 0 0.75rem; }
+  .meta { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+  .meta li { background: rgba(255,255,255,0.18); padding: 0.3rem 0.75rem; border-radius: 999px; font-size: 0.85rem; font-weight: 500; }
+
+  section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem 1.75rem;
+    margin-top: 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  section h2 { display: flex; align-items: center; gap: 0.55rem; font-size: 1.35rem; font-weight: 900; margin: 0 0 1rem; }
+  .icon { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 10px; font-size: 1.05rem; flex-shrink: 0; }
+  .sec-overview .icon  { background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); }
+  .sec-code .icon      { background: linear-gradient(135deg, #312e81, #1e1b2e); }
+  .sec-reference .icon { background: linear-gradient(135deg, #10b981, #06b6d4); }
+
+  h3 { font-size: 1.15rem; font-weight: 700; margin: 2.5rem 0 1rem; padding: 0.15rem 0 0.45rem 0.7rem; border-left: 4px solid var(--accent-1); border-bottom: 1px solid var(--border); }
+  section h2 + h3 { margin-top: 1.25rem; }
+  h4 { display: flex; align-items: baseline; gap: 0.45rem; font-size: 1rem; font-weight: 700; color: var(--fg); margin: 1.75rem 0 0.6rem; }
+  h4::before { content: ""; flex-shrink: 0; width: 0.5rem; height: 0.5rem; border-radius: 2px; background: var(--accent-2); transform: translateY(-0.1rem); }
+  p, li { color: var(--fg); }
+  /* 日本語を文節単位で折り返し、行末の孤立文字を減らす */
+  p, li, td, th, .dep-note, .kw-desc, .step-row { word-break: auto-phrase; text-wrap: pretty; }
+  .dc-side code { background: var(--border); color: var(--fg); padding: 0.15em 0.4em; border-radius: 5px; font-family: "Fira Code", monospace; font-size: 0.85em; }
+  ul { padding-left: 1.3rem; margin: 0.5rem 0; }
+  li { margin: 0.3rem 0; }
+
+  .editor { background: var(--code-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 6px 16px rgba(0,0,0,0.25); }
+  .editor + p, .editor + ul { margin-top: 0.85rem; }
+  .editor-bar { display: flex; gap: 0.4rem; padding: 0.65rem 0.85rem; background: rgba(255,255,255,0.05); }
+  .editor-bar span { width: 0.65rem; height: 0.65rem; border-radius: 50%; display: inline-block; }
+  .editor-bar span:nth-child(1) { background: #ff5f57; }
+  .editor-bar span:nth-child(2) { background: #febc2e; }
+  .editor-bar span:nth-child(3) { background: #28c840; }
+  pre { margin: 0; padding: 1.1rem 1.25rem; overflow-x: auto; }
+  code { font-family: "Fira Code", "SFMono-Regular", Consolas, monospace; font-size: 0.88rem; color: var(--code-fg); }
+  pre[class*="language-"], pre[class*="language-"] > code { background: transparent; text-shadow: none; }
+  pre[class*="language-"] { margin: 0; padding: 1.1rem 1.25rem; }
+  code[class*="language-"] { font-family: "Fira Code", "SFMono-Regular", Consolas, monospace; font-size: 0.88rem; }
+  p code, li code, td code, th code, .step-row code, .tx-line code, .tx-title code { background: var(--border); color: var(--fg); padding: 0.15em 0.4em; border-radius: 5px; font-family: "Fira Code", monospace; font-size: 0.85em; }
+
+  .dep-note { margin: 0.6rem 0 0; padding: 0.75rem 0.9rem; background: var(--bg); border-radius: 10px; font-size: 0.92rem; }
+  .dep-note strong { color: var(--fg); }
+
+  .deep-dive { margin: 1rem 0; padding: 1rem 1.1rem; border: 1px dashed var(--accent-1); border-radius: 12px; }
+  .deep-dive-title { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 700; color: var(--accent-1); margin: 0 0 0.75rem; }
+
+  .callout { margin: 1.25rem 0; padding: 0.9rem 1.1rem; border-left: 4px solid var(--accent-3); background: rgba(6,182,212,0.08); border-radius: 0 12px 12px 0; }
+  .callout-title { font-weight: 700; margin: 0 0 0.4rem; }
+  .callout p { margin: 0.5rem 0; }
+  .callout .editor { margin: 0.6rem 0; }
+  .callout-warn { border-left-color: var(--accent-4); background: rgba(245,158,11,0.1); }
+
+  .compare-label { display: inline-block; margin: 1rem 0 0.5rem; padding: 0.15rem 0.7rem; border-radius: 999px; font-size: 0.85rem; font-weight: 700; color: #fff; }
+  .label-bad { background: #e11d48; }
+  .label-good { background: #059669; }
+
+  .tx-frame { padding: 0.8rem 0.9rem; border-radius: 12px; border: 2px solid; }
+  .tx-outer { margin: 0.9rem 0; border-color: #e11d48; background: rgba(225,29,72,0.06); }
+  .tx-inner { margin: 0.7rem 0 0; border-color: #059669; background: rgba(5,150,105,0.08); }
+  .tx-title { margin: 0 0 0.5rem; font-size: 0.85rem; font-weight: 700; }
+  .tx-outer > .tx-title { color: #e11d48; }
+  .tx-inner > .tx-title { color: #059669; }
+  .tx-line { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
+  .tx-res { margin-left: auto; padding: 0.1rem 0.65rem; border-radius: 999px; font-size: 0.8rem; font-weight: 700; color: #fff; }
+  .tx-res-bad { background: #e11d48; }
+  .tx-res-good { background: #059669; }
+  .tx-end { margin: 0.6rem 0 0; font-size: 0.85rem; font-weight: 700; color: #e11d48; }
+
+  .dc-box { margin: 0.9rem 0; padding: 0.9rem 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+  .dc-title { margin: 0 0 0.6rem; font-size: 0.78rem; font-weight: 700; color: var(--muted); text-align: center; }
+  .dc-compare { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.5rem; align-items: stretch; }
+  .dc-side { padding: 0.55rem 0.7rem; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; text-align: center; }
+  .dc-side-now { border-color: var(--accent-2); }
+  .dc-label { display: block; font-size: 0.72rem; font-weight: 700; color: var(--muted); margin-bottom: 0.25rem; }
+  .dc-vs { display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 700; color: var(--accent-2); }
+  .dc-arrow { margin: 0.55rem 0 0.45rem; text-align: center; font-size: 0.8rem; font-weight: 700; color: var(--accent-2); }
+  .dc-sql { padding: 0.5rem 0.7rem; border-radius: 8px; background: var(--code-bg); color: var(--code-fg); font-family: "Fira Code", monospace; font-size: 0.8rem; text-align: center; overflow-wrap: anywhere; }
+  @media (max-width: 560px) {
+    .dc-compare { grid-template-columns: 1fr; }
+  }
+
+  .step-list { display: flex; flex-direction: column; gap: 0.4rem; margin: 0.9rem 0; }
+  .step-row { display: flex; gap: 0.7rem; align-items: flex-start; padding: 0.6rem 0.85rem; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; font-size: 0.92rem; }
+  .step-num { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--accent-1); color: #fff; font-size: 0.78rem; font-weight: 700; }
+  .step-row strong { display: block; }
+  .step-row small { display: block; color: var(--muted); font-size: 0.82rem; }
+
+  .elem-list { display: flex; flex-direction: column; gap: 0.9rem; margin: 0.75rem 0; }
+  .elem-card { padding: 0.9rem 1.05rem; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+  .elem-card > p { margin: 0.6rem 0 0; }
+  .elem-head { display: flex; align-items: center; gap: 0.55rem; margin: 0 0 0.6rem !important; font-weight: 700; }
+  .elem-num { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--accent-1); color: #fff; font-size: 0.8rem; }
+  .elem-code { padding: 0.45rem 0.75rem; border-radius: 8px; background: var(--code-bg); color: var(--code-fg); font-family: "Fira Code", monospace; font-size: 0.85rem; overflow-wrap: anywhere; }
+  .elem-code mark { padding: 0 0.15rem; border-radius: 3px; background: rgba(236,72,153,0.4); color: #fff; }
+  .elem-points { margin: 0.6rem 0 0; }
+  .elem-points li { margin: 0.2rem 0; }
+
+  .kw-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin: 0.75rem 0; }
+  .kw-card { padding: 0.8rem 0.95rem; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+  .kw-badge { display: inline-block; padding: 0.05rem 0.6rem; border-radius: 999px; background: var(--accent-1); color: #fff; font-family: "Fira Code", monospace; font-size: 0.8rem; font-weight: 500; }
+  .kw-desc { margin: 0.5rem 0 0; font-size: 0.92rem; }
+  .kw-jpql { margin-top: 0.5rem; padding: 0.3rem 0.6rem; border-radius: 6px; background: var(--code-bg); color: var(--code-fg); font-family: "Fira Code", monospace; font-size: 0.8rem; overflow-wrap: anywhere; }
+
+  @media (max-width: 560px) {
+    .kw-grid { grid-template-columns: 1fr; }
+  }
+
+  table { border-collapse: collapse; width: 100%; margin: 0.75rem 0; font-size: 0.92rem; }
+  th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+  th { background: var(--bg); }
+  .table-wrap { overflow-x: auto; }
+
+  a { color: var(--accent-1); font-weight: 500; text-decoration: none; border-bottom: 1px solid transparent; }
+  a:hover { border-bottom-color: currentColor; }
+
+</style>
+</head>
+<body>
+<main>
+
+  <header class="hero">
+    <h1>トランザクションと永続化コンテキスト</h1>
+    <ul class="meta">
+      <li>📅 作成日: 2026-10-10</li>
+      <li>🔄 更新日: 2026-10-10</li>
+    </ul>
+  </header>
+
+
+  <section class="sec-overview">
+    <h2><span class="icon">🎯</span>概要</h2>
+    <p><strong>永続化コンテキスト</strong>とは、JPA が「いま扱っているエンティティ」を覚えておく<strong>作業場</strong>のこと。DB から取り出したエンティティは、まずここに置かれる。</p>
+    <p>この作業場が存在するのは、<strong>トランザクションの開始から終了までの間だけ</strong>。そして、その範囲を決めているのが <code>@Transactional</code>。</p>
+
+    <div class="step-list">
+      <div class="step-row">
+        <span class="step-num">1</span>
+        <div><strong>トランザクション開始</strong><small>空の作業場が用意される</small></div>
+      </div>
+      <div class="step-row">
+        <span class="step-num">2</span>
+        <div><strong>取得</strong><small>DB から読んだエンティティが作業場に置かれる（SELECT）</small></div>
+      </div>
+      <div class="step-row">
+        <span class="step-num">3</span>
+        <div><strong>変更</strong><small>setter で値を書き換える。この時点ではまだ SQL は走らない</small></div>
+      </div>
+      <div class="step-row">
+        <span class="step-num">4</span>
+        <div><strong>コミット</strong><small>変更された分の SQL（UPDATE など）がまとめて発行される</small></div>
+      </div>
+      <div class="step-row">
+        <span class="step-num">5</span>
+        <div><strong>トランザクション終了</strong><small>作業場は破棄される。以降、中のエンティティは管理されない</small></div>
+      </div>
+    </div>
+
+    <p>この仕組みを知らないと、「<strong><code>save()</code> を呼んでいないのに更新された</strong>」「<strong>例外が出たのにロールバックされない</strong>」といった挙動に戸惑うことになる。</p>
+  </section>
+
+  <section class="sec-code">
+    <h2><span class="icon">💻</span>コード</h2>
+
+    <h3>1. 同じデータを 2 回取得しても SQL は 1 回</h3>
+    <p>永続化コンテキストは<strong>一次キャッシュ</strong>としても働く。同じトランザクションの中で同じデータを取得すると、2 回目は DB ではなく作業場から返る。</p>
+
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Transactional
+public void example() {
+    Product a = productRepository.findById(1L).orElseThrow();  // SELECT が走る
+    Product b = productRepository.findById(1L).orElseThrow();  // SQL は走らない
+
+    System.out.println(a == b);   // true（同じインスタンス）
+}</code></pre>
+    </div>
+    <p><code>==</code> は「<strong>メモリ上で同じオブジェクトか</strong>」を調べる比較（<code>equals</code> の「中身が同じ値か」とは別物）。これが <code>true</code> ということは、<code>a</code> と <code>b</code> は<strong>中身が同じコピーではなく、まったく同一のオブジェクト</strong>だという意味になる。</p>
+
+    <p>作業場の中では「<strong>1 件のデータにつき、インスタンスは 1 つ</strong>」と決まっているため。これにより、片方を書き換えるともう片方にも反映される。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">a.setName("シャープペン");
+
+System.out.println(b.getName());   // "シャープペン"（b も変わっている）</code></pre>
+    </div>
+    <p>この仕組みによって、<strong>DB 上の同じ 1 行</strong>（この例では <code>id = 1</code> の商品）が <strong>Java 側で 2 つのインスタンスに分裂し、内容が食い違う</strong>、ということが起きないようになっている。</p>
+
+    <h3>2. ダーティチェッキング（save を呼ばなくても更新される）</h3>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Transactional
+public void renameProduct(Long id, String newName) {
+    Product product = productRepository.findById(id).orElseThrow();
+    product.setName(newName);
+
+    // save() を呼んでいないのに、コミット時に UPDATE が発行される
+}</code></pre>
+    </div>
+
+    <p>JPA は<strong>取得した時点の値をコピーして持っている</strong>。コミットのタイミングで現在の値と見比べ、違っていれば自動で UPDATE を発行する。これを<strong>ダーティチェッキング</strong>（変更の自動検知）と呼ぶ。</p>
+
+    <div class="dc-box">
+      <p class="dc-title">コミット時、作業場の中で起きていること</p>
+      <div class="dc-compare">
+        <div class="dc-side">
+          <span class="dc-label">取得したときのコピー</span>
+          <code>name = "ボールペン"</code>
+        </div>
+        <div class="dc-vs">≠</div>
+        <div class="dc-side dc-side-now">
+          <span class="dc-label">いまのエンティティ</span>
+          <code>name = "シャープペン"</code>
+        </div>
+      </div>
+      <div class="dc-arrow">↓ 違いを検知したので</div>
+      <div class="dc-sql">UPDATE products SET name = 'シャープペン' WHERE id = 1</div>
+    </div>
+
+    <p>変更していないフィールドは比較しても同じなので、<strong>実際に書き換えた分だけが UPDATE の対象になる</strong>。</p>
+
+    <div class="callout callout-warn">
+      <p class="callout-title">⚠️ 意図しない更新に注意</p>
+      <p>「画面表示用にちょっと値を書き換えただけ」のつもりでも、<strong>管理されているエンティティなら DB に反映される</strong>。参照だけの処理では <code>readOnly = true</code> を付けて防ぐ（「4.」で後述）。</p>
+      <p>逆に、<strong>トランザクションの外で setter を呼んでも何も起きない</strong>。作業場が存在せず、誰も変更を見ていないため。</p>
+    </div>
+
+    <h3>3. save() が実際にやっていること</h3>
+    <p>Spring Data の <code>save()</code> は、中で 2 つの処理を使い分けている。</p>
+
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">// SimpleJpaRepository の中身（簡略版）
+if (entityInformation.isNew(entity)) {
+    em.persist(entity);        // 新規 → INSERT
+    return entity;
+} else {
+    return em.merge(entity);   // 既存 → SELECT してから UPDATE
+}</code></pre>
+    </div>
+
+    <div class="kw-grid">
+      <div class="kw-card">
+        <span class="kw-badge">persist</span>
+        <p class="kw-desc">新規エンティティを<strong>作業場に登録する</strong>。コミット時に INSERT。</p>
+        <div class="kw-jpql">判定：id が null → 新規</div>
+      </div>
+      <div class="kw-card">
+        <span class="kw-badge">merge</span>
+        <p class="kw-desc">DB から<strong>現在の状態を読み込んでから</strong>、渡された値を上書きする。</p>
+        <div class="kw-jpql">判定：id が入っている → 既存</div>
+      </div>
+    </div>
+
+    <p><code>merge</code> は<strong>内部で SELECT が 1 回増える</strong>。すでに作業場で管理されているエンティティに対しては、ダーティチェッキングだけで更新されるため、<strong><code>save()</code> を呼ぶ必要はない</strong>。</p>
+
+    <div class="callout callout-warn">
+      <p class="callout-title">⚠️ id を自分で採番する場合は要注意</p>
+      <p>新規でも <code>id</code> に値が入っているため、<strong>「既存」と誤判定されて <code>merge</code> が走る</strong>。存在しない行を SELECT しにいく無駄が発生する。</p>
+      <p>対策として、エンティティに <code>Persistable</code> を実装し、<code>isNew()</code> の判定を自分で書く方法がある。</p>
+    </div>
+
+    <h3>4. @Transactional の役割と、付ける場所</h3>
+
+    <h4>何をしてくれるのか</h4>
+    <p>メソッドに <code>@Transactional</code> を付けると、<strong>そのメソッドの開始から終了までが 1 つのトランザクション</strong>になる。開始・コミット・ロールバックを、Spring が代わりに行ってくれる。</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>タイミング</th><th>Spring がやること</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>メソッドに入るとき</td><td>トランザクションを開始する（永続化コンテキストも用意される）</td></tr>
+          <tr><td>正常に終わったとき</td><td><strong>コミット</strong>する（変更が DB に反映される）</td></tr>
+          <tr><td>例外が出たとき</td><td><strong>ロールバック</strong>する（変更がなかったことになる）</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>この仕組みがなければ、同じことを手書きすることになる。</p>
+
+    <span class="compare-label label-bad">✗ @Transactional がない場合</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">tx.begin();
+try {
+    // やりたい処理
+    tx.commit();
+} catch (RuntimeException e) {
+    tx.rollback();
+    throw e;
+}</code></pre>
+    </div>
+
+    <span class="compare-label label-good">✓ @Transactional を付ける</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Transactional
+public void renameProduct(Long id, String newName) {
+    // やりたい処理だけを書けばよい
+}</code></pre>
+    </div>
+    <p>開始とコミット、例外時のロールバックという<strong>決まりきった処理が消え、業務の処理だけが残る</strong>。</p>
+
+    <h4>どこに付けるか</h4>
+    <p>トランザクションの範囲は「ここからここまでを、全部成功か全部失敗にしたい」という業務処理の単位。<strong>その単位を表すサービス層のメソッドに付ける</strong>。</p>
+
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Service
+public class ProductService {
+
+    // 更新あり
+    @Transactional
+    public void renameProduct(Long id, String newName) { ... }
+
+    // 参照のみ
+    @Transactional(readOnly = true)
+    public List&lt;Product&gt; findAll() { ... }
+}</code></pre>
+    </div>
+
+    <h4>readOnly = true を付ける効果</h4>
+    <ul class="elem-points">
+      <li><strong>ダーティチェッキング用のコピーを作らない</strong>：取得時の値を控えておく必要がなくなるので、何百件も読むような処理ではメモリと CPU の節約になる</li>
+      <li><strong>意図しない更新を防げる</strong>：うっかり setter を呼んでも UPDATE が飛ばないので、「2.」で見たような事故を防げる</li>
+      <li>DB やドライバによっては、<strong>読み取り専用の最適化</strong>が効くこともある（参照専用サーバーへの振り分けなど）</li>
+    </ul>
+
+    <div class="dep-note">
+      <p>💬 補足: <code>readOnly = true</code> を付けたうえで setter を呼んでも、<strong>例外にはならない</strong>。UPDATE が飛ばないだけで、Java 側のインスタンスは書き換わっている。「エラーで気づける仕組み」ではない点に注意。</p>
+    </div>
+
+    <div class="callout">
+      <p class="callout-title">📌 参照だけのメソッドにも付ける意味はあるのか</p>
+      <p>実は <code>SimpleJpaRepository</code> には、<strong>最初から <code>@Transactional(readOnly = true)</code> が付いている</strong>。そのため、リポジトリを 1 回呼ぶだけのメソッドなら、サービス側に書かなくても読み取り専用トランザクションで動く。</p>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-java">// これだけなら、付けても付けなくてもほぼ同じ
+public List&lt;Product&gt; findAll() {
+    return productRepository.findAll();
+}</code></pre>
+      </div>
+      <p>意味が出てくるのは、<strong>リポジトリを複数回呼ぶ場合</strong>。サービス側に付けないと、<strong>呼び出しごとに別のトランザクション</strong>になってしまう。</p>
+      <p>別々だと困るのは次の 2 点。</p>
+      <ul class="elem-points">
+        <li><strong>読む時点がずれる</strong>：1 回目と 2 回目のあいだに他の処理がコミットすると、商品一覧は更新前・件数は更新後、という食い違った画面になりうる</li>
+        <li><strong>永続化コンテキストも分かれる</strong>：同じデータを 2 回取得すると、SQL も 2 回発行される（「1.」のキャッシュが効かない）</li>
+      </ul>
+      <p>サービスのメソッドに付ければ、<strong>その中の取得すべてが 1 つのトランザクションにまとまる</strong>ので、どちらも同じ時点のデータとして扱える。</p>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-java">// 2 回の取得が同じトランザクションになる
+@Transactional(readOnly = true)
+public DashboardView load() {
+    List&lt;Product&gt; products = productRepository.findAll();
+    long orderCount = orderRepository.count();
+    ...
+}</code></pre>
+      </div>
+      <p>「1 回しか呼んでいないから要らない、2 回呼ぶから必要」と<strong>メソッドごとに見極めるのは手間</strong>がかかるうえ、あとからリポジトリの呼び出しが増えたときに付け忘れる。そのため実務では、<strong>参照系のメソッドには一律で付ける</strong>というルールにしておくことが多い。</p>
+    </div>
+
+    <h3>5. @Transactional が効かないケース</h3>
+    <p><code>@Transactional</code> は、Spring が作る<strong>プロキシ</strong>によって実現されている。メソッドの呼び出しがプロキシを通らないと、トランザクションは始まらない。</p>
+
+    <span class="compare-label label-bad">✗ 自己呼び出し：トランザクションが始まらない</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Service
+public class ProductService {
+
+    public void outer() {
+        inner();   // ← 自分のメソッドを直接呼んでいる
+    }
+
+    @Transactional
+    public void inner() {
+        // トランザクションは始まらない
+    }
+}</code></pre>
+    </div>
+
+    <div class="step-list">
+      <div class="step-row">
+        <span class="step-num">◯</span>
+        <div><strong>外部から呼ぶ場合</strong><small>呼び出し元 → プロキシ（ここでトランザクション開始）→ 実体のメソッド</small></div>
+      </div>
+      <div class="step-row">
+        <span class="step-num">✗</span>
+        <div><strong>自己呼び出しの場合</strong><small>実体のメソッド → 実体のメソッド（プロキシを通らない）</small></div>
+      </div>
+    </div>
+
+    <p>同じクラスの中から呼ぶと、プロキシを経由せず<strong>素のメソッドがそのまま実行される</strong>。アノテーションは無視され、エラーにもならないため気づきにくい。</p>
+
+    <p class="dep-note">💬 同じ理由で、<code>private</code> メソッドや <code>final</code> メソッドに付けても効かない。プロキシが上書きできないため。</p>
+
+    <span class="compare-label label-good">✓ クラスを分けて、外部から呼ぶ形にする</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Service
+public class ProductService {
+
+    private final ProductUpdater updater;   // 別クラスとして注入する
+
+    public void outer() {
+        updater.inner();   // プロキシを経由するので有効になる
+    }
+}</code></pre>
+    </div>
+
+    <h3>6. ロールバックされる条件</h3>
+    <p>「例外が出れば必ずロールバックされる」と思いがちだが、<strong>既定では非検査例外のときだけ</strong>。</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>例外の種類</th><th>例</th><th>既定の挙動</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>非検査例外（<code>RuntimeException</code> / <code>Error</code>）</td><td><code>IllegalArgumentException</code></td><td><strong>ロールバックされる</strong></td></tr>
+          <tr><td>検査例外（<code>Exception</code>）</td><td><code>IOException</code></td><td><strong>コミットされる</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <span class="compare-label label-bad">✗ 検査例外は、投げてもロールバックされない</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Transactional
+public void register(Product product) throws IOException {
+    productRepository.save(product);
+
+    throw new IOException();   // 保存はコミットされてしまう
+}</code></pre>
+    </div>
+
+    <span class="compare-label label-good">✓ rollbackFor で対象を広げる</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Transactional(rollbackFor = Exception.class)
+public void register(Product product) throws IOException { ... }</code></pre>
+    </div>
+
+    <div class="dep-note">
+      <p>💬 そもそも検査例外を投げず、<strong>非検査例外に包み直してから投げる</strong>設計にしておけば、この問題は起きにくい。検査例外はその場で <code>catch</code> し、自作の非検査例外にして投げ直す。</p>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-java">@Transactional   // rollbackFor は不要
+public void register(Product product) {
+    productRepository.save(product);
+
+    try {
+        fileStorage.write(product);          // IOException（検査例外）を投げる
+    } catch (IOException e) {
+        throw new FileStorageException(e);   // 非検査例外に包み直す
+    }
+}</code></pre>
+      </div>
+      <p>包み直す先は、<code>RuntimeException</code> を継承した例外として用意しておく。元の例外を <code>cause</code> として渡すと、スタックトレースに原因が残る。</p>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-java">public class FileStorageException extends RuntimeException {
+
+    public FileStorageException(Throwable cause) {
+        super(cause);
+    }
+}</code></pre>
+      </div>
+    </div>
+
+    <h3>7. propagation（トランザクションの伝播）</h3>
+    <p>トランザクションの中から、別のトランザクション付きメソッドを呼んだときの振る舞い。</p>
+
+    <div class="kw-grid">
+      <div class="kw-card">
+        <span class="kw-badge">REQUIRED</span>
+        <p class="kw-desc"><strong>既定値</strong>。すでにトランザクションがあれば<strong>参加し</strong>、なければ新しく開始する。</p>
+        <div class="kw-jpql">外側がロールバックすれば、内側も巻き込まれる</div>
+      </div>
+      <div class="kw-card">
+        <span class="kw-badge">REQUIRES_NEW</span>
+        <p class="kw-desc">既存のものを中断し、<strong>必ず新しいトランザクションを開始する</strong>。</p>
+        <div class="kw-jpql">外側がロールバックしても、内側は残る</div>
+      </div>
+    </div>
+
+    <p><code>REQUIRES_NEW</code> の使いどころは、<strong>本処理が失敗しても記録を残したい</strong>場合。監査ログがその代表例で、「登録しようとして失敗した」という事実自体を残したい。</p>
+
+    <p>ログを書き込む側に <code>REQUIRES_NEW</code> を付ける。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Transactional(propagation = Propagation.REQUIRES_NEW)
+public void writeAuditLog(String message) {
+    auditLogRepository.save(new AuditLog(message));
+}</code></pre>
+    </div>
+
+    <p>呼び出す側は、ふつうに <code>@Transactional</code> を付けたメソッド。ここで例外が出たとする。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Transactional
+public void register(Product product) {
+    productRepository.save(product);
+    auditService.writeAuditLog("登録: " + product.getName());
+
+    throw new IllegalStateException();   // 後続の処理で失敗
+}</code></pre>
+    </div>
+
+    <div class="tx-frame tx-outer">
+      <p class="tx-title">トランザクション A ── register()</p>
+      <div class="tx-line"><code>save(product)</code><span class="tx-res tx-res-bad">取り消される</span></div>
+      <div class="tx-frame tx-inner">
+        <p class="tx-title">トランザクション B ── writeAuditLog()／REQUIRES_NEW</p>
+        <div class="tx-line"><code>save(auditLog)</code><span class="tx-res tx-res-good">そのまま残る</span></div>
+      </div>
+      <p class="tx-end">✗ 例外 → A をロールバック（B には影響しない）</p>
+    </div>
+
+    <p>A と B は<strong>別のトランザクション</strong>なので、A のロールバックは B に届かない。結果として、<strong>商品は登録されていないが、ログだけは残る</strong>。</p>
+    <p class="dep-note">💬 <code>REQUIRES_NEW</code> を付けずに既定の <code>REQUIRED</code> のままにすると、ログの保存もトランザクション A に参加する。つまり<strong>商品と一緒に取り消され、何も残らない</strong>。</p>
+  </section>
+
+  <section class="sec-reference">
+    <h2><span class="icon">📚</span>参考</h2>
+    <ul>
+      <li><a href="https://docs.spring.io/spring-framework/reference/data-access/transaction.html">Spring Framework - Transaction Management</a></li>
+      <li><a href="https://jakarta.ee/specifications/persistence/">Jakarta Persistence (JPA) Specification</a></li>
+      <li><a href="https://hibernate.org/orm/documentation/">Hibernate ORM Documentation</a></li>
+    </ul>
+  </section>
+
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script>
+  Prism.plugins.autoloader.languages_path = "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/";
+</script>
+</body>
+</html>
