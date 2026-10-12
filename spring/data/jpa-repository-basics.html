@@ -319,6 +319,52 @@ public class ProductService {
         </li>
       </ol>
     </div>
+
+    <div class="deep-dive">
+      <p class="deep-dive-title">🔍 用語ノート: EntityManager</p>
+      <p class="dep-note">JPA の<strong>中心となるインターフェース</strong>。エンティティを操作するための窓口で、<strong>永続化コンテキスト（JPA が扱い中のエンティティを置いておく作業場）を管理している</strong>。</p>
+
+      <p>上の流れに出てくるとおり、リポジトリは<strong><code>EntityManager</code> の呼び出しを肩代わりしてくれる仕組み</strong>。<code>SimpleJpaRepository</code> は中に <code>EntityManager</code> を持っていて、実際の処理はそこへ渡している。</p>
+      <p><code>productRepository.save(product)</code> も、内部では <code>persist</code> か <code>merge</code> を呼んでいるだけ。</p>
+
+      <h4>主なメソッド</h4>
+      <table>
+        <thead>
+          <tr><th>メソッド</th><th>役割</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>persist(entity)</code></td><td>新規エンティティを作業場に置く（INSERT の対象になる）</td></tr>
+          <tr><td><code>find(Product.class, 1L)</code></td><td>主キーで取得する。作業場にあれば、それをそのまま返す</td></tr>
+          <tr><td><code>merge(entity)</code></td><td>管理外のエンティティを作業場に取り込む</td></tr>
+          <tr><td><code>remove(entity)</code></td><td>削除する</td></tr>
+          <tr><td><code>createQuery(...)</code></td><td>JPQL や Criteria でクエリを組み立てる</td></tr>
+          <tr><td><code>flush()</code> / <code>clear()</code></td><td>DB へ書き出す／作業場を空にする</td></tr>
+        </tbody>
+      </table>
+
+      <h4>直接使うのはどんなときか</h4>
+      <p>ふだんはリポジトリ越しに使うので、意識する必要はない。直接触るのは、<strong>リポジトリに自作のメソッドを足す場合</strong>や、<code>flush()</code> のタイミングを自分で制御したい場合。</p>
+
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-java">public class ProductRepositoryCustomImpl
+        implements ProductRepositoryCustom {
+
+    // ← ここで受け取る
+    private final EntityManager entityManager;
+
+    @Override
+    public List&lt;Product&gt; searchComplex(SearchCondition cond) {
+        return entityManager
+                .createQuery("select p from Product p where ...",
+                             Product.class)
+                .getResultList();
+    }
+}</code></pre>
+      </div>
+
+      <p class="dep-note">💬 <code>EntityManager</code> は JPA 仕様が定めたインターフェースで、<strong>実装は Hibernate の <code>Session</code></strong>。エラーメッセージに <code>org.hibernate.Session</code> が出てくるのは、そのため。</p>
+    </div>
   </section>
 
   <section class="sec-code">
