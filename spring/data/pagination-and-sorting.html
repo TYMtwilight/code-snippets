@@ -160,7 +160,7 @@
     <h1>Spring Data ページングとソート</h1>
     <ul class="meta">
       <li>📅 作成日: 2026-10-06</li>
-      <li>🔄 更新日: 2026-10-06</li>
+      <li>🔄 更新日: 2026-10-12</li>
     </ul>
   </header>
 
@@ -489,6 +489,59 @@ public class ProductController {
       </table>
     </div>
 
+    <h4>URI の組み立て方</h4>
+    <p>必要なパラメータだけを、順に足していける。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-bash"># 2 ページ目を取得（0 始まり）
+/products?page=1
+
+# 1 ページあたり 3 件
+/products?page=1&amp;size=3
+
+# amount 順に並べる（方向を省略すると昇順）
+/products?page=1&amp;size=3&amp;sort=amount
+
+# amount の降順
+/products?page=1&amp;size=3&amp;sort=amount,desc</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <p class="callout-title">⚠️ sort のカンマの前後にスペースを入れない</p>
+      <div class="elem-code">sort=amount, desc<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↑ これが入ると方向として認識されない</div>
+      <p>スペースを含めると <code>desc</code> の部分が並び順の方向として解釈されず、<strong>意図した並び順にならない</strong>。URI を手で組み立てるときに踏みやすい。</p>
+    </div>
+
+    <h4>ソートは必ず指定する</h4>
+    <p><code>sort</code> を省略すると、<strong>どの順で返るかは DB 任せ</strong>になる。たまたま見た目が揃っていても、それは保証された順序ではない。</p>
+
+    <span class="compare-label label-bad">✗ 未ソート：新しいデータがどこに入るか分からない</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-bash">ページ 1: [$0.19, $1000.00, $50.00]
+ページ 2: [$20.00, $10.00]
+
+# ここで $42.00 を追加すると、どのページに現れるか分からない</code></pre>
+    </div>
+
+    <span class="compare-label label-good">✓ amount の降順：入る位置が決まる</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-bash">ページ 1: [$1000.00, $50.00, $42.00]
+ページ 2: [$20.00, $10.00, $0.19]
+
+# $42.00 は必ず 1 ページ目のこの位置に入る</code></pre>
+    </div>
+
+    <p>未ソートのまま運用すると、次の問題が起きる。</p>
+    <ul>
+      <li><strong>同じ行が 2 ページに現れたり、どのページにも出てこなかったりする</strong>（順序が一定でないため）</li>
+      <li>並び順の根拠が説明できず、画面を見た人が「なぜこの順なのか」を追えない</li>
+      <li>Spring・DB のバージョンが上がると、それまでの暗黙の順序が変わる</li>
+    </ul>
+
+    <p class="dep-note">💬 <code>page</code> と <code>size</code> には Spring が既定値（<code>0</code> と <code>20</code>）を用意しているが、<strong><code>sort</code> には既定値がない</strong>。つまり、並び順はアプリ側で決めない限り決まらない。</p>
+
     <h4>指定がなかったときの既定値</h4>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
@@ -510,6 +563,36 @@ public Page&lt;Product&gt; findAll(
 spring.data.web.pageable.max-page-size=100</code></pre>
     </div>
     <p><code>max-page-size</code> は特に重要。これがないと <code>?size=1000000</code> のような指定を受け付けてしまい、<strong>ページングしている意味がなくなる</strong>。</p>
+
+    <h4>受け取った Pageable に既定のソートを補う（getSortOr）</h4>
+    <p>アノテーションではなくコード側で決めたい場合は、<code>getSortOr()</code> を使う。<strong>ソートが指定されていればそれを使い、無ければ引数の <code>Sort</code> を使う</strong>。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@GetMapping
+public Page&lt;Product&gt; findAll(Pageable pageable) {
+
+    // sort が未指定なら amount の降順にする
+    Pageable withSort = PageRequest.of(
+            pageable.getPageNumber(),
+            pageable.getPageSize(),
+            pageable.getSortOr(Sort.by(Sort.Direction.DESC, "amount")));
+
+    return productRepository.findAll(withSort);
+}</code></pre>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>やり方</th><th>決める場所</th><th>向いている場面</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>@PageableDefault</code></td><td>引数のアノテーション</td><td>そのエンドポイントの既定値を宣言的に書きたい</td></tr>
+          <tr><td><code>getSortOr()</code></td><td>メソッドの中</td><td>条件によって既定のソートを変えたい</td></tr>
+          <tr><td><code>application.properties</code></td><td>アプリ全体</td><td><code>size</code> の既定値・上限をそろえたい（<code>sort</code> は指定できない）</td></tr>
+        </tbody>
+      </table>
+    </div>
 
     <div class="callout callout-warn">
       <p class="callout-title">⚠️ sort はユーザーが自由に指定できる</p>
@@ -548,6 +631,7 @@ Slice&lt;Product&gt; findByStatus(ProductStatus status, Pageable pageable);</cod
       <li><a href="https://docs.spring.io/spring-data/commons/reference/repositories/query-methods-details.html#repositories.special-parameters">Spring Data - Paging, Iterating Large Results, Sorting</a></li>
       <li><a href="https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/domain/Pageable.html">Pageable JavaDoc</a></li>
       <li><a href="https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/domain/Page.html">Page JavaDoc</a></li>
+      <li><a href="https://docs.spring.io/spring-data/commons/reference/repositories/core-extensions.html#core.web.basic.paging-and-sorting">Spring Data Web Support - Paging and Sorting</a></li>
     </ul>
   </section>
 
