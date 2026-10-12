@@ -126,10 +126,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 - [Java Iterable JavaDoc](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Iterable.html)
 - [JpaRepository JavaDoc](https://docs.spring.io/spring-data/jpa/docs/current/api/org/springframework/data/jpa/repository/JpaRepository.html)
 
-## 関連スニペット
-- [CrudRepositoryの基本メソッド](./crud-repository-methods.md)
-- [PageableとPage<T>](./pageable-and-page.md)
-
 ## 作成日
 2026-01-29
 

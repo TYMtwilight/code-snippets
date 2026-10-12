@@ -118,8 +118,7 @@ public void badExample2(Optional<User> user) {  // ❌ 引数に Optional は避
 - [Tired of Null Pointer Exceptions? Consider Using Java SE 8's Optional!](https://www.oracle.com/technical-resources/articles/java/java8-optional.html)
 
 ## 関連スニペット
-- [CrudRepositoryの基本メソッド](./crud-repository-methods.md)
-- [Repository<T, ID>の型引数](./repository-type-parameters.md)
+- [Repository<T, ID>の型引数](../spring/data/repository-type-parameters.md)
 
 ## 作成日
 2026-01-29

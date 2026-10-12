@@ -120,8 +120,7 @@ User savedUser = userRepository.save(user);  // S = T = User
 - [CrudRepository JavaDoc](https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/CrudRepository.html)
 
 ## 関連スニペット
-- [Repository<T, ID>の型引数](./repository-type-parameters.md)
-- [CrudRepositoryの基本メソッド](./crud-repository-methods.md)
+- [Repository<T, ID>の型引数](../spring/data/repository-type-parameters.md)
 
 ## 作成日
 2026-01-29

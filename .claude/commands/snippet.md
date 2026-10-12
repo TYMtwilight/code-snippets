@@ -26,7 +26,6 @@ description: Claudeとの会話で学んだ知識を、snippets-template.html �
 5. **内容の作成**
    - `snippets-template.html` の各セクションを、実際に学んだ内容で埋める。
      - 概要: 1〜2行で目的・要点
-     - 使用場面: 具体的なシチュエーション
      - コード: 会話中に出てきた実際のコード例（なければ代表的な最小例を作る）。`<code class="language-xxx">` の `xxx` は実際の言語（`java`, `typescript`, `javascript`, `jsx`, `tsx`, `json`, `bash` など）に正しく合わせる（Prism.js のオートローダーが構文ハイライトを自動適用する）。
      - 説明: コードの重要なポイント、なぜそうするのかを中心に
      - 参考: 会話中で言及された公式ドキュメント等のURL（なければ省略可、URLを捏造しない）
