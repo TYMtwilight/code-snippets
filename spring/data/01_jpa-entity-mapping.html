@@ -117,10 +117,15 @@
   .label-good { background: #059669; }
 
   .map-list { display: flex; flex-direction: column; gap: 0.5rem; margin: 0.9rem 0; }
-  .map-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.6rem; align-items: center; padding: 0.6rem 0.85rem; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; font-size: 0.92rem; }
-  .map-side { text-align: center; }
+  .map-row { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.6rem 0.85rem; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; font-size: 0.92rem; }
+  .map-pair { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.6rem; align-items: center; }
+  .map-side { text-align: center; min-width: 0; }
+  .map-side code { overflow-wrap: anywhere; }
   .map-label { display: block; font-size: 0.72rem; font-weight: 700; color: var(--muted); }
   .map-arrow { color: var(--accent-2); font-weight: 700; }
+  .map-anno { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.3rem 0.4rem; padding-top: 0.45rem; border-top: 1px dashed var(--border); }
+  .map-anno code { background: color-mix(in srgb, var(--accent-1) 14%, transparent); color: var(--accent-1); border: 1px solid color-mix(in srgb, var(--accent-1) 30%, transparent); font-weight: 600; overflow-wrap: anywhere; }
+  .map-anno-note { font-size: 0.78rem; color: var(--muted); }
 
   .elem-list { display: flex; flex-direction: column; gap: 0.9rem; margin: 0.75rem 0; }
   .elem-card { padding: 0.9rem 1.05rem; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
@@ -146,8 +151,8 @@
 
   @media (max-width: 560px) {
     .kw-grid { grid-template-columns: 1fr; }
-    .map-row { grid-template-columns: 1fr; }
-    .map-arrow { transform: rotate(90deg); }
+    .map-pair { grid-template-columns: 1fr; }
+    .map-arrow { transform: rotate(90deg); width: 1.4rem; height: 1.4rem; line-height: 1.4rem; justify-self: center; }
   }
 
   table { border-collapse: collapse; width: 100%; margin: 0.75rem 0; font-size: 0.92rem; }
@@ -167,35 +172,48 @@
     <h1>JPA エンティティのマッピング</h1>
     <ul class="meta">
       <li>📅 作成日: 2026-10-07</li>
-      <li>🔄 更新日: 2026-10-07</li>
+      <li>🔄 更新日: 2026-10-14</li>
     </ul>
   </header>
 
 
   <section class="sec-overview">
     <h2><span class="icon">🎯</span>概要</h2>
+    <p><strong>JPA（Java Persistence API）</strong>は、Java のオブジェクトとリレーショナル DB のレコードを対応づけるための<strong>仕様</strong>。正式には現在 <strong>Jakarta Persistence</strong> という名前になっている。</p>
     <p><strong>エンティティ</strong>とは、DB のテーブルに対応する Java のクラスのこと。アノテーションで「<strong>このクラスはどのテーブルに、どのフィールドはどのカラムに対応するか</strong>」を JPA に伝える。この対応づけを<strong>マッピング</strong>と呼ぶ。</p>
 
     <div class="map-list">
       <div class="map-row">
-        <div class="map-side"><span class="map-label">Java 側</span><code>class Product</code></div>
-        <div class="map-arrow">⇄</div>
-        <div class="map-side"><span class="map-label">DB 側</span><code>products テーブル</code></div>
+        <div class="map-pair">
+          <div class="map-side"><span class="map-label">Java 側</span><code>class Product</code></div>
+          <div class="map-arrow">⇄</div>
+          <div class="map-side"><span class="map-label">DB 側</span><code>products テーブル</code></div>
+        </div>
+        <div class="map-anno"><code>@Entity</code><code>@Table(name = "products")</code></div>
       </div>
       <div class="map-row">
-        <div class="map-side"><span class="map-label">Java 側</span><code>String name</code></div>
-        <div class="map-arrow">⇄</div>
-        <div class="map-side"><span class="map-label">DB 側</span><code>name カラム</code></div>
+        <div class="map-pair">
+          <div class="map-side"><span class="map-label">Java 側</span><code>String name</code></div>
+          <div class="map-arrow">⇄</div>
+          <div class="map-side"><span class="map-label">DB 側</span><code>name カラム</code></div>
+        </div>
+        <div class="map-anno"><code>@Column</code></div>
       </div>
       <div class="map-row">
-        <div class="map-side"><span class="map-label">Java 側</span><code>Long id</code></div>
-        <div class="map-arrow">⇄</div>
-        <div class="map-side"><span class="map-label">DB 側</span><code>主キー</code></div>
+        <div class="map-pair">
+          <div class="map-side"><span class="map-label">Java 側</span><code>Long id</code></div>
+          <div class="map-arrow">⇄</div>
+          <div class="map-side"><span class="map-label">DB 側</span><code>主キー</code></div>
+        </div>
+        <div class="map-anno"><code>@Id</code><code>@GeneratedValue</code></div>
       </div>
       <div class="map-row">
-        <div class="map-side"><span class="map-label">Java 側</span><code>インスタンス 1 個</code></div>
-        <div class="map-arrow">⇄</div>
-        <div class="map-side"><span class="map-label">DB 側</span><code>レコード 1 行</code></div>
+        <div class="map-pair">
+          <div class="map-side"><span class="map-label">Java 側</span><code>インスタンス 1 個</code></div>
+          <div class="map-arrow">⇄</div>
+          <div class="map-side"><span class="map-label">DB 側</span><code>レコード 1 行</code></div>
+        </div>
+        <div class="map-anno"><span class="map-anno-note">アノテーションなし（JPA が実行時に対応づける）</span></div>
       </div>
     </div>
 
@@ -252,7 +270,7 @@ public class Product {
         <ul class="elem-points">
           <li>リポジトリで<strong>保存・取得できる</strong>ようになる</li>
           <li>JPQL で<strong>クラス名を使って書ける</strong>（<code>SELECT p FROM Product p</code>）</li>
-          <li>代わりに制約も付く：<code>@Id</code> が必須、引数なしコンストラクタが必要、<code>final</code> にできない</li>
+          <li>代わりに制約も付く：<code>@Id</code> が必須、<strong>引数なしコンストラクタが必要</strong>、<code>final</code> にできない</li>
         </ul>
       </div>
       <div class="elem-card">
@@ -377,13 +395,49 @@ public Product(String name, BigDecimal price) {
     this.price = price;
 }</code></pre>
     </div>
-    <p><code>public</code> である必要はなく、<strong><code>protected</code> で十分</strong>。こうしておくと「中身が空の <code>Product</code>」をアプリのコードから誤って作ってしまうことを防げる。</p>
+    <p><code>public</code> である必要はなく、<strong><code>protected</code> で十分</strong>。この引数なしコンストラクタは「JPA が値を詰めるための空の器」を作るためだけのものなので、アプリのコードから呼べる必要がない。</p>
+
+    <h4>可視性は private / protected / public のどれにするか</h4>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>可視性</th><th>JPA から使えるか</th><th>アプリのコードから呼べるか</th><th>判定</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>private</code></td><td>✗ 使えない</td><td>✗ 呼べない</td><td>仕様違反になる</td></tr>
+          <tr><td><code>protected</code></td><td>✓ 使える</td><td>✗ 呼べない</td><td><strong>これがよい</strong></td></tr>
+          <tr><td><code>public</code></td><td>✓ 使える</td><td>✓ 呼べる</td><td>動くが広すぎる</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p><code>public</code> にしても動作はする。ただし、<strong>中身が空のまま保存されかねない</strong>という穴が残る。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">// public だと、アプリのどこからでもこう書けてしまう
+Product p = new Product();
+
+// name も price も null のまま保存しようとする
+productRepository.save(p);</code></pre>
+    </div>
+    <p><code>protected</code> なら<strong>同じパッケージかサブクラスからしか呼べない</strong>ので、業務のコードを書いているときにこの書き方が候補に出てこない。「空の <code>Product</code> を作れるのは JPA だけ」という状態にできる。</p>
 
     <div class="callout callout-warn">
       <p class="callout-title">⚠️ private にはできない</p>
-      <p>JPA には、関連するデータを<strong>実際に使うときまで読み込まない</strong>仕組み（遅延ロード）がある。このとき Hibernate は、本物の代わりに <code>Product</code> を<strong>継承した「身代わり」のクラス</strong>を実行時に作る。</p>
-      <p>継承したクラスは<strong>親のコンストラクタを呼ぶ</strong>が、<code>private</code> は継承先から呼べない。そのため JPA の仕様でも、<code>public</code> か <code>protected</code> にすることと決められている。</p>
-      <p>つまり <code>protected</code> は、<strong>仕様を満たせる範囲でいちばん狭い可視性</strong>ということ。</p>
+      <p>JPA には、関連するデータを<strong>実際に使うときまで読み込まない</strong>仕組み（遅延ロード）がある。このとき Hibernate は、本物の <code>Product</code> の代わりに、<strong><code>Product</code> を継承した「身代わり」のクラス</strong>を実行時に作って返す。イメージはこうなる。</p>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-java">// Hibernate が実行時に作るクラス（イメージ）
+class Product$HibernateProxy extends Product {
+
+    Product$HibernateProxy() {
+        // 親の引数なしコンストラクタを呼ぶ
+        super();
+    }
+}</code></pre>
+      </div>
+      <p>Java では、サブクラスのコンストラクタは<strong>必ず親のコンストラクタを呼ぶ</strong>。ところが <code>private</code> なメンバは<strong>そのクラスの中からしか見えない</strong>ため、継承先から <code>super()</code> を呼べない。そのため JPA の仕様でも、引数なしコンストラクタは <strong><code>public</code> か <code>protected</code> にすること</strong>と決められている。</p>
+      <p>つまり <code>protected</code> は、<strong>仕様を満たせる範囲でいちばん狭い可視性</strong>ということ。覚え方は「<strong>JPA には見せるが、アプリのコードには見せない</strong>」。</p>
     </div>
 
     <h3>5. フィールドの型の選び方</h3>
@@ -433,11 +487,39 @@ private ProductStatus status;</code></pre>
     </div>
 
     <div class="callout callout-warn">
-      <p class="callout-title">⚠️ データは変わっていないのに、意味だけが変わる</p>
-      <p>DB に入っている <code>1</code> は、もともと「売り切れ（<code>SOLD_OUT</code>）」のつもりだった。しかし追加後は <code>1</code> が「販売中（<code>ON_SALE</code>）」として読まれる。</p>
+      <p class="callout-title">⚠️ DB のデータは変わっていないのに、意味だけが変わる</p>
+      <p>ここで大事なのは、<strong>DB に入っている数字は書き換わらない</strong>ということ。enum に値を足しても、<code>products</code> テーブルを <code>UPDATE</code> する処理はどこにも走らない。変わるのは <strong>Java 側の並び順、つまりその数字の読み方</strong>だけ。</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>DB の status 列</th><th>追加前に読まれる値</th><th>追加後に読まれる値</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>0</code></td><td><code>ON_SALE</code>（販売中）</td><td><code>PREPARING</code>（準備中）</td></tr>
+            <tr><td><code>1</code></td><td><code>SOLD_OUT</code>（売り切れ）</td><td><code>ON_SALE</code>（販売中）</td></tr>
+          </tbody>
+        </table>
+      </div>
       <div class="elem-code">status = 1  →  追加前: SOLD_OUT（売り切れ）／追加後: ON_SALE（販売中）</div>
-      <p>売り切れの商品が販売中として扱われてしまうが、<strong>エラーは出ないので気づきにくい</strong>。<code>STRING</code> なら <code>'SOLD_OUT'</code> という名前で入っているので、並び順を変えても影響がない。</p>
+      <p>売り切れの商品が販売中として扱われ、在庫がないのに注文を受けてしまう。しかも<strong>例外は 1 つも出ない</strong>。<code>1</code> は <code>ON_SALE</code> として正しく読める値なので、JPA から見れば何も異常がないからである。</p>
+      <p>いったんこうなると、直すには<strong>DB のデータを数え直して全件 UPDATE する</strong>しかない。あとから安全に直せないのが、この問題のいちばん厄介なところ。</p>
     </div>
+
+    <p>一方 <code>EnumType.STRING</code> なら、DB に入っているのは <code>'SOLD_OUT'</code> という<strong>名前そのもの</strong>。並び順は保存に使われていないので、enum に値を足しても読まれ方が変わらない。</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th></th><th>ORDINAL（指定なし）</th><th>EnumType.STRING</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>DB に入る値</td><td><code>1</code></td><td><code>'SOLD_OUT'</code></td></tr>
+          <tr><td>enum に値を足すと</td><td>意味がずれる</td><td>影響なし</td></tr>
+          <tr><td>enum の順番を入れ替えると</td><td>意味がずれる</td><td>影響なし</td></tr>
+          <tr><td>DB を直接見たとき</td><td>番号の意味が分からない</td><td>名前でそのまま読める</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="dep-note">💬 補足: <code>STRING</code> で注意するのは、<strong>enum の名前を変えると読めなくなる</strong>こと。<code>SOLD_OUT</code> を <code>OUT_OF_STOCK</code> に改名すると、DB の <code>'SOLD_OUT'</code> に対応する定数が見つからず例外になる。ただしこちらは<strong>例外が出るので気づける</strong>ぶん、黙ってずれる ORDINAL よりずっと安全。</p>
 
     <h3>6. やりがちな失敗</h3>
 
@@ -504,18 +586,58 @@ public class Category {
     </div>
 
     <span class="compare-label label-good">✓ 必要なものだけを付ける</span>
+    <p>直し方は「<code>@Data</code> を消す」だけではない。<strong>getter のように必要なものは残す</strong>のがポイント。<code>@Data</code> がまとめて作る 5 つを 1 つずつ見ていくと、こう判断できる。</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th><code>@Data</code> が作るもの</th><th>エンティティでどうするか</th><th>書き方</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>getter</td><td>そのまま全部ほしい</td><td>クラスに <code>@Getter</code></td></tr>
+          <tr><td>setter</td><td><code>id</code> には作らせない</td><td>フィールドに <code>@Setter</code></td></tr>
+          <tr><td><code>toString</code></td><td>関連フィールドだけ外す</td><td>関連に <code>@ToString.Exclude</code></td></tr>
+          <tr><td><code>equals</code></td><td rowspan="2">自動生成させない</td><td rowspan="2">何も付けない</td></tr>
+          <tr><td><code>hashCode</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">@Entity
-@Getter                      // setter は必要なフィールドにだけ個別に付ける
+@Getter
+@ToString
 public class Product {
 
-    @ToString.Exclude        // toString が必要な場合は、関連フィールドを除外する
+    @Id
+    private Long id;
+
+    // 変更する必要があるフィールドにだけ setter を付ける
+    @Setter
+    private String name;
+
+    private BigDecimal price;
+
+    // toString が関連先を辿らないように除外する
+    @ToString.Exclude
     @ManyToOne
     private Category category;
 }</code></pre>
     </div>
+
+    <ul class="elem-points">
+      <li><strong><code>@Getter</code> はクラスに付けてよい</strong>：値を読むだけなので、全フィールドに作られても事故にならない</li>
+      <li><strong><code>@Setter</code> はフィールドに付ける</strong>：クラスに付けると <code>setId()</code> まで作られてしまう。<code>id</code> や <code>createdAt</code> のように「あとから変えないもの」には付けない</li>
+      <li><strong><code>@ToString.Exclude</code> で無限ループが止まる</strong>：<code>category</code> を文字列にしなくなるので、<code>product → category → product</code> の往復が起きない</li>
+      <li><strong><code>equals</code> / <code>hashCode</code> は何も付けない</strong>：自動生成させると全フィールド比較になってしまう（次の項目で詳しく）</li>
+    </ul>
+
     <p>エンティティでは <code>@Data</code> をひとまとめに付けず、<strong>必要なものを 1 つずつ選んで付ける</strong>。</p>
+
+    <div class="callout">
+      <p class="callout-title">📌 @ToString.Exclude を付け忘れないために</p>
+      <p>そもそも <code>toString</code> が要らないなら、<code>@ToString</code> を付けないのがいちばん安全。付ける場合も、<strong><code>@ManyToOne</code> や <code>@OneToMany</code> が付いたフィールドを見つけたら <code>@ToString.Exclude</code> を添える</strong>とセットで覚えておく。</p>
+    </div>
 
     <h4>equals / hashCode を id だけで実装する</h4>
     <div class="editor">
