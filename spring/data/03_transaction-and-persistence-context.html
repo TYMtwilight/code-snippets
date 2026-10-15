@@ -185,7 +185,7 @@
     <h1>トランザクションと永続化コンテキスト</h1>
     <ul class="meta">
       <li>📅 作成日: 2026-10-10</li>
-      <li>🔄 更新日: 2026-10-10</li>
+      <li>🔄 更新日: 2026-10-16</li>
     </ul>
   </header>
 
@@ -459,18 +459,76 @@ public class ProductService {
 
     <p class="dep-note">💬 同じ理由で、<code>private</code> メソッドや <code>final</code> メソッドに付けても効かない。プロキシが上書きできないため。</p>
 
-    <span class="compare-label label-good">✓ クラスを分けて、外部から呼ぶ形にする</span>
+    <span class="compare-label label-bad">✗ 自分で new する：クラスを分けても効かない</span>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">@Service
 public class ProductService {
 
-    private final ProductUpdater updater;   // 別クラスとして注入する
-
     public void outer() {
-        updater.inner();   // プロキシを経由するので有効になる
+        // 自分で作ったオブジェクトを呼んでいる
+        ProductUpdater updater = new ProductUpdater();
+        updater.inner();
     }
 }</code></pre>
+    </div>
+
+    <p>クラスを分けただけでは足りない。<code>new</code> で作ったオブジェクトには<strong>プロキシが用意されない</strong>ため、自己呼び出しとまったく同じ結果になる。</p>
+
+    <p>プロキシを作るのは Spring であり、その対象は <strong>Bean として登録されたオブジェクト</strong>だけ。<code>new ProductUpdater()</code> は Java が素のオブジェクトを作るだけなので、Spring は関与せず、プロキシもない。</p>
+
+    <div class="step-list">
+      <div class="step-row">
+        <span class="step-num">◯</span>
+        <div><strong>注入して受け取る</strong><small>Spring が Bean 登録済みのプロキシを渡す → プロキシのメソッドを呼ぶ → トランザクション開始</small></div>
+      </div>
+      <div class="step-row">
+        <span class="step-num">✗</span>
+        <div><strong>自分で new する</strong><small>素のオブジェクトができる → 素のメソッドを呼ぶ → アノテーションは無視される</small></div>
+      </div>
+    </div>
+
+    <span class="compare-label label-good">✓ クラスを分けて、コンストラクタインジェクションで受け取る</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Service
+public class ProductService {
+
+    // 別クラスとして注入する（new しない）
+    private final ProductUpdater updater;
+
+    public ProductService(ProductUpdater updater) {
+        this.updater = updater;
+    }
+
+    public void outer() {
+        // プロキシを経由するので有効になる
+        updater.inner();
+    }
+}</code></pre>
+    </div>
+
+    <p>呼ばれる側のクラスにも <code>@Service</code> などを付けて、Bean として登録しておく必要がある。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Service   // ← これがないと Bean にならず、注入もできない
+public class ProductUpdater {
+
+    @Transactional
+    public void inner() { ... }
+}</code></pre>
+    </div>
+
+    <div class="callout">
+      <p class="callout-title">📌 効かないパターンはすべて同じ理由</p>
+      <p><code>@Transactional</code> が効くのは、<strong>Spring が管理している Bean のメソッドを、外から呼んだとき</strong>だけ。次の 4 つは、どれも「呼び出しがプロキシを通らない」という 1 つの理由で説明できる。</p>
+      <ul>
+        <li>自己呼び出し（同じクラスの中から呼ぶ）</li>
+        <li><code>private</code> メソッド／<code>final</code> メソッドに付ける</li>
+        <li>自分で <code>new</code> したオブジェクトのメソッドを呼ぶ</li>
+        <li>呼ばれる側のクラスを Bean として登録していない</li>
+      </ul>
+      <p>「<code>new</code> した瞬間に Spring の手を離れる」と覚えておくとよい。</p>
     </div>
 
     <h3>6. ロールバックされる条件</h3>
@@ -533,6 +591,52 @@ public void register(Product product) {
       </div>
     </div>
 
+    <h4>包み直しは try-catch で行う（orElseThrow ではない）</h4>
+    <p>どちらも「見つからない・失敗したときに例外を投げる」場面で出てくるが、<strong>相手にするものが違う</strong>。</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>書き方</th><th>何を相手にするか</th><th>使う場面</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>try-catch</code></td><td>投げられてきた<strong>例外</strong></td><td>検査例外を受け止めて、非検査例外に包み直す</td></tr>
+          <tr><td><code>orElseThrow</code></td><td><code>Optional</code> という<strong>戻り値の箱</strong></td><td>箱を開け、空なら例外を投げる</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <span class="compare-label label-bad">✗ 例外を投げるメソッドに orElseThrow を使う</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">// write() は Optional ではなく void を返し、IOException を投げる
+// → orElseThrow は呼べず、コンパイルエラーになる
+fileStorage.write(product)
+        .orElseThrow(e -&gt; new FileStorageException(e));</code></pre>
+    </div>
+
+    <p><code>orElseThrow</code> は <code>Optional</code> が持つメソッドなので、<code>Optional</code> を返すメソッドにしか使えない。<code>fileStorage.write()</code> が返すのは <code>Optional</code> ではないため、そもそも呼び出せない。</p>
+
+    <span class="compare-label label-good">✓ それぞれの使い分け</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">// 検査例外を投げるメソッド → try-catch で包み直す
+try {
+    fileStorage.write(product);
+} catch (IOException e) {
+    throw new FileStorageException(e);
+}
+
+// Optional を返すメソッド → orElseThrow で箱を開ける
+Product product = productRepository.findById(id)
+        .orElseThrow(() -&gt; new ProductNotFoundException(id));</code></pre>
+    </div>
+
+    <ul>
+      <li><code>try-catch</code> は「飛んできた例外を受け止める」もの</li>
+      <li><code>orElseThrow</code> は「箱を開けて、空なら例外を投げる」もの</li>
+    </ul>
+
     <h3>7. propagation（トランザクションの伝播）</h3>
     <p>トランザクションの中から、別のトランザクション付きメソッドを呼んだときの振る舞い。</p>
 
@@ -584,6 +688,161 @@ public void register(Product product) {
 
     <p>A と B は<strong>別のトランザクション</strong>なので、A のロールバックは B に届かない。結果として、<strong>商品は登録されていないが、ログだけは残る</strong>。</p>
     <p class="dep-note">💬 <code>REQUIRES_NEW</code> を付けずに既定の <code>REQUIRED</code> のままにすると、ログの保存もトランザクション A に参加する。つまり<strong>商品と一緒に取り消され、何も残らない</strong>。</p>
+
+    <div class="callout callout-warn">
+      <p class="callout-title">⚠️ REQUIRES_NEW も、プロキシを通らなければ効かない</p>
+      <p><code>propagation</code> の指定もプロキシの働きなので、「5.」の条件がそのまま当てはまる。<code>writeAuditLog()</code> を同じクラスに置いて呼ぶと、新しいトランザクションは始まらない。</p>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-java">@Service
+public class ProductService {
+
+    @Transactional
+    public void register(Product product) {
+        productRepository.save(product);
+
+        // 自己呼び出し → REQUIRES_NEW は無視される
+        writeAuditLog("登録: " + product.getName());
+
+        throw new IllegalStateException();
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void writeAuditLog(String message) { ... }
+}</code></pre>
+      </div>
+      <p>この場合、ログの保存はトランザクション A に参加してしまう。<strong>商品と一緒にログも取り消され、何も残らない</strong>。狙いと正反対の結果になるうえ、エラーにもならないため気づきにくい。</p>
+      <p>別クラスに分け、注入して呼ぶ形にする。</p>
+      <div class="editor">
+        <div class="editor-bar"><span></span><span></span><span></span></div>
+        <pre><code class="language-java">@Service
+public class AuditService {
+
+    private final AuditLogRepository auditLogRepository;
+
+    public AuditService(AuditLogRepository auditLogRepository) {
+        this.auditLogRepository = auditLogRepository;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void writeAuditLog(String message) {
+        auditLogRepository.save(new AuditLog(message));
+    }
+}</code></pre>
+      </div>
+    </div>
+
+    <h3>8. まとめ：3 つの注意点を 1 つにまとめた例</h3>
+    <p>「商品の登録に失敗したら商品は登録されない。ただし<strong>監査ログだけは残す</strong>」という仕様を、ここまでの内容をすべて踏まえて書くとこうなる。</p>
+
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Service
+public class ProductService {
+
+    private final ProductRepository productRepository;
+    private final FileStorage fileStorage;
+
+    // ① 別クラスとして注入する（new しない）
+    private final AuditLogger auditLogger;
+
+    public ProductService(ProductRepository productRepository,
+                          FileStorage fileStorage,
+                          AuditLogger auditLogger) {
+        this.productRepository = productRepository;
+        this.fileStorage = fileStorage;
+        this.auditLogger = auditLogger;
+    }
+
+    // ② throws IOException が消えている
+    @Transactional
+    public void register(Product product) {
+        productRepository.save(product);
+
+        // ① プロキシ経由なので REQUIRES_NEW が効く
+        auditLogger.writeAuditLog("登録: " + product.getName());
+
+        // ③ 検査例外を非検査例外に包み直す
+        try {
+            fileStorage.write(product);
+        } catch (IOException e) {
+            throw new FileStorageException(e);
+        }
+    }
+}</code></pre>
+    </div>
+
+    <p>ログを書く側は<strong>別クラスの Bean</strong>として用意する。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Service
+public class AuditLogger {
+
+    private final AuditLogRepository auditLogRepository;
+
+    public AuditLogger(AuditLogRepository auditLogRepository) {
+        this.auditLogRepository = auditLogRepository;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void writeAuditLog(String message) {
+        auditLogRepository.save(new AuditLog(message));
+    }
+}</code></pre>
+    </div>
+
+    <p>包み直す先の例外も用意しておく。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">public class FileStorageException extends RuntimeException {
+
+    public FileStorageException(Throwable cause) {
+        super(cause);
+    }
+}</code></pre>
+    </div>
+
+    <h4>どこに何を効かせているか</h4>
+    <div class="elem-list">
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">①</span>別クラスを注入する（「5.」「7.」）</p>
+        <div class="elem-code">private final AuditLogger <mark>auditLogger</mark>;</div>
+        <ul class="elem-points">
+          <li>同じクラスに置いて呼ぶと自己呼び出しになり、<code>REQUIRES_NEW</code> が無視される</li>
+          <li><code>new AuditLogger()</code> でも同じく無視される。プロキシは Bean にしか用意されない</li>
+          <li>コンストラクタで受け取れば、Spring が渡すプロキシを経由する</li>
+        </ul>
+      </div>
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">②</span>検査例外を外に出さない（「6.」）</p>
+        <div class="elem-code">public void register(Product product) <mark>（throws なし）</mark></div>
+        <ul class="elem-points">
+          <li><code>throws IOException</code> のままだと、呼び出し側にも例外処理が必要になる</li>
+          <li>メソッド内で包み直すので、<code>rollbackFor</code> の指定も不要</li>
+        </ul>
+      </div>
+      <div class="elem-card">
+        <p class="elem-head"><span class="elem-num">③</span>非検査例外に包み直す（「6.」）</p>
+        <div class="elem-code">catch (IOException e) { throw new <mark>FileStorageException</mark>(e); }</div>
+        <ul class="elem-points">
+          <li><code>IOException</code> をそのまま投げると<strong>コミットされてしまう</strong></li>
+          <li><code>RuntimeException</code> を継承した例外に変えることで、ロールバックの対象になる</li>
+          <li>包み直しは <code>try-catch</code> で行う（<code>orElseThrow</code> は <code>Optional</code> 用）</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="tx-frame tx-outer">
+      <p class="tx-title">トランザクション A ── register()</p>
+      <div class="tx-line"><code>save(product)</code><span class="tx-res tx-res-bad">取り消される</span></div>
+      <div class="tx-frame tx-inner">
+        <p class="tx-title">トランザクション B ── writeAuditLog()／REQUIRES_NEW</p>
+        <div class="tx-line"><code>save(auditLog)</code><span class="tx-res tx-res-good">そのまま残る</span></div>
+      </div>
+      <p class="tx-end">✗ FileStorageException（非検査例外）→ A をロールバック</p>
+    </div>
+
+    <p>結果として、<strong>商品は登録されず、監査ログだけが残る</strong>。仕様どおりの動きになる。</p>
   </section>
 
   <section class="sec-reference">
