@@ -98,7 +98,7 @@
   pre[class*="language-"], pre[class*="language-"] > code { background: transparent; text-shadow: none; }
   pre[class*="language-"] { margin: 0; padding: 1.1rem 1.25rem; }
   code[class*="language-"] { font-family: "Fira Code", "SFMono-Regular", Consolas, monospace; font-size: 0.88rem; }
-  p code, li code, td code, th code, .rel-row code { background: var(--border); color: var(--fg); padding: 0.15em 0.4em; border-radius: 5px; font-family: "Fira Code", monospace; font-size: 0.85em; }
+  p code, li code, td code, th code, .rel-card code, .rel-head code, .rel-caption code, .method-step code, .step-row code, .step-note code, .owner-term code, .fan-box code { background: var(--border); color: var(--fg); padding: 0.15em 0.4em; border-radius: 5px; font-family: "Fira Code", monospace; font-size: 0.85em; }
 
   .dep-note { margin: 0.6rem 0 0; padding: 0.75rem 0.9rem; background: var(--bg); border-radius: 10px; font-size: 0.92rem; }
   .dep-note strong { color: var(--fg); }
@@ -116,11 +116,66 @@
   .label-bad { background: #e11d48; }
   .label-good { background: #059669; }
 
-  .rel-list { display: flex; flex-direction: column; gap: 0.5rem; margin: 0.9rem 0; }
-  .rel-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.6rem; align-items: center; padding: 0.6rem 0.85rem; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; font-size: 0.92rem; }
-  .rel-side { text-align: center; }
-  .rel-label { display: block; font-size: 0.72rem; font-weight: 700; color: var(--muted); }
-  .rel-arrow { color: var(--accent-2); font-weight: 700; font-size: 0.85rem; white-space: nowrap; }
+  .rel-diagram { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.4rem 0.7rem; align-items: center; margin: 1rem 0; padding: 1rem 0.9rem; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+  .rel-head { font-size: 0.72rem; font-weight: 700; color: var(--muted); text-align: center; }
+  .rel-head code { font-size: 0.82rem; }
+  .rel-card { padding: 0.45rem 0.6rem; background: var(--surface); border: 1px solid var(--border); border-radius: 9px; text-align: center; font-size: 0.88rem; }
+  .rel-card span { display: block; margin-top: 0.1rem; font-size: 0.72rem; color: var(--muted); font-family: "Fira Code", monospace; }
+  .rel-one-card { grid-column: 3; grid-row: 2 / span 3; align-self: center; border-color: var(--accent-1); border-width: 2px; font-weight: 700; }
+  .rel-arrow-cell { color: var(--accent-2); font-weight: 700; text-align: center; }
+  .rel-caption { margin: 0.6rem 0 0; font-size: 0.88rem; color: var(--muted); text-align: center; }
+
+  .type-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin: 0.9rem 0; }
+  .type-card { padding: 0.85rem 0.95rem; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+  .type-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.55rem; margin: 0 0 0.6rem; font-weight: 700; }
+  .type-rel { font-size: 0.78rem; color: var(--muted); }
+  .mini-rel { display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.6rem 0.4rem; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+  .mini-stack { display: flex; flex-direction: column; gap: 0.2rem; }
+  .mini-box { padding: 0.18rem 0.5rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.75rem; text-align: center; white-space: nowrap; }
+  .mini-one { border-color: var(--accent-1); border-width: 2px; font-weight: 700; }
+  .mini-arrow { color: var(--accent-2); font-weight: 700; }
+  .mini-arrow-both { line-height: 1.1; text-align: center; }
+  .type-note { margin: 0.55rem 0 0; font-size: 0.85rem; color: var(--muted); }
+
+  .jd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin: 0.9rem 0; }
+  .jd-card { padding: 0.85rem 0.95rem; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+  .jd-title { margin: 0 0 0.55rem; font-size: 0.78rem; font-weight: 700; color: var(--muted); letter-spacing: 0.04em; }
+  .jd-obj { display: flex; flex-direction: column; gap: 0.25rem; padding: 0.6rem 0.7rem; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+  .jd-obj-name { font-weight: 700; font-size: 0.88rem; }
+  .jd-field { font-family: "Fira Code", monospace; font-size: 0.75rem; color: var(--muted); overflow-wrap: anywhere; }
+  .jd-field-rel { padding: 0.15rem 0.4rem; border-radius: 5px; background: rgba(124,58,237,0.14); color: var(--accent-1); font-weight: 600; }
+  .jd-note { margin: 0.55rem 0 0; font-size: 0.85rem; }
+
+  .jd-card .jd-obj + .jd-obj { margin-top: 0.4rem; }
+  .jd-none { padding: 0.15rem 0.4rem; border: 1px dashed var(--border); border-radius: 5px; color: var(--muted); }
+
+  .fan { margin: 1rem 0; padding: 0.9rem 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+  .fan-intro { margin: 0 0 0.5rem; text-align: center; font-size: 0.85rem; }
+  .fan-top { padding: 0.5rem 0.8rem; background: var(--code-bg); color: var(--code-fg); border-radius: 9px; font-family: "Fira Code", monospace; font-size: 0.85rem; text-align: center; overflow-wrap: anywhere; }
+  .fan-split { margin: 0.45rem 0; text-align: center; color: var(--accent-2); font-weight: 700; font-size: 0.82rem; }
+  .fan-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .fan-box { display: flex; flex-direction: column; gap: 0.3rem; padding: 0.6rem 0.7rem; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; text-align: center; }
+  .fan-box-owner { border-color: var(--accent-1); border-width: 2px; }
+  .fan-box-stale { border: 2px dashed var(--accent-4); }
+  .fan-label { font-size: 0.72rem; font-weight: 700; color: var(--muted); }
+  .fan-box code { font-size: 0.78rem; overflow-wrap: anywhere; }
+  .fan-note { font-size: 0.78rem; color: var(--muted); }
+  .fan-item + .fan-item { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed var(--border); }
+  .fan-line { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.35rem; }
+  .fan-mark { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 1.15rem; height: 1.15rem; border-radius: 50%; color: #fff; font-size: 0.72rem; font-weight: 700; }
+  .fan-mark-ok { background: #059669; }
+  .fan-mark-ng { background: #e11d48; }
+
+  .owner-eq { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.5rem 0.6rem; margin: 1rem 0; padding: 0.9rem 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+  .owner-term { padding: 0.35rem 0.8rem; border-radius: 9px; background: var(--surface); border: 1px solid var(--border); font-size: 0.9rem; font-weight: 700; text-align: center; }
+  .owner-term code { font-size: 0.85em; }
+  .owner-term-key { border-color: var(--accent-2); }
+  .owner-term-res { border-color: var(--accent-1); border-width: 2px; color: var(--accent-1); }
+  .owner-eq-mark { color: var(--muted); font-weight: 700; }
+
+  .code-label { display: inline-block; margin: 1.1rem 0 0.4rem; padding: 0.1rem 0.65rem; border-radius: 999px; background: var(--border); color: var(--fg); font-family: "Fira Code", monospace; font-size: 0.78rem; font-weight: 500; }
+  p + .code-label { margin-top: 0.75rem; }
+  .compare-label + .code-label { display: block; width: fit-content; margin-top: 0.1rem; }
 
   .chain2 { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.4rem; align-items: center; margin: 0.5rem 0; }
   .chain3 { display: grid; grid-template-columns: 1fr auto 1.2fr auto 1fr; gap: 0.4rem; align-items: center; margin: 0.5rem 0; }
@@ -144,6 +199,8 @@
   .dg-cut { stroke: #e11d48; stroke-width: 2; stroke-dasharray: 6 4; }
   .dg-cut-label { fill: #e11d48; font-family: "Zen Maru Gothic", sans-serif; font-size: 12px; font-weight: 700; }
   .dg-dim { opacity: 0.4; }
+  .cut-row td { background: rgba(225,29,72,0.12); color: #e11d48; font-weight: 700; text-align: center; }
+  .dim-row td { opacity: 0.45; }
   .dg-track { fill: var(--bg); stroke: var(--border); stroke-width: 1; }
   .dg-open { fill: rgba(5,150,105,0.3); stroke: #059669; stroke-width: 1; }
   .dg-arrow { stroke: #059669; stroke-width: 2; fill: none; }
@@ -156,6 +213,30 @@
   .diagram figcaption { margin-top: 0.4rem; color: var(--muted); font-size: 0.82rem; text-align: center; }
   .total-box { margin: 0.6rem 0 0; padding: 0.6rem 0.9rem; border-radius: 8px; background: rgba(225,29,72,0.12); color: #e11d48; font-weight: 700; text-align: center; }
   .total-box-good { background: rgba(5,150,105,0.12); color: #059669; }
+
+  .method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin: 0.9rem 0; }
+  .method-card { padding: 0.85rem 0.95rem; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+  .method-name { margin: 0 0 0.6rem; font-family: "Fira Code", monospace; font-size: 0.8rem; font-weight: 700; text-align: center; overflow-wrap: anywhere; }
+  .method-step { display: flex; gap: 0.5rem; align-items: flex-start; padding: 0.5rem 0.6rem; background: var(--surface); border: 1px solid var(--border); border-radius: 9px; }
+  .method-step + .method-step { margin-top: 0.4rem; }
+  .method-num { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 1.3rem; height: 1.3rem; border-radius: 50%; background: var(--accent-1); color: #fff; font-size: 0.72rem; font-weight: 700; }
+  .method-step code { display: inline-block; font-size: 0.78rem; overflow-wrap: anywhere; }
+  .method-desc { display: block; margin-top: 0.2rem; font-size: 0.8rem; color: var(--muted); }
+  .method-desc code { font-size: 0.95em; }
+
+  .step-flow { display: flex; flex-direction: column; gap: 0.25rem; margin: 1rem 0; }
+  .step-row { display: flex; gap: 0.6rem; align-items: flex-start; padding: 0.6rem 0.8rem; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; }
+  .step-row-none { border-style: dashed; }
+  .step-badge { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 1.4rem; height: 1.4rem; border-radius: 50%; background: var(--accent-1); color: #fff; font-size: 0.75rem; font-weight: 700; }
+  .step-badge-none { background: var(--muted); }
+  .step-note { display: block; margin-top: 0.25rem; font-size: 0.85rem; }
+  .step-sql { display: block; margin-top: 0.4rem; padding: 0.3rem 0.55rem; border-radius: 6px; background: var(--code-bg); color: var(--code-fg); font-family: "Fira Code", monospace; font-size: 0.75rem; overflow-wrap: anywhere; }
+  .step-flow-list { gap: 0.5rem; }
+  .step-label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--muted); }
+  .step-label + .step-sql { margin-top: 0.25rem; }
+  .step-arrow { text-align: center; color: var(--accent-2); font-weight: 700; line-height: 1.2; }
+
+  .conclusion { margin: 1.5rem 0; padding: 0.75rem 1rem; border: 1px solid var(--accent-1); border-radius: 10px; font-weight: 700; }
 
   .elem-list { display: flex; flex-direction: column; gap: 0.9rem; margin: 0.75rem 0; }
   .elem-card { padding: 0.9rem 1.05rem; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
@@ -184,7 +265,15 @@
 
   @media (max-width: 560px) {
     .kw-grid { grid-template-columns: 1fr; }
-    .rel-row { grid-template-columns: 1fr; }
+    .type-grid { grid-template-columns: 1fr; }
+    .jd-grid { grid-template-columns: 1fr; }
+    .method-grid { grid-template-columns: 1fr; }
+    .fan-row { grid-template-columns: 1fr; }
+    .rel-diagram { grid-template-columns: 1fr; }
+    .rel-one-card { grid-column: 1; grid-row: auto; }
+    .rel-head-one { display: none; }
+    .rel-arrow-cell { display: none; }
+    .rel-arrow-last { display: block; transform: rotate(90deg); }
   }
 
   table { border-collapse: collapse; width: 100%; margin: 0.75rem 0; font-size: 0.92rem; }
@@ -208,45 +297,121 @@
     </ul>
   </header>
 
-
   <section class="sec-overview">
     <h2><span class="icon">🎯</span>概要</h2>
-    <p>「商品はカテゴリに属する」といった<strong>エンティティどうしのつながり</strong>をアノテーションで表したものが、リレーション。リレーションを定義しておくと、<code>product.getCategory()</code> のように<strong>メソッドを呼ぶだけで、つながった先のデータを取り出せる</strong>。</p>
+    <p>「商品はカテゴリに属する」といった<strong>エンティティどうしの関係</strong>をアノテーションで表したものが、<strong>リレーション</strong>。リレーションを定義しておくと、<code>product.getCategory()</code> のように<strong>メソッドを呼ぶだけで、リレーションの先にあるデータを取り出せる</strong>。</p>
 
-    <div class="rel-list">
-      <div class="rel-row">
-        <div class="rel-side"><span class="rel-label">多</span><code>Product</code></div>
-        <div class="rel-arrow">@ManyToOne →</div>
-        <div class="rel-side"><span class="rel-label">1</span><code>Category</code></div>
-      </div>
+    <div class="rel-diagram">
+      <div class="rel-head">多（Many）<br>Product</div>
+      <div class="rel-head"><code>@ManyToOne</code></div>
+      <div class="rel-head rel-head-one">1（One）<br>Category</div>
+
+      <div class="rel-card">りんご<span>category_id = 1</span></div>
+      <div class="rel-arrow-cell">→</div>
+
+      <div class="rel-card">みかん<span>category_id = 1</span></div>
+      <div class="rel-arrow-cell">→</div>
+
+      <div class="rel-card">ぶどう<span>category_id = 1</span></div>
+      <div class="rel-arrow-cell rel-arrow-last">→</div>
+
+      <div class="rel-card rel-one-card">果物<span>id = 1</span></div>
+    </div>
+    <p class="rel-caption">3 つの商品が、同じ 1 つのカテゴリ（<code>id = 1</code>）を指している</p>
+
+    <p>ただし、この便利さには<strong>見えない SQL が裏で走る</strong>という代償がある。<code>product.getCategory()</code> は、カテゴリをまだ読み込んでいなければ<strong>その場で <code>SELECT</code> を 1 回発行して取りに行く</strong>。ただのメソッド呼び出しに見えて、中では DB アクセスが起きている。</p>
+    <p>商品 1 件を表示するだけなら、増えるのは 1 回だけなので問題にならない。困るのは、この呼び出しが<strong>ループの中に入ったとき</strong>。</p>
+
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">// 商品を 20 件取得する
+List&lt;Product&gt; products = productRepository.findAll();
+
+for (Product p : products) {
+    // この 1 行が、商品 1 件につき 1 回ずつ SELECT を発行する
+    System.out.println(p.getCategory().getName());
+}</code></pre>
     </div>
 
-    <p>ただし、この便利さには<strong>見えない SQL が裏で走る</strong>という代償がある。アノテーションの書き方が、そのまま<strong>発行される SQL の回数と、1 回に読み込むデータ量</strong>を決めてしまう。</p>
-    <p>たとえば <code>fetch</code> を 1 つ書き忘れただけで、1 回のつもりだった取得が<strong>数百回のクエリ</strong>に化けることもある。だからリレーションは、<strong>書き方とパフォーマンスをセットで覚える</strong>必要がある。</p>
+    <p><code>getCategory()</code> は呼ばれるたびに <code>SELECT</code> を 1 回出すので、ループが 20 周すれば 20 回になる。最初の <code>findAll()</code> と合わせて <strong>1 + 20 = 21 回</strong>。商品が 1000 件なら 1001 回になる。これが <strong>N+1 問題</strong>（→「4. N+1 問題」）。</p>
+    <p>Java のコードは「取得 1 回」と「ループ 1 つ」にしか見えず、SQL はどこにも書かれていない。そのぶん<strong>回数が増えたことに気づけない</strong>のが、この問題の厄介なところ。だからリレーションは、<strong>書き方とパフォーマンスをセットで覚える</strong>必要がある。</p>
   </section>
 
   <section class="sec-code">
     <h2><span class="icon">💻</span>コード</h2>
 
     <h3>1. リレーションの 4 種類</h3>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>アノテーション</th><th>関係</th><th>例</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><code>@ManyToOne</code></td><td>多 → 1</td><td>商品 → カテゴリ</td></tr>
-          <tr><td><code>@OneToMany</code></td><td>1 → 多</td><td>カテゴリ → 商品</td></tr>
-          <tr><td><code>@OneToOne</code></td><td>1 → 1</td><td>ユーザー → プロフィール</td></tr>
-          <tr><td><code>@ManyToMany</code></td><td>多 → 多</td><td>商品 ⇄ タグ</td></tr>
-        </tbody>
-      </table>
+    <div class="type-grid">
+      <div class="type-card">
+        <p class="type-head"><code>@ManyToOne</code><span class="type-rel">多 → 1</span></p>
+        <div class="mini-rel">
+          <div class="mini-stack">
+            <span class="mini-box">商品</span>
+            <span class="mini-box">商品</span>
+            <span class="mini-box">商品</span>
+          </div>
+          <span class="mini-arrow">→</span>
+          <div class="mini-stack">
+            <span class="mini-box mini-one">カテゴリ</span>
+          </div>
+        </div>
+        <p class="type-note">多くの商品が、1 つのカテゴリに属する</p>
+      </div>
+
+      <div class="type-card">
+        <p class="type-head"><code>@OneToMany</code><span class="type-rel">1 → 多</span></p>
+        <div class="mini-rel">
+          <div class="mini-stack">
+            <span class="mini-box mini-one">カテゴリ</span>
+          </div>
+          <span class="mini-arrow">→</span>
+          <div class="mini-stack">
+            <span class="mini-box">商品</span>
+            <span class="mini-box">商品</span>
+            <span class="mini-box">商品</span>
+          </div>
+        </div>
+        <p class="type-note">1 つのカテゴリが、多くの商品を持つ</p>
+      </div>
+
+      <div class="type-card">
+        <p class="type-head"><code>@OneToOne</code><span class="type-rel">1 → 1</span></p>
+        <div class="mini-rel">
+          <div class="mini-stack">
+            <span class="mini-box mini-one">ユーザー</span>
+          </div>
+          <span class="mini-arrow">→</span>
+          <div class="mini-stack">
+            <span class="mini-box mini-one">プロフィール</span>
+          </div>
+        </div>
+        <p class="type-note">1 人のユーザーに、1 つのプロフィール</p>
+      </div>
+
+      <div class="type-card">
+        <p class="type-head"><code>@ManyToMany</code><span class="type-rel">多 → 多</span></p>
+        <div class="mini-rel">
+          <div class="mini-stack">
+            <span class="mini-box">商品</span>
+            <span class="mini-box">商品</span>
+            <span class="mini-box">商品</span>
+          </div>
+          <span class="mini-arrow mini-arrow-both">→<br>←</span>
+          <div class="mini-stack">
+            <span class="mini-box">タグ</span>
+            <span class="mini-box">タグ</span>
+            <span class="mini-box">タグ</span>
+          </div>
+        </div>
+        <p class="type-note">1 つの商品が複数のタグを持ち、1 つのタグも複数の商品に付く</p>
+      </div>
     </div>
 
     <p>いちばんよく使うのは <code>@ManyToOne</code> と <code>@OneToMany</code> の組み合わせ。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">@Entity
+@Table(name = "products")
 public class Product {
 
     @Id
@@ -260,6 +425,7 @@ public class Product {
 }
 
 @Entity
+@Table(name = "categories")
 public class Category {
 
     @Id
@@ -271,67 +437,92 @@ public class Category {
     private List&lt;Product&gt; products = new ArrayList&lt;&gt;();
 }</code></pre>
     </div>
-    <h4>アノテーションを付ける場所</h4>
-    <p>上のコードをよく見ると、アノテーションが<strong>クラスの上とフィールドの上</strong>の 2 か所に分かれている。これは役割が違うため。</p>
+    <h4>リレーションのアノテーションはフィールドに付ける</h4>
+    <p>リレーションは「<strong>どのフィールドが、どの相手と繋がっているか</strong>」という情報なので、相手のエンティティを持つ<strong>フィールドの上</strong>に付ける。クラスの上には付けない。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">@Entity                              // ← クラスに付ける
-@Table(name = "products")            // ← クラスに付ける
-public class Product {
+      <pre><code class="language-java">public class Product {
 
-    @Id                              // ← フィールドに付ける
-    @GeneratedValue(...)             // ← フィールドに付ける
-    private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)   // ← フィールドに付ける
-    @JoinColumn(name = "category_id")    // ← フィールドに付ける
+    // カテゴリとのリレーション
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
     private Category category;
+
+    // メーカーとのリレーションは、別のフィールドに付ける
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "maker_id")
+    private Maker maker;
 }</code></pre>
     </div>
+    <p>1 つのクラスが <code>category</code> と <code>maker</code> のように<strong>複数のリレーションを持つこともある</strong>ため、クラス単位では表現できない。フィールドごとに付けるからこそ、リレーションを何本でも持てる。</p>
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th>付ける対象</th><th>アノテーション</th><th>意味</th></tr>
+          <tr><th>アノテーション</th><th>付けるフィールド</th><th>意味</th></tr>
         </thead>
         <tbody>
-          <tr><td><strong>クラス</strong></td><td><code>@Entity</code> / <code>@Table</code></td><td>このクラスは<strong>テーブルに対応する</strong></td></tr>
-          <tr><td><strong>フィールド</strong></td><td><code>@Id</code> / <code>@Column</code> / <code>@ManyToOne</code> / <code>@OneToMany</code> / <code>@JoinColumn</code></td><td>このフィールドは<strong>このカラム・この関連に対応する</strong></td></tr>
+          <tr><td><code>@ManyToOne</code></td><td>相手を <strong>1 つ</strong>持つフィールド（<code>Category category</code>）</td><td>この商品は、このカテゴリに属する</td></tr>
+          <tr><td><code>@OneToMany</code></td><td>相手の<strong>一覧</strong>を持つフィールド（<code>List&lt;Product&gt; products</code>）</td><td>このカテゴリは、これらの商品を持つ</td></tr>
+          <tr><td><code>@JoinColumn</code></td><td><code>@ManyToOne</code> と<strong>同じフィールド</strong></td><td>外部キーのカラム名を指定する</td></tr>
         </tbody>
       </table>
     </div>
-    <p>リレーションは「<strong>どのフィールドがどの相手と繋がっているか</strong>」という情報なので、フィールドに付かないと意味を成さない。1 つのクラスが <code>category</code> と <code>maker</code> のように<strong>複数の関連を持つこともある</strong>ため、クラス単位では表現できない。</p>
     <p class="dep-note">💬 補足: <code>mappedBy</code> や <code>cascade</code>、<code>fetch</code> は独立したアノテーションではなく、<strong><code>@OneToMany</code> などの属性</strong>。属性が多いときは改行して書くこともあるが、1 行で書いた場合と意味は同じ。</p>
 
-    <h4>@ManyToOne と fetch の指定</h4>
-    <div class="elem-list">
-      <div class="elem-card">
-        <p class="elem-head"><span class="elem-num">1</span><code>@ManyToOne</code></p>
-        <p>「多くの商品が、1 つのカテゴリに属する」という関係を表す。<code>Product</code> から見ると「多 → 1」なので <code>@ManyToOne</code> になる。</p>
+    <h4>@JoinColumn：リレーションを持つカラムを指定する</h4>
+    <p>Java と DB では、<strong>リレーションの持ち方が違う</strong>。同じ「ボールペンは文房具カテゴリ」という事実が、両者ではこう分かれる。</p>
+
+    <div class="jd-grid">
+      <div class="jd-card">
+        <p class="jd-title">JAVA 側</p>
+        <div class="jd-obj">
+          <span class="jd-obj-name">Product インスタンス</span>
+          <span class="jd-field">name = "ボールペン"</span>
+          <span class="jd-field jd-field-rel">category → Category インスタンス</span>
+        </div>
+        <p class="jd-note">カテゴリ<strong>そのもの</strong>を持っている</p>
       </div>
-      <div class="elem-card">
-        <p class="elem-head"><span class="elem-num">2</span><code>fetch = FetchType.LAZY</code></p>
-        <p>カテゴリを<strong>実際に使うときまで読み込まない</strong>という指定。<code>@ManyToOne</code> は<strong>何も書かないと EAGER</strong>（商品を取るたびにカテゴリも必ず読む）になってしまうため、明示的に書いている。詳しくは「3. フェッチ戦略」で扱う。</p>
+      <div class="jd-card">
+        <p class="jd-title">DB 側</p>
+        <div class="jd-obj">
+          <span class="jd-obj-name">products の 1 行</span>
+          <span class="jd-field">name = 'ボールペン'</span>
+          <span class="jd-field jd-field-rel">category_id = 3</span>
+        </div>
+        <p class="jd-note">カテゴリの <strong>id という数字だけ</strong>を持っている</p>
       </div>
     </div>
 
-    <h4>@JoinColumn：つながりを持つカラムを指定する</h4>
-    <p>Java 側では <code>Product</code> が <code>Category</code> を<strong>オブジェクトとして</strong>持っている。一方 DB 側でつながりを保持しているのは、<code>products</code> テーブルの<strong>たった 1 つのカラム</strong>（外部キー）。</p>
+    <p>この違いは、カテゴリ名を取り出すコードにそのまま表れる。</p>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th colspan="4">products テーブル</th></tr>
-          <tr><th>id</th><th>name</th><th>price</th><th><strong>category_id</strong>（外部キー）</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>1</td><td>ボールペン</td><td>120</td><td><strong>3</strong></td></tr>
-          <tr><td>2</td><td>ノート</td><td>250</td><td><strong>3</strong></td></tr>
-        </tbody>
-      </table>
+    <span class="code-label">Java</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">// オブジェクトをたどるだけでよい
+product.getCategory().getName();</code></pre>
     </div>
-    <p><code>category_id</code> の <code>3</code> は、<code>categories</code> テーブルの <code>id = 3</code> を指す。<code>product.getCategory()</code> を呼ぶと、JPA はこの値からカテゴリを取りに行く。</p>
 
-    <p><code>@JoinColumn</code> は、この<strong>外部キーのカラム名</strong>を指定する。書く場所は<strong>外部キーを持つ側</strong>、つまり <code>@ManyToOne</code> のフィールド。</p>
+    <span class="code-label">SQL</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-sql">-- id を手がかりに、自分で JOIN する
+SELECT c.name
+FROM products p
+JOIN categories c ON c.id = p.category_id
+WHERE p.id = 1;</code></pre>
+    </div>
+    <p>Java のコードに <code>JOIN</code> は 1 文字も出てこないが、<strong>裏では JPA が上の SQL を組み立てて実行している</strong>。</p>
+    <p>このとき JPA が知らないといけないのは、「<code>products</code> テーブルの<strong>どのカラムが外部キーか</strong>」の 1 点だけ。<code>@JoinColumn</code> は、この<strong>外部キーのカラム名</strong>を伝えている。</p>
+
+    <span class="code-label">Java</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "category_id")
+private Category category;</code></pre>
+    </div>
+    <p>ここで <code>name</code> に書いたカラム名が、JPA が組み立てる SQL の <code>ON c.id = p.category_id</code> の部分になる。</p>
+    <p>書く場所は<strong>外部キーを持つ側</strong>、つまり <code>@ManyToOne</code> が付いたフィールド。<code>Category</code> 側に書くものではない。</p>
 
     <div class="callout">
       <p class="callout-title">📌 省略できるが、書いておくほうがよい</p>
@@ -388,19 +579,18 @@ public class ProductTag {
     <h3 id="bidirectional">2. 双方向のリレーションと mappedBy</h3>
 
     <h4>片方向と双方向</h4>
-    <p>リレーションは、<strong>片側だけ</strong>でも成立する。<code>Product</code> に <code>category</code> フィールドだけを持たせれば、<code>product.getCategory()</code> でカテゴリを辿れる。これが<strong>片方向</strong>。</p>
-    <p>リレーションを成立させるには、<strong>外部キーを持つ側に <code>@ManyToOne</code> と <code>@JoinColumn</code> を設定する</strong>必要がある。これが<strong>片方向リレーションの最低条件</strong>で、ここまで書けばリレーションとして機能する。</p>
+    <p>リレーションは<strong>片側だけでも成立する</strong>。外部キーを持つ <code>Product</code> に <code>@ManyToOne</code> と <code>@JoinColumn</code> を書けば、それだけで <code>product.getCategory()</code> からカテゴリを辿れる。これが<strong>片方向</strong>。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">@Entity
 public class Product {
 
     @ManyToOne
-    @JoinColumn(name = "category_id")   // つながりを保持する外部キーカラム
+    @JoinColumn(name = "category_id")   // リレーションを保持する外部キーカラム
     private Category category;
 }</code></pre>
     </div>
-    <p>さらに <code>Category</code> 側にも <code>products</code> フィールドを持たせると、<code>category.getProducts()</code> で逆方向にも辿れるようになる。このように<strong>両方のエンティティから相手を辿れる状態</strong>を、<strong>双方向</strong>のリレーションと呼ぶ。</p>
+    <p>さらに <code>Category</code> 側にも、<code>@OneToMany(mappedBy = "category")</code> を付けた <code>products</code> フィールドを持たせると、<code>category.getProducts()</code> で逆方向にも辿れるようになる。このように<strong>両方のエンティティから相手を辿れる状態</strong>を、<strong>双方向</strong>のリレーションと呼ぶ。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">@Entity
@@ -413,39 +603,70 @@ public class Category {
     <p class="dep-note">💬 補足: 双方向は便利に見えるが、両側を管理する手間が増える。「カテゴリから商品一覧を取りたい」という要件がなければ、<strong>片方向のままで十分</strong>。</p>
 
     <h4>どちらの変更を DB に反映するのか</h4>
-    <p>双方向にすると、<strong>Java 側と DB 側で数が合わなくなる</strong>。</p>
+    <p>双方向にすると、<strong>Java と DB で「リレーションの数」が合わなくなる</strong>。</p>
 
-    <div class="kw-grid">
-      <div class="kw-card">
-        <span class="kw-badge">Java 側</span>
-        <p class="kw-desc">相手への参照が<strong>2 つ</strong>ある</p>
-        <div class="kw-jpql">product.category<br>category.products</div>
+    <div class="jd-grid">
+      <div class="jd-card">
+        <p class="jd-title">JAVA 側</p>
+        <div class="jd-obj">
+          <span class="jd-obj-name">Product</span>
+          <span class="jd-field jd-field-rel">category → Category</span>
+        </div>
+        <div class="jd-obj">
+          <span class="jd-obj-name">Category</span>
+          <span class="jd-field jd-field-rel">products → List&lt;Product&gt;</span>
+        </div>
+        <p class="jd-note"><strong>お互いが相手を知っている</strong>（参照は 2 つ）</p>
       </div>
-      <div class="kw-card">
-        <span class="kw-badge">DB 側</span>
-        <p class="kw-desc">つながりを保持するカラムは<strong>1 つだけ</strong></p>
-        <div class="kw-jpql">products.category_id</div>
+      <div class="jd-card">
+        <p class="jd-title">DB 側</p>
+        <div class="jd-obj">
+          <span class="jd-obj-name">products テーブル</span>
+          <span class="jd-field jd-field-rel">category_id = 3</span>
+        </div>
+        <div class="jd-obj">
+          <span class="jd-obj-name">categories テーブル</span>
+          <span class="jd-field jd-none">商品を指すカラムは無い</span>
+        </div>
+        <p class="jd-note"><strong>片方しか相手を知らない</strong>（リレーションは 1 つ）</p>
       </div>
     </div>
 
-    <p>この食い違いが問題になるのは、<strong>商品の所属カテゴリを変更するとき</strong>。Java 側には参照が 2 つあるため、「ボールペンのカテゴリを文房具に変える」という同じ処理が、<strong>次の 2 通りに書けてしまう</strong>。</p>
+    <p>ポイントは <code>Category</code> 側。Java では <code>category.getProducts()</code> で商品の一覧を持っているのに、<code>categories</code> テーブルには<strong>商品を指すカラムが 1 つも無い</strong>。DB でリレーションを保持しているのは、<code>products</code> テーブルの <code>category_id</code> <strong>だけ</strong>。</p>
+
+    <p>この違いは、<strong>商品の所属カテゴリを変えるとき</strong>に問題になる。いま「雑貨」カテゴリ（<code>misc</code>）に入っているボールペンを、<strong>「文房具」カテゴリ（<code>stationery</code>）に移す</strong>としよう。この<strong>1 つの処理</strong>が、参照が 2 つあるせいで<strong>2 通りに書けてしまう</strong>。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">// ① Product 側の参照を変える
+      <pre><code class="language-java">// ボールペン
+Product product = productRepository.findById(1L).orElseThrow();
+
+// 移動元の「雑貨」と、移動先の「文房具」
+Category misc = categoryRepository.findByName("雑貨").orElseThrow();
+Category stationery = categoryRepository.findByName("文房具").orElseThrow();
+
+// ① Product 側の参照を差し替える
 product.setCategory(stationery);
 
-// ② Category 側の参照を変える
+// ② Category 側のリストを入れ替える
+misc.getProducts().remove(product);
 stationery.getProducts().add(product);</code></pre>
     </div>
 
     <p>どちらも Java 上は「カテゴリを変更した」ように見える。しかし DB で書き換えるのは <code>products.category_id</code> という<strong>たった 1 つのカラム</strong>。</p>
-    <p>もし ① と ② に矛盾する内容を書いたら、JPA は <code>category_id</code> を<strong>どちらに合わせて更新すべきか判断できない</strong>。そのため JPA では、<strong>あらかじめ決まった片方の参照だけを見て DB を更新する</strong>仕組みになっている。</p>
-    <p>この<strong>基準になる側を「所有者」と呼び</strong>、<strong>外部キーを持っている側</strong>（＝ <code>Product</code>）がこれにあたる。したがって DB に反映されるのは ① だけで、<strong>② は無視される</strong>。</p>
+    <p>もし ① と ② に違う内容を書いたら、JPA は <code>category_id</code> を<strong>どちらに合わせればいいか決められない</strong>。</p>
+    <p>そこで JPA は、<strong>外部キーを持つ側（所有者）の参照だけを見て DB を更新する</strong>仕組みになっている。ここでは <code>category_id</code> を持つ <code>Product</code> が所有者。</p>
+    <div class="owner-eq">
+      <span class="owner-term">所有者</span>
+      <span class="owner-eq-mark">=</span>
+      <span class="owner-term owner-term-key">外部キー（<code>category_id</code>）を持つクラス</span>
+      <span class="owner-eq-mark">=</span>
+      <span class="owner-term owner-term-res">Product</span>
+    </div>
 
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th></th><th><code>Product</code>（所有側）</th><th><code>Category</code>（反対側）</th></tr>
+          <tr><th></th><th><code>Product</code>（所有者）</th><th><code>Category</code>（所有者ではない側）</th></tr>
         </thead>
         <tbody>
           <tr><td>書き方</td><td><code>@ManyToOne</code></td><td><code>@OneToMany(mappedBy = "category")</code></td></tr>
@@ -455,11 +676,12 @@ stationery.getProducts().add(product);</code></pre>
       </table>
     </div>
 
-    <h4>mappedBy は「私は所有者ではない」という宣言</h4>
-    <p><code>mappedBy = "category"</code> は、<strong>「このリレーションは、相手側の <code>category</code> フィールドが管理している」</strong>という意味。つまり <code>Category</code> 側が「自分は所有者ではない」と宣言している。</p>
+    <h4>mappedBy は「所有者のどのフィールドでマッピングされているか」を示す</h4>
+    <p><code>mappedBy</code> は<strong>「〜によってマッピングされている」</strong>という意味。<code>@OneToMany(mappedBy = "category")</code> は、<code>Category</code> 側の<strong>「このリレーションをマッピングしているのは <code>Product</code> の <code>category</code> フィールドであって、私ではない」</strong>という申告。</p>
+
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">// ── 所有側：外部キーを持つ ──
+      <pre><code class="language-java">// ── 所有者：外部キーを持つ ──
 @Entity
 public class Product {
 
@@ -468,7 +690,7 @@ public class Product {
     private Category category;          // ← mappedBy が指しているフィールド
 }
 
-// ── 反対側：外部キーを持たない ──
+// ── 所有者ではない側：外部キーを持たない ──
 @Entity
 public class Category {
 
@@ -477,7 +699,10 @@ public class Category {
 }</code></pre>
     </div>
 
-    <p>この <code>"category"</code> が指しているのは、<strong><code>Product</code> クラスの <code>category</code> フィールド名</strong>。JPA は所有側のフィールドを <strong>2 段階</strong>で特定している。</p>
+    <p>所有者そのものは、<strong>外部キーを持つかどうか</strong>ですでに決まっている（→ 前の項目）。<code>mappedBy</code> はそれを決めるのではなく、<strong>その所有者がどのフィールドかを指し示すだけ</strong>。</p>
+
+    <h4>なぜフィールド名だけで特定できるのか</h4>
+    <p><code>mappedBy</code> に書いたのは <code>"category"</code> という<strong>フィールド名だけ</strong>で、クラス名はどこにもない。JPA は<strong>2 つの情報を組み合わせて</strong>特定している。</p>
 
     <div class="kw-grid">
       <div class="kw-card">
@@ -492,56 +717,239 @@ public class Category {
       </div>
     </div>
 
-    <p>つまり <strong><code>Product</code> クラスの <code>category</code> フィールド</strong>が所有者だと判断される。</p>
+    <p>この 2 つから、<strong><code>Product</code> クラスの <code>category</code> フィールド</strong>だと決まる。</p>
 
-    <p class="dep-note">💬 補足: <code>mappedBy</code> に書くのは<strong>カラム名（<code>category_id</code>）ではなくフィールド名（<code>category</code>）</strong>。文字列なのでフィールド名を変えてもコンパイルエラーにならず、起動時に初めて失敗するため注意。</p>
-    <p>これを書き忘れると、JPA は <code>Product.category</code> と <code>Category.products</code> を<strong>別々の 2 つのリレーション</strong>と解釈する。その結果、<strong>商品とカテゴリの対応を保存する場所が、DB に 2 つできてしまう</strong>。</p>
+    <p class="dep-note">💬 補足: 書くのは<strong>カラム名（<code>category_id</code>）ではなくフィールド名（<code>category</code>）</strong>。文字列なのでフィールド名を変えてもコンパイルエラーにならず、起動時に初めて失敗する。</p>
+
+    <h4>書き忘れると保存場所が 2 つできる</h4>
+    <p><code>mappedBy</code> が無いと、JPA は <code>Product.category</code> と <code>Category.products</code> を<strong>別々の 2 つのリレーション</strong>と解釈し、それぞれに保存場所を用意してしまう。</p>
 
     <span class="compare-label label-good">✓ mappedBy あり：保存場所は 1 つ</span>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-plaintext">products テーブル
-  id | name | price | category_id    ← つながりはここだけ</code></pre>
+  id | name | price | category_id    ← リレーションはここだけ</code></pre>
     </div>
 
     <span class="compare-label label-bad">✗ mappedBy なし：保存場所が 2 つに分かれる</span>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-plaintext">products テーブル
-  id | name | price | category_id    ← Product 側のつながり
+  id | name | price | category_id    ← Product 側のリレーション
 
 category_products テーブル           ← JPA が勝手に作る「中間テーブル」
-  category_id | products_id          ← Category 側のつながり</code></pre>
+  category_id | products_id          ← Category 側のリレーション</code></pre>
     </div>
 
-    <p>「どの商品がどのカテゴリに属するか」という同じ情報が、次の<strong>2 か所に分かれて保存される</strong>ことになる。</p>
-
-    <div class="kw-grid">
-      <div class="kw-card">
-        <span class="kw-badge">products.category_id</span>
-        <p class="kw-desc">所有側のフィールドを変えたときに更新される</p>
-        <div class="kw-jpql">product.setCategory(...)</div>
-      </div>
-      <div class="kw-card">
-        <span class="kw-badge">category_products</span>
-        <p class="kw-desc">反対側のリストに追加したときに更新される</p>
-        <div class="kw-jpql">category.getProducts().add(...)</div>
-      </div>
-    </div>
+    <p>「どの商品がどのカテゴリに属するか」という<strong>同じ情報が 2 か所に保存される</strong>ことになる。しかも更新されるタイミングが別々で、<code>product.setCategory(...)</code> は <code>products.category_id</code> を、<code>category.getProducts().add(...)</code> は中間テーブルを書き換える。</p>
 
     <p class="dep-note">⚠️ 片方しか書かなければ 2 つの内容が食い違い、<strong>どちらが正しいのか分からなくなる</strong>。</p>
 
-    <h4>やりがちな失敗：片側しか更新しない</h4>
-    <span class="compare-label label-bad">✗ 反対側にだけ追加する</span>
+    <h4>やりがちな失敗：所有者ではない側を更新する</h4>
+    <p>双方向にすると、同じリレーションを表すフィールドが <strong>2 つ</strong>できる（<code>product.category</code> と <code>category.products</code>）。このうち <strong>DB に反映されるのは所有者の <code>product.category</code> だけ</strong>。</p>
+
+    <span class="compare-label label-bad">✗ 所有者ではない側に追加する</span>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">category.getProducts().add(product);
 // product.getCategory() は null のまま
 // → DB の category_id も更新されない</code></pre>
     </div>
-    <p>DB に反映されるのは所有側（<code>Product</code>）の変更だけなので、<strong>反対側のリストに足しても保存されない</strong>。</p>
+    <p><strong>メモリ上のリストは更新されるが、DB は更新されない</strong>。所有者の <code>product.category</code> が <code>null</code> のままだからで、この追加はトランザクションが終わると<strong>なかったことになる</strong>。</p>
+    <p>しかも<strong>例外は 1 つも出ない</strong>。<code>category.getProducts()</code> に商品は入っているので、その場では成功したように見える。</p>
 
-    <span class="compare-label label-good">✓ 片方のクラスに、両側の参照をまとめて更新するメソッドを用意する</span>
+    <p class="conclusion">リレーションを変えるときは、必ず<strong>所有者のフィールド</strong>（<code>product.setCategory(...)</code>）を更新する。</p>
+
+    <h4>所有者だけ更新すればよいわけではない</h4>
+    <p>DB に保存するだけなら、所有者を更新すれば足りる。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">// 「文房具」カテゴリを DB から読み込む
+Category stationery = categoryRepository.findById(3L).orElseThrow();
+
+// ボールペンのカテゴリを差し替える
+product.setCategory(stationery);</code></pre>
+    </div>
+    <p>ただしこれを呼んでも、<strong>すでに読み込まれている <code>stationery.getProducts()</code> の中身は古いままになる</strong>。この 2 つは別々のフィールドなので、片方を書き換えても、もう片方が連動して変わることはない。</p>
+    <div class="fan">
+      <p class="fan-intro">やりたいこと：ボールペンを「雑貨」から「文房具」に移す</p>
+      <div class="fan-top">product.setCategory(stationery)</div>
+      <div class="fan-split">↓ 更新されるのは片方だけ ↓</div>
+      <div class="fan-row">
+        <div class="fan-box fan-box-owner">
+          <span class="fan-label">所有者</span>
+          <div class="fan-item">
+            <span class="fan-line"><span class="fan-mark fan-mark-ok">✓</span><code>product.category</code></span>
+            <span class="fan-note">雑貨 → 文房具 に変わる<br>DB の <code>category_id</code> も更新される</span>
+          </div>
+        </div>
+        <div class="fan-box fan-box-stale">
+          <span class="fan-label">所有者ではない側</span>
+          <div class="fan-item">
+            <span class="fan-line"><span class="fan-mark fan-mark-ng">✗</span><code>stationery.products</code></span>
+            <span class="fan-note">ボールペンが入らない</span>
+          </div>
+          <div class="fan-item">
+            <span class="fan-line"><span class="fan-mark fan-mark-ng">✗</span><code>misc.products</code></span>
+            <span class="fan-note">ボールペンが残ったまま</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p>カテゴリを取り直せば DB の内容が反映されるものの、<strong>同じトランザクションの中で <code>stationery.getProducts()</code> を使うと、移したはずのボールペンが入っていない</strong>。この食い違いでも例外は出ないため、気づきにくい。</p>
+
+    <p class="conclusion">リレーションを変えるときは、<strong>両方のフィールドを更新する必要がある</strong>。</p>
+    <div class="fan">
+      <div class="fan-row">
+        <div class="fan-box fan-box-owner">
+          <span class="fan-label">所有者</span>
+          <div class="fan-item">
+            <span class="fan-line"><code>product.category</code></span>
+            <span class="fan-note"><strong>DB</strong> を更新するため</span>
+          </div>
+        </div>
+        <div class="fan-box">
+          <span class="fan-label">所有者ではない側</span>
+          <div class="fan-item">
+            <span class="fan-line"><code>category.products</code></span>
+            <span class="fan-note"><strong>手元のオブジェクト</strong>を更新するため</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h4>両方のフィールドをまとめて更新するメソッドを用意する</h4>
+    <p>呼び出す場所で 2 行書いてもよい。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">// カテゴリを設定するたびに、この 2 行をセットで書く
+product.setCategory(stationery);
+stationery.getProducts().add(product);</code></pre>
+    </div>
+    <p>ただし、カテゴリを設定する処理は<strong>アプリの中に何か所も現れる</strong>（商品の新規登録、カテゴリの変更、CSV の取り込みなど）。そのすべてで 2 行をセットで書く必要がある。<strong>1 か所でも片方を忘れれば、ここまで見てきた食い違いが起きる</strong>。<code>setCategory()</code> を忘れれば <strong>DB に保存されず</strong>、<code>getProducts().add()</code> を忘れれば<strong>手元のリストが古いまま</strong>になる。</p>
+    <p class="conclusion">そこで、この <strong>2 行をエンティティのメソッドにまとめる</strong>。呼ぶ側は 1 行だけになり、書き忘れようがなくなる。</p>
+
+    <h4>両側に書くと無限ループになる</h4>
+    <p>このメソッドは、<strong>どちらか一方のクラスにだけ置く</strong>。<code>Category</code> と <code>Product</code> の両方に書くと、こうなる。</p>
+
+    <span class="compare-label label-bad">✗ 2 つのメソッドが互いを呼び合う</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">public class Category {
+
+    public void addProduct(Product product) {
+        products.add(product);
+        product.setCategory(this);      // ← Product 側を呼ぶ
+    }
+}
+
+public class Product {
+
+    public void setCategory(Category category) {
+        this.category = category;
+        category.addProduct(this);      // ← また Category 側を呼ぶ
+    }
+}</code></pre>
+    </div>
+
+    <p><code>category.addProduct(product)</code> を呼ぶと、2 つのメソッドが延々と呼び合う。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-plaintext">category.addProduct(product)
+  → product.setCategory(category)
+      → category.addProduct(product)
+          → product.setCategory(category)
+              → ...  （終わらない）</code></pre>
+    </div>
+    <p>呼び出しが積み上がりすぎて <code>StackOverflowError</code> で落ちる。</p>
+    <p class="conclusion"><code>Category.addProduct</code> に任せるなら、<code>Product.setCategory</code> は<strong>フィールドに代入するだけ</strong>にしておく。</p>
+
+    <h4>メソッドを置くのは、所有者ではない側（Category）</h4>
+    <div class="elem-list">
+      <div class="elem-card">
+        <p class="elem-head">理由：リストは <code>Category</code> の持ち物だから</p>
+        <p><code>products</code> リストは <code>Category</code> の <code>private</code> フィールド。つまり<strong><code>Category</code> クラスの中からしか直接触れない</strong>。同じ処理でも、どちらのクラスに書くかで中身がこう変わる。</p>
+
+        <span class="compare-label label-good">✓ Category に置く</span>
+        <div class="editor">
+          <div class="editor-bar"><span></span><span></span><span></span></div>
+          <pre><code class="language-java">public void addProduct(Product product) {
+
+    // 自分のリストなので、そのまま操作できる
+    products.add(product);
+
+    // 相手には、公開されたメソッドで頼む
+    product.setCategory(this);
+}</code></pre>
+        </div>
+        <p class="dep-note">💬 <code>product.setCategory(this)</code> の <code>this</code> は、<strong>いま <code>addProduct()</code> が呼ばれている <code>Category</code> インスタンス自身</strong>。<code>stationery.addProduct(ボールペン)</code> と呼べば <code>this</code> は <code>stationery</code> なので、「このボールペンのカテゴリは文房具です」とセットしていることになる。</p>
+
+        <span class="compare-label label-bad">✗ Product に置く</span>
+        <div class="editor">
+          <div class="editor-bar"><span></span><span></span><span></span></div>
+          <pre><code class="language-java">public void setCategory(Category category) {
+
+    // 自分のフィールドなので、そのまま代入できる
+    this.category = category;
+
+    // 相手のリストを取り出して、中身を書き換える
+    category.getProducts().add(this);
+}</code></pre>
+        </div>
+
+        <p class="case-title">どちらが「カプセル化」を守れているか</p>
+        <p><strong>カプセル化</strong>とは、<strong>オブジェクトの中身を外から直接いじらせず、公開されたメソッド経由でだけ操作させる</strong>という考え方。</p>
+        <ul>
+          <li><code>Category</code> に置く場合：自分のリストは直接操作し、<code>Product</code> には <code>setCategory()</code> という<strong>公開された入口から頼む</strong>。どちらも<strong>正式な手段で操作している</strong></li>
+          <li><code>Product</code> に置く場合：<code>getProducts()</code> で<strong>リストそのものを外に持ち出して</strong>、その中身を書き換える。<code>Category</code> から見れば、知らないうちに自分のリストが変えられている</li>
+        </ul>
+        <p>後者は壊れやすい。<code>getProducts()</code> が<strong>変更できないリストを返す</strong>ように直されただけで、<code>Product</code> 側の <code>add()</code> は例外になる。</p>
+        <p><strong>リストの管理は、持ち主の <code>Category</code> に任せる。</strong></p>
+      </div>
+    </div>
+
+    <p class="case-title">更新メソッドの書き方</p>
+    <p><strong>追加用と削除用を対で</strong>用意する。どちらも中身は 2 行で、<strong>「自分のリストを操作する」＋「相手のフィールドを更新する」</strong>をセットで行う。</p>
+    <div class="method-grid">
+      <div class="method-card">
+        <p class="method-name">category.addProduct(product)</p>
+        <div class="method-step">
+          <span class="method-num">1</span>
+          <div>
+            <code>products.add(product)</code>
+            <span class="method-desc">自分のリストに<strong>相手を入れる</strong></span>
+          </div>
+        </div>
+        <div class="method-step">
+          <span class="method-num">2</span>
+          <div>
+            <code>product.setCategory(this)</code>
+            <span class="method-desc">相手のフィールドに<strong>自分をセットする</strong></span>
+          </div>
+        </div>
+      </div>
+      <div class="method-card">
+        <p class="method-name">category.removeProduct(product)</p>
+        <div class="method-step">
+          <span class="method-num">1</span>
+          <div>
+            <code>products.remove(product)</code>
+            <span class="method-desc">自分のリストから<strong>相手を外す</strong></span>
+          </div>
+        </div>
+        <div class="method-step">
+          <span class="method-num">2</span>
+          <div>
+            <code>product.setCategory(null)</code>
+            <span class="method-desc">相手のフィールドを <strong><code>null</code> に戻す</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="rel-caption">「自分」は <code>category</code>、「相手」は引数の <code>product</code></p>
+    <p>名前は <code>addProduct</code> / <code>removeProduct</code> のように、<strong>リストに何が入るのかが分かる形</strong>にしておく。</p>
+
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">@Entity
@@ -568,50 +976,76 @@ public class Category {
     }
 }</code></pre>
     </div>
-    <p><code>addProduct</code> を 1 回呼ぶだけで、<strong><code>Category</code> のリストと <code>Product</code> の <code>category</code> フィールドが同時に更新される</strong>。呼び出し側で 2 行書き分ける必要はない。</p>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">category.addProduct(product);
-// → category.getProducts() に product が入る
-// → product.getCategory() も category になる</code></pre>
+    <div class="fan">
+      <div class="fan-top">category.addProduct(product)</div>
+      <div class="fan-split">↓ メソッドの中で、2 つの参照を同時に更新する ↓</div>
+      <div class="fan-row">
+        <div class="fan-box">
+          <span class="fan-label">所有者ではない側</span>
+          <div class="fan-item">
+            <span class="fan-line"><span class="fan-mark fan-mark-ok">✓</span><code>products.add(product)</code></span>
+            <span class="fan-note">Java 上のリストが正しくなる</span>
+          </div>
+        </div>
+        <div class="fan-box fan-box-owner">
+          <span class="fan-label">所有者</span>
+          <div class="fan-item">
+            <span class="fan-line"><span class="fan-mark fan-mark-ok">✓</span><code>product.setCategory(this)</code></span>
+            <span class="fan-note">DB の <code>category_id</code> が更新される</span>
+          </div>
+        </div>
+      </div>
     </div>
-    <p>カテゴリを設定したいときは常にこれを呼べばよいので、<strong><code>Product</code> 側に同じメソッドは不要</strong>。置き場所は<strong>コレクションを持つ側（＝ <code>Category</code>）</strong>が慣習。</p>
-    <h4>両側に書くと無限ループになる</h4>
-    <p><code>Category</code> 側と同じ発想で、<code>Product</code> 側の <code>setCategory</code> にも「相手のリストにも自分を追加する」処理を書いてしまうことがある。</p>
 
-    <span class="compare-label label-bad">✗ 2 つのメソッドが互いを呼び合う</span>
+    <p class="case-title">カテゴリに商品を追加する</p>
+    <p><code>addProduct</code> を呼ぶだけ。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">public class Category {
+      <pre><code class="language-java">@Transactional
+public void addToCategory(Long productId, Long categoryId) {
 
-    public void addProduct(Product product) {
-        products.add(product);
-        product.setCategory(this);      // ← Product 側を呼ぶ
-    }
-}
+    Product product = productRepository.findById(productId).orElseThrow();
+    Category category = categoryRepository.findById(categoryId).orElseThrow();
 
-public class Product {
-
-    public void setCategory(Category category) {
-        this.category = category;
-        category.addProduct(this);      // ← また Category 側を呼ぶ
-    }
+    category.addProduct(product);
 }</code></pre>
     </div>
 
-    <p>この状態で <code>category.addProduct(product)</code> を呼ぶと、2 つのメソッドが延々と呼び合う。</p>
+    <p class="case-title">カテゴリから商品を外す</p>
+    <p><code>removeProduct</code> を呼ぶ。商品の <code>category</code> は <code>null</code> になる。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-plaintext">category.addProduct(product)
-  → product.setCategory(category)
-      → category.addProduct(product)
-          → product.setCategory(category)
-              → ...  （終わらない）</code></pre>
+      <pre><code class="language-java">@Transactional
+public void removeFromCategory(Long productId, Long categoryId) {
+
+    Product product = productRepository.findById(productId).orElseThrow();
+    Category category = categoryRepository.findById(categoryId).orElseThrow();
+
+    category.removeProduct(product);
+}</code></pre>
     </div>
-    <p>最終的にメソッド呼び出しが積み上がりすぎて <code>StackOverflowError</code> で落ちる。</p>
+    <p class="dep-note">💬 補足: <code>category_id</code> が <code>NOT NULL</code> のカラムなら、外した時点で保存に失敗する。<strong>どのカテゴリにも属さない商品を許すのか</strong>を決めたうえで使う。</p>
 
-    <p class="dep-note">💬 対策: <strong>両側の参照を更新する処理は、どちらか一方のクラスにだけ書く</strong>。<code>Category.addProduct</code> に任せるなら、<code>Product.setCategory</code> は<strong>フィールドに代入するだけの素朴な setter</strong>にしておく。</p>
+    <p class="case-title">商品を別のカテゴリに移す</p>
+    <p>外してから入れる。<code>removeProduct</code> と <code>addProduct</code> を組み合わせる。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Transactional
+public void moveToCategory(Long productId, Long newCategoryId) {
 
+    Product product = productRepository.findById(productId).orElseThrow();
+    Category newCategory = categoryRepository.findById(newCategoryId).orElseThrow();
+
+    // 今のカテゴリから外す
+    Category current = product.getCategory();
+    if (current != null) {
+        current.removeProduct(product);
+    }
+
+    // 新しいカテゴリに入れる
+    newCategory.addProduct(product);
+}</code></pre>
+    </div>
     <h3>3. フェッチ戦略（EAGER と LAZY）</h3>
     <p>リレーションでつながった相手を、<strong>いつ取りに行くか</strong>の設定。</p>
 
@@ -631,11 +1065,14 @@ public class Product {
     <p>同じコードを両方の設定で動かすと、<strong>SQL が流れるタイミング</strong>の違いがはっきりする。</p>
 
     <span class="compare-label label-bad">EAGER：商品を取る時点でカテゴリも取る</span>
+    <span class="code-label">Java</span>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">@ManyToOne(fetch = FetchType.EAGER)
 private Category category;</code></pre>
     </div>
+
+    <span class="code-label">実行される SQL</span>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-plaintext">Product product = productRepository.findById(1L).get();
@@ -648,11 +1085,14 @@ product.getCategory().getName();    // SQL は走らない（すでに手元に�
     <p>カテゴリを<strong>一度も使わない場面でも</strong>、商品を取るたびに <code>categories</code> への SQL が増える。</p>
 
     <span class="compare-label label-good">LAZY：カテゴリを使った瞬間に取る</span>
+    <span class="code-label">Java</span>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">@ManyToOne(fetch = FetchType.LAZY)
 private Category category;</code></pre>
     </div>
+
+    <span class="code-label">実行される SQL</span>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-plaintext">Product product = productRepository.findById(1L).get();
@@ -664,7 +1104,7 @@ product.getCategory().getName();    // ← ここで初めて
   → SELECT * FROM categories WHERE id = 3</code></pre>
     </div>
     <p>カテゴリを使わなければ <code>categories</code> への SQL は<strong>一度も走らない</strong>。</p>
-    <p class="dep-note">💬 補足: <code>getCategory()</code> で返るのは中身が空の<strong>プロキシ</strong>で、<code>getName()</code> のように中身へ触った瞬間に SQL が走る。そのためトランザクションの外で触ると失敗する（→ <a href="#lazy-init">5. LazyInitializationException</a>）。</p>
+    <p class="dep-note">💬 補足: <code>getCategory()</code> で返るのは中身が空の<strong>プロキシ</strong>で、<code>getName()</code> のように中身へ触った瞬間に SQL が走る。そのためトランザクションの外で触ると失敗する（→ <a href="#lazy-init">6. LazyInitializationException</a>）。</p>
 
     <p>やや厄介なのは、<code>fetch</code> を指定しなかったときの<strong>既定値がアノテーションごとに違う</strong>という点。</p>
     <div class="table-wrap">
@@ -712,7 +1152,12 @@ SELECT * FROM categories WHERE id = 3;      -- ② 3 件目のカテゴリ
     </div>
     <div class="total-box">合計 1 + 20 = 21 回（商品が 1000 件なら 1001 回）</div>
 
-    <p>最初の 1 回（N 件の取得）に対して、<strong>N 回の追加クエリが発生する</strong>ことから N+1 問題と呼ばれる。件数が増えるほど悪化するため、テストデータが少ないうちは気づきにくい。</p>
+    <p>N+1 問題の名前の由来は、この<strong>クエリの内訳</strong>。</p>
+    <ul>
+      <li><strong>1</strong> … 商品を N 件まとめて取る、最初の <code>SELECT</code></li>
+      <li><strong>N</strong> … <strong>リレーション先のカテゴリを取りに行く <code>SELECT</code></strong>。商品 1 件ごとに <code>category_id</code> をもとに <code>categories</code> テーブルへ問い合わせるため、<strong>商品の件数だけ繰り返される</strong></li>
+    </ul>
+    <p>つまり、<strong>本体を取る 1 回</strong>と<strong>リレーション先を取る N 回</strong>で <code>N+1</code> 回。件数が増えるほど悪化するため、テストデータが少ないうちは気づきにくい。</p>
 
     <h4>対策</h4>
     <p>やり方は 3 つある。いずれも「<strong>カテゴリをまとめて取ってくる</strong>」ことで追加クエリを減らす。</p>
@@ -761,7 +1206,9 @@ JOIN categories c ON c.id = p.category_id;</code></pre>
     <p class="dep-note">💬 補足: 上の書き方では<strong>カテゴリ未設定（<code>category_id</code> が NULL）の商品が結果から落ちる</strong>。全件ほしいなら <code>LEFT JOIN FETCH</code> を使う。</p>
 
     <h4>対策② @EntityGraph：アノテーションで指定する</h4>
-    <p>取得したい関連を <code>attributePaths</code> に書くだけで、JPQL を書かずに同じことができる。メソッド名から導出されるクエリにも付けられる。</p>
+    <p>Repository のメソッドに <code>@EntityGraph</code> を付け、<strong>一緒に取りたいリレーションを <code>attributePaths</code> に並べる</strong>。JPQL を書かなくても、リレーション先のエンティティまで取得できる。</p>
+    <p><code>findByPriceLessThan</code> のように<strong>メソッド名から自動でクエリが作られるもの</strong>（メソッド名クエリ）にも付けられる。</p>
+    <p class="dep-note">💬 用語: <strong>グラフ</strong>とは、<code>Product → Category</code>、<code>Product → Maker</code> のように<strong>エンティティが参照でつながった構造</strong>のこと。<code>@EntityGraph</code> は、その<strong>どこまでを一緒に読み込むか</strong>を指定する。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">public interface ProductRepository extends JpaRepository&lt;Product, Long&gt; {
@@ -780,20 +1227,22 @@ JOIN categories c ON c.id = p.category_id;</code></pre>
 FROM products p
 LEFT JOIN categories c ON c.id = p.category_id;</code></pre>
     </div>
-    <p>関連が複数あるときは配列で並べ、ネストした先は <code>.</code> でつなぐ。</p>
+    <p>リレーションが複数あるときは配列で並べ、ネストした先は <code>.</code> でつなぐ。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">@EntityGraph(attributePaths = {"category", "maker", "category.parent"})
 List&lt;Product&gt; findAll();</code></pre>
     </div>
+    <p><code>category.parent</code> は、<strong>カテゴリがさらに親カテゴリを持っている場合</strong>（<code>Category</code> に <code>@ManyToOne Category parent</code> がある構成）に、<strong>そこまで一緒に読み込む</strong>という指定。<code>商品 → カテゴリ → 親カテゴリ</code> と 2 段たどることになる。</p>
 
     <h4>対策③ batch_fetch_size：設定でまとめ取りする</h4>
-    <p>個別の対策ではなく、<strong>アプリ全体の既定の振る舞いを変える</strong>方法。LAZY の関連を取りに行くとき、1 件ずつではなく <code>IN</code> 句でまとめて取るようになる。</p>
+    <p>個別の対策ではなく、<strong>アプリ全体の既定の振る舞いを変える</strong>方法。LAZY のリレーションを取りに行くとき、1 件ずつではなく <code>IN</code> 句でまとめて取るようになる。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-properties"># application.properties
 spring.jpa.properties.hibernate.default_batch_fetch_size=100</code></pre>
     </div>
+    <p class="dep-note">💬 用語: <code>hibernate.default_batch_fetch_size</code> は、<strong>LAZY のリレーションを取りに行くとき、何件ぶんまとめて取るか</strong>の既定値。<code>default</code> は「エンティティごとに <code>@BatchSize</code> で個別指定しなければ、これを使う」という意味。</p>
     <p>コードは<strong>元のまま何も変えない</strong>。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
@@ -811,7 +1260,7 @@ for (Product p : products) {
 SELECT * FROM categories WHERE id IN (1, 2, 3, 4);   -- ② まとめて 1 回
 -- 20 回が 1 回に減る（100 件ずつまとめるので、未取得が 100 件を超えたら複数回）</code></pre>
     </div>
-    <p class="dep-note">💬 補足: <code>JOIN FETCH</code> や <code>@EntityGraph</code> と違い、<strong>SQL は 2 回に分かれる</strong>（本体＋関連）。ただし件数に比例して増えないので N+1 は解消される。</p>
+    <p class="dep-note">💬 補足: <code>JOIN FETCH</code> や <code>@EntityGraph</code> と違い、<strong>SQL は 2 回に分かれる</strong>（本体＋リレーション）。ただし件数に比例して増えないので N+1 は解消される。</p>
 
     <h4>使い分け</h4>
     <div class="table-wrap">
@@ -821,7 +1270,7 @@ SELECT * FROM categories WHERE id IN (1, 2, 3, 4);   -- ② まとめて 1 回
         </thead>
         <tbody>
           <tr><td><code>JOIN FETCH</code></td><td>Repository の <code>@Query</code></td><td>1 回</td><td>条件や JOIN を細かく制御したい</td></tr>
-          <tr><td><code>@EntityGraph</code></td><td>Repository のメソッド</td><td>1 回</td><td>取得したい関連を指定するだけでよい</td></tr>
+          <tr><td><code>@EntityGraph</code></td><td>Repository のメソッド</td><td>1 回</td><td>取得したいリレーションを指定するだけでよい</td></tr>
           <tr><td><code>batch_fetch_size</code></td><td><code>application.properties</code></td><td>2 回以上</td><td>全体の保険。コレクション側の対策</td></tr>
         </tbody>
       </table>
@@ -831,7 +1280,7 @@ SELECT * FROM categories WHERE id IN (1, 2, 3, 4);   -- ② まとめて 1 回
     <p>どれを使っても、<strong>SQL の回数は 21 回から 1〜2 回に減る</strong>。</p>
     <div class="total-box total-box-good">対策後：合計 1〜2 回</div>
 
-    <h4>⚠️ コレクションの JOIN FETCH とページングは併用しない</h4>
+    <h3 id="fetch-paging">5. コレクションの JOIN FETCH とページングは併用しない</h3>
     <p>ここまでの例は「商品 → カテゴリ」（<code>@ManyToOne</code>）だった。これを逆向きにして、「<strong>カテゴリ → 商品</strong>」（<code>@OneToMany</code> のコレクション）を <code>JOIN FETCH</code> しながらページングすると、落とし穴がある。<strong>一見きちんと動くのに、裏側では全件がメモリに読み込まれてしまう</strong>。</p>
     <p>原因は「<strong>件</strong>」と「<strong>行</strong>」の数え方の違い。ここだけ押さえれば理解できるので、順を追って見ていく。</p>
 
@@ -843,69 +1292,58 @@ SELECT * FROM categories WHERE id IN (1, 2, 3, 4);   -- ② まとめて 1 回
     </div>
     <p><code>LIMIT 10</code> の意味は「<strong>結果の先頭 10 行をください</strong>」。ここが重要で、<code>LIMIT</code> が数えているのは<strong>エンティティの件数ではなく、結果の行数</strong>。</p>
     <p>JOIN しなければ、この 2 つは一致する。</p>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-plaintext">categories テーブル
-id | name
- 1 | 文房具      ← 1 行 = カテゴリ 1 件
- 2 | 書籍        ← 1 行 = カテゴリ 1 件
- 3 | 家電        ← 1 行 = カテゴリ 1 件</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th colspan="2">categories テーブル</th><th></th></tr>
+          <tr><th>id</th><th>name</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>文房具</td><td>1 行 = カテゴリ 1 件</td></tr>
+          <tr><td>2</td><td>書籍</td><td>1 行 = カテゴリ 1 件</td></tr>
+          <tr><td>3</td><td>家電</td><td>1 行 = カテゴリ 1 件</td></tr>
+        </tbody>
+      </table>
     </div>
     <p>1 行がそのままカテゴリ 1 件なので、<code>LIMIT 10</code> はきちんと「カテゴリ 10 件」になる。</p>
 
     <h4>JOIN すると「1 件 = 複数行」になる</h4>
     <p>ところが <code>JOIN FETCH c.products</code> を付けると、<strong>商品の数だけカテゴリの行が複製される</strong>。</p>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-plaintext">category_id | category_name | product_name
-         1  | 文房具        | ボールペン    ┐
-         1  | 文房具        | ノート        ├ カテゴリ 1 件なのに 3 行
-         1  | 文房具        | 消しゴム      ┘
-         2  | 書籍          | 技術書        ← こちらは 1 件 = 1 行</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th colspan="3">JOIN した結果</th><th></th></tr>
+          <tr><th>category_id</th><th>category_name</th><th>product_name</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>文房具</td><td>ボールペン</td><td rowspan="3"><strong>カテゴリ 1 件なのに 3 行</strong></td></tr>
+          <tr><td>1</td><td>文房具</td><td>ノート</td></tr>
+          <tr><td>1</td><td>文房具</td><td>消しゴム</td></tr>
+          <tr><td>2</td><td>書籍</td><td>技術書</td><td>こちらは 1 件 = 1 行</td></tr>
+        </tbody>
+      </table>
     </div>
     <p>文房具はカテゴリとしては 1 件なのに、結果は 3 行。<strong>「件」と「行」がずれてしまった</strong>。</p>
 
     <h4>だから LIMIT が使えない</h4>
     <p>このずれた結果に <code>LIMIT 2</code> を付けると、返ってくるのは先頭 2 行だけ。</p>
-    <figure class="diagram">
-      <svg viewBox="0 0 660 210" role="img" aria-label="JOIN の結果に LIMIT を付けると、1 件のカテゴリの商品が途中で切れてしまうことを示す図">
-        <rect class="dg-head" x="8" y="8" width="300" height="26" rx="5"/>
-        <text class="dg-note" x="20" y="25">category</text>
-        <text class="dg-note" x="170" y="25">product</text>
-
-        <rect class="dg-box" x="8" y="36" width="300" height="30" rx="5"/>
-        <text class="dg-code" x="20" y="56">文房具</text>
-        <text class="dg-code" x="170" y="56">ボールペン</text>
-
-        <rect class="dg-box" x="8" y="68" width="300" height="30" rx="5"/>
-        <text class="dg-code" x="20" y="88">文房具</text>
-        <text class="dg-code" x="170" y="88">ノート</text>
-
-        <g class="dg-dim">
-          <rect class="dg-box" x="8" y="108" width="300" height="30" rx="5"/>
-          <text class="dg-code" x="20" y="128">文房具</text>
-          <text class="dg-code" x="170" y="128">消しゴム</text>
-
-          <rect class="dg-box" x="8" y="140" width="300" height="30" rx="5"/>
-          <text class="dg-code" x="20" y="160">書籍</text>
-          <text class="dg-code" x="170" y="160">技術書</text>
-
-          <rect class="dg-box" x="8" y="172" width="300" height="30" rx="5"/>
-          <text class="dg-code" x="20" y="192">家電</text>
-          <text class="dg-code" x="170" y="192">NULL</text>
-        </g>
-
-        <line class="dg-cut" x1="8" y1="103" x2="400" y2="103"/>
-        <text class="dg-cut-label" x="316" y="99">LIMIT 2 はここで行を切る</text>
-
-        <text class="dg-note" x="420" y="56">取れたカテゴリは「文房具」1 件だけ</text>
-        <text class="dg-note" x="420" y="76">しかもその商品は 3 件のうち</text>
-        <text class="dg-note" x="420" y="94">　2 件しか入らない</text>
-        <text class="dg-note" x="420" y="150">「書籍」「家電」は</text>
-        <text class="dg-note" x="420" y="168">そもそも取得されない</text>
-      </svg>
-      <figcaption>JOIN した結果に LIMIT を付けると、エンティティ単位ではなく行単位で切られてしまう</figcaption>
-    </figure>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th colspan="3">LIMIT 2 を付けた結果</th><th></th></tr>
+          <tr><th>category_id</th><th>category_name</th><th>product_name</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>文房具</td><td>ボールペン</td><td rowspan="2"><strong>ここまでが取れる</strong></td></tr>
+          <tr><td>1</td><td>文房具</td><td>ノート</td></tr>
+          <tr class="cut-row"><td colspan="4">LIMIT 2 はここで行を切る</td></tr>
+          <tr class="dim-row"><td>1</td><td>文房具</td><td>消しゴム</td><td>同じ「文房具」なのに切り捨てられる</td></tr>
+          <tr class="dim-row"><td>2</td><td>書籍</td><td>技術書</td><td rowspan="2">そもそも取得されない</td></tr>
+          <tr class="dim-row"><td>3</td><td>家電</td><td>NULL</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="rel-caption">JOIN した結果に LIMIT を付けると、エンティティ単位ではなく<strong>行単位</strong>で切られてしまう</p>
     <p>カテゴリは 1 件しか取れず、しかもその <code>getProducts()</code> は<strong>本当は 3 件あるのに 2 件しか返さない</strong>。<strong>嘘のデータを返すエンティティ</strong>ができてしまう。</p>
 
     <h4>Hibernate の逃げ道：全件読んでメモリで切る</h4>
@@ -947,20 +1385,54 @@ firstResult/maxResults specified with collection fetch; applying in memory</code
     <p><code>JOIN FETCH</code> をやめれば行は増えないので、<code>LIMIT</code> がそのまま使える。商品はあとから <code>batch_fetch_size</code> にまとめ取りさせる。</p>
 
     <span class="compare-label label-good">✓ JOIN FETCH を外して batch_fetch_size に任せる</span>
+    <span class="code-label">application.properties</span>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-properties"># application.properties
-spring.jpa.properties.hibernate.default_batch_fetch_size=100</code></pre>
+      <pre><code class="language-properties">spring.jpa.properties.hibernate.default_batch_fetch_size=100</code></pre>
     </div>
+
+    <span class="code-label">Java</span>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">// 専用メソッドは不要。継承した findAll(Pageable) をそのまま使う
-Page&lt;Category&gt; page = categoryRepository.findAll(PageRequest.of(0, 10));
+Pageable pageable = PageRequest.of(0, 10);
+Page&lt;Category&gt; page = categoryRepository.findAll(pageable);
 
 for (Category c : page) {
-    c.getProducts().size();   // 1 件目に触れた時点で 10 件分まとめて取りに行く
+    // ここで初めて商品を読み込む
+    System.out.println(c.getName() + "：" + c.getProducts().size() + " 件");
 }</code></pre>
     </div>
+    <p><code>products</code> は LAZY なので、読み込まれるタイミングはこうなる。</p>
+    <div class="step-flow">
+      <div class="step-row">
+        <span class="step-badge">1</span>
+        <div>
+          <code>categoryRepository.findAll(pageable)</code>
+          <span class="step-note">カテゴリを 10 件取得する。<strong>商品はまだ読み込まない</strong></span>
+          <span class="step-sql">SELECT * FROM categories LIMIT 10 OFFSET 0</span>
+        </div>
+      </div>
+      <div class="step-arrow">↓</div>
+      <div class="step-row">
+        <span class="step-badge">2</span>
+        <div>
+          <code>ループ 1 周目の c.getProducts()</code>
+          <span class="step-note">ここで初めて商品を取りに行く。<code>batch_fetch_size</code> が効いて、<strong>10 件分のカテゴリの商品をまとめて読む</strong></span>
+          <span class="step-sql">SELECT * FROM products WHERE category_id IN (1, 2, … , 10)</span>
+        </div>
+      </div>
+      <div class="step-arrow">↓</div>
+      <div class="step-row step-row-none">
+        <span class="step-badge step-badge-none">3</span>
+        <div>
+          <code>ループ 2 周目以降の c.getProducts()</code>
+          <span class="step-note">すでに読み込み済みなので、<strong>SQL は走らない</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <span class="code-label">実行される SQL</span>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-sql">SELECT * FROM categories LIMIT 10 OFFSET 0;            -- ① LIMIT が効く
@@ -987,8 +1459,8 @@ WHERE category_id IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10); -- ② その 10 件分だ
       </table>
     </div>
 
-    <h3 id="lazy-init">5. LazyInitializationException</h3>
-    <p>LAZY を使っていると必ず一度は踏む例外。<strong>「あとで取りに行く」と言っていた関連を、取りに行けなくなった状態</strong>で発生する。</p>
+    <h3 id="lazy-init">6. LazyInitializationException</h3>
+    <p>LAZY を使っていると必ず一度は踏む例外。<strong>「あとで取りに行く」と言っていたリレーションを、取りに行けなくなった状態</strong>で発生する。</p>
 
     <div class="kw-grid">
       <div class="kw-card">
@@ -998,8 +1470,8 @@ WHERE category_id IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10); -- ② その 10 件分だ
       </div>
       <div class="kw-card">
         <span class="kw-badge">いつ出るか</span>
-        <p class="kw-desc">LAZY にしたカテゴリの中身を、<strong>トランザクションの外で使おうとしたとき</strong>。商品はすでに手元にあるので <code>getName()</code> は問題なく動く</p>
-        <div class="kw-jpql">product.getCategory().getName()</div>
+        <p class="kw-desc">LAZY にしたカテゴリの中身を、<strong>トランザクションの外で使おうとしたとき</strong>。商品自身の <code>product.getName()</code> は手元にあるので動くが、<strong>カテゴリを読みに行った瞬間に失敗する</strong></p>
+        <div class="kw-jpql">product.getCategory().<mark>getName()</mark></div>
       </div>
     </div>
 
@@ -1052,7 +1524,6 @@ public class Product {
 product.getCategory().getName();
 // 中身に触った瞬間、引換券を使って DB に取りに行く</code></pre>
     </div>
-    <p class="dep-note">💬 ここが冒頭の差の答え。<code>getName()</code> は<strong>手元の値を返すだけ</strong>だが、<code>getCategory().getName()</code> は<strong>引換券を使って DB に行く</strong>必要がある。</p>
 
     <h4>ステップ② 引換券が使えるのは、トランザクションの間だけ</h4>
     <p>引換券を使って DB に取りに行くには、SQL を投げるための窓口が必要になる。この窓口の役割を担っているのが <strong>EntityManager</strong>（永続化コンテキストとも呼ばれる）。そして EntityManager は、<strong>トランザクションが終わると一緒に閉じられる</strong>。</p>
@@ -1158,35 +1629,54 @@ product.getCategory().getName();    // 💥 引換券を使おうとしたが窓
   ...</code></pre>
     </div>
     <p>読むべき箇所は 3 つ。</p>
-    <ul class="elem-points">
-      <li><code>could not initialize proxy [Category#3]</code> … <strong>id が 3 の Category の引換券を読み込めなかった</strong>（どのエンティティで失敗したか）</li>
-      <li><code>no Session</code> … <strong>窓口（Session = EntityManager）がない</strong>。これが根本原因</li>
-      <li><code>HibernateProxy.getName()</code> … プロキシのメソッドを呼んだ瞬間に落ちている。その 1 つ下の行（<code>ProductController.show</code>）が<strong>直すべき自分のコード</strong></li>
-    </ul>
-    <p class="dep-note">💬 補足: <code>Category$HibernateProxy</code> は Hibernate が実行時に生成した<strong>プロキシのクラス</strong>。デバッガでこの名前を見かけたら「まだ読み込まれていない LAZY の関連」だと判断できる。</p>
+    <div class="step-flow step-flow-list">
+      <div class="step-row">
+        <span class="step-badge">1</span>
+        <div>
+          <span class="step-label">どのデータで失敗したか</span>
+          <span class="step-sql">could not initialize proxy [com.example.Category#3]</span>
+          <span class="step-note"><code>id = 3</code> の <code>Category</code> の引換券を読み込めなかった</span>
+        </div>
+      </div>
+      <div class="step-row">
+        <span class="step-badge">2</span>
+        <div>
+          <span class="step-label">なぜ失敗したか（根本原因）</span>
+          <span class="step-sql">- no Session</span>
+          <span class="step-note">引換券を使うための<strong>窓口（<code>Session</code> ＝ <code>EntityManager</code>）がない</strong></span>
+        </div>
+      </div>
+      <div class="step-row">
+        <span class="step-badge">3</span>
+        <div>
+          <span class="step-label">どこを直すか</span>
+          <span class="step-sql">at com.example.ProductController.show(ProductController.java:24)</span>
+          <span class="step-note"><code>HibernateProxy.getName()</code> の<strong>1 つ下にある、自分のコードの行</strong>。ここが引換券に触れている</span>
+        </div>
+      </div>
+    </div>
 
     <h4>なぜ勝手に取ってきてくれないのか</h4>
-    <p>「接続が閉じているなら、そのとき開き直して取ってくればいいのでは」と思えるが、JPA はそういう動きにはなっていない。仮にそうだったら何が起きるかを考えてみる。</p>
+    <p>「接続が閉じているなら、そのとき開き直して取ってくればいい」と思えるが、そうなっていない。仮にそういう仕様だったら、次のコードで何が起きるかを見る。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">// Controller（トランザクションの外）
 List&lt;Product&gt; products = service.findAll();   // 商品 1000 件
 
 for (Product p : products) {
-    System.out.println(p.getCategory().getName());   // ← 1 周ごとに DB アクセス
+    System.out.println(p.getCategory().getName());
 }</code></pre>
     </div>
-    <p><code>getCategory().getName()</code> は見た目はただの getter だが、中身はプロキシなので<strong>1 回ごとに DB アクセスが必要</strong>。接続を勝手に開く仕様だったら、ループ 1 周ごとにこれが起きる。</p>
+    <p><code>getCategory().getName()</code> は 1 回ごとに DB アクセスが必要なので、<strong>ループ 1 周ごとに接続を借りて返す</strong>ことになる。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-plaintext">1 周目: プールから接続を借りる → トランザクション開始
-        → SELECT * FROM categories WHERE id = 3 → コミット → 接続を返す
-2 周目: 接続を借りる → トランザクション開始 → SELECT ... → コミット → 返す
-3 周目: ...
+      <pre><code class="language-plaintext">1 周目: 接続を借りる → SELECT → コミット → 接続を返す
+2 周目: 接続を借りる → SELECT → コミット → 接続を返す
+...
 （1000 周 = 接続の取得と返却が 1000 回）</code></pre>
     </div>
 
-    <p>これは<strong>通常の N+1 問題よりさらに悪い</strong>。SQL の回数が同じでも、<strong>接続の取得回数とキャッシュの有無で、とてつもない無駄が生まれる</strong>。</p>
+    <p>SQL の回数は N+1 と同じでも、<strong>中身はもっと悪い</strong>。</p>
     <div class="table-wrap">
       <table>
         <thead>
@@ -1194,16 +1684,11 @@ for (Product p : products) {
         </thead>
         <tbody>
           <tr><td>SQL の回数</td><td>1 + 1000 回</td><td>1 + 1000 回</td></tr>
-          <tr><td>接続の取得</td><td><strong>1 回</strong>（使い回す）</td><td><strong>1000 回</strong></td></tr>
-          <tr><td>同じカテゴリの再取得</td><td><strong>起きない</strong>（キャッシュが効く）</td><td><strong>毎回起きる</strong></td></tr>
+          <tr><td>接続の取得</td><td><strong>1 回</strong>（使い回す）</td><td><strong>1000 回</strong><br>プールが枯渇すれば他のリクエストが待たされる</td></tr>
+          <tr><td>同じカテゴリの再取得</td><td><strong>起きない</strong><br>一度読んだものはキャッシュされる</td><td><strong>毎回起きる</strong><br>毎回まっさらな状態から読み直す</td></tr>
         </tbody>
       </table>
     </div>
-    <p>効いてくるのは下の 2 行。</p>
-    <ul class="elem-points">
-      <li><strong>接続の取得コスト</strong> … プールからの借り出しと返却が 1000 回発生する。プールが枯渇すれば<strong>他のリクエストが待たされる</strong></li>
-      <li><strong>キャッシュが効かない</strong> … トランザクション内なら永続化コンテキストが「id = 3 のカテゴリはもう読んだ」と覚えているので、1000 件が同じカテゴリなら SQL は 1 回で済む。毎回トランザクションを開き直すと<strong>毎回まっさらな状態</strong>なので、同じカテゴリを 1000 回取りに行く</li>
-    </ul>
 
     <p>そして何より、<strong>コードを読んでも気づけない</strong>。</p>
     <div class="editor">
@@ -1212,10 +1697,7 @@ for (Product p : products) {
 // この 1 行が DB アクセスだとは、コードから読み取れない</code></pre>
     </div>
 
-    <div class="callout">
-      <p class="callout-title">📌 例外は制約ではなく、隠れた DB アクセスを表に出すための仕組み</p>
-      <p>黙って動いてしまうと、<strong>どこで何回 SQL が走っているのか追跡できなくなる</strong>。だから JPA は「トランザクションの外では取りに行けない」と決め、<code>LazyInitializationException</code> で<strong>気づかせる</strong>設計にしている。</p>
-    </div>
+    <p class="conclusion">例外は制約ではなく、<strong>隠れた DB アクセスを表に出すための仕組み</strong>。黙って動くと、どこで何回 SQL が走っているか追えなくなる。</p>
 
     <h4>対策</h4>
     <p>解決策は 2 つだけ。<strong>引換券を残さない</strong>か、<strong>引換券を外に出さない</strong>かのどちらか。</p>
@@ -1234,6 +1716,7 @@ for (Product p : products) {
     <p>ひとつめは <code>JOIN FETCH</code> / <code>@EntityGraph</code>。<strong>N+1 問題の対策とまったく同じもの</strong>（→ <a href="#n-plus-one">4. N+1 問題</a>）で、商品を取るときに<strong>カテゴリも一緒に読み込んでしまう</strong>。</p>
 
     <span class="compare-label label-good">✓ 最初からカテゴリも読んでおく</span>
+    <span class="code-label">Repository</span>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">public interface ProductRepository extends JpaRepository&lt;Product, Long&gt; {
@@ -1242,17 +1725,18 @@ for (Product p : products) {
     Optional&lt;Product&gt; findById(Long id);
 }</code></pre>
     </div>
+
+    <span class="code-label">Controller</span>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">// Controller
-Product product = service.find(1L);
+      <pre><code class="language-java">Product product = service.find(1L);
 product.getCategory().getName();   // ✅ すでに読み込まれているので例外にならない</code></pre>
     </div>
     <p>カテゴリの中身が最初から入っているため、<strong>引換券そのものが残らない</strong>。トランザクションの外で触っても DB に行く必要がないので例外にならない。</p>
-    <p>注意点は、<code>@EntityGraph</code> が<strong>「このメソッドではこの関連を取る」と Repository 側で固定する</strong>仕組みだということ。呼び出す画面によって必要な関連が違う場合、1 つのメソッドで全部読み込むと無駄が出る。</p>
+    <p>注意点は、<code>@EntityGraph</code> が<strong>「このメソッドではこのリレーションを取る」と Repository 側で固定する</strong>仕組みだということ。呼び出す画面によって必要なリレーションが違う場合、1 つのメソッドで全部読み込むと無駄が出る。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">// ✗ 全部の関連を読み込むメソッドを 1 つだけ用意した場合
+      <pre><code class="language-java">// ✗ 全部のリレーションを読み込むメソッドを 1 つだけ用意した場合
 @EntityGraph(attributePaths = {"category", "maker", "tags"})
 Optional&lt;Product&gt; findById(Long id);
 
@@ -1268,7 +1752,7 @@ Optional&lt;Product&gt; findWithCategoryById(Long id);              // 一覧画
 @EntityGraph(attributePaths = {"category", "maker", "tags"})
 Optional&lt;Product&gt; findWithAllRelationsById(Long id);          // 詳細画面用</code></pre>
     </div>
-    <p class="dep-note">💬 つまり <code>@EntityGraph</code> は「<strong>何を使うかが先に分かっている</strong>」場面に向いた対策。使うかどうかが呼び出し側次第なら、DTO に詰め替えるほうが素直。</p>
+    <p class="dep-note">💬 デメリット: <strong>呼び出し側が何を使うかを、Repository 側で先に決めておく必要がある</strong>。</p>
 
     <p>実務でよく使うのは DTO への詰め替え。<code>@Transactional</code> を自分で付けてトランザクションの範囲を Service 全体に広げ、<strong>その中で必要な値を取り出してしまう</strong>。</p>
 
@@ -1287,14 +1771,16 @@ public ProductDto find(Long id) {
 }                                         // ← ここで初めて終了</code></pre>
     </div>
     <p>ポイントは、<strong>Controller に渡るのがエンティティではなく <code>ProductDto</code> になる</strong>こと。DTO の中身は取り出し済みの <code>String</code> だけで、プロキシはどこにも入っていない。</p>
+    <span class="code-label">DTO</span>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">public record ProductDto(String name, String categoryName) {}</code></pre>
     </div>
+
+    <span class="code-label">Controller</span>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">// Controller
-ProductDto dto = service.find(1L);
+      <pre><code class="language-java">ProductDto dto = service.find(1L);
 
 dto.name();           // ✅ ただの String
 dto.categoryName();   // ✅ ただの String。DB には行かない
@@ -1302,6 +1788,10 @@ dto.categoryName();   // ✅ ただの String。DB には行かない
 // dto.getCategory() ← そんなメソッドは存在しないので、呼ぼうとしてもコンパイルエラー</code></pre>
     </div>
     <p>つまり <strong>Controller には引換券が一枚も渡らない</strong>。<code>getCategory()</code> を呼ぶ手段がないので、<strong>例外が起きる余地そのものがなくなる</strong>のがこの対策の要点。</p>
+    <p class="dep-note">💬 デメリット: 例外は起きなくなるが、<strong>SQL の回数は減らない</strong>。詰め替えはトランザクションの中で動くので、<code>product.getCategory().getName()</code> は普通に <code>SELECT</code> を発行する。一覧処理では件数ぶん繰り返され、N+1 になる。</p>
+
+    <p class="conclusion">実務では、まず <strong>DTO への詰め替え</strong>で例外が起きない形にする。そのうえで<strong>件数が多く、性能が問題になりそうな処理だけ</strong> <code>@EntityGraph</code> を足す。</p>
+    <p>先に DTO にしておけば例外は構造的に起きなくなるので、<code>@EntityGraph</code> は<strong>あとから必要な場所にだけ足せる</strong>。逆の順番だと、画面を変えるたびに例外が出ないか確かめることになる。</p>
 
     <h4>なぜ手元の環境では例外が出ないのか</h4>
     <p>Spring Boot では <code>spring.jpa.open-in-view</code> の初期値が <code>true</code> で、これは<strong>画面の描画が終わるまで窓口を開いたままにする</strong>設定（上の図の 3 段目）。そのため Controller でも <code>getCategory()</code> が動いてしまい、この例外に遭遇しないことがある。</p>
@@ -1313,7 +1803,7 @@ spring.jpa.open-in-view=false</code></pre>
     <p>ただし <code>true</code> のままだと、リクエストの処理が終わるまで<strong>ずっと DB 接続を握り続ける</strong>。アクセスが増えると接続が枯渇するため <strong><code>false</code> にするのが推奨</strong>で、その場合は上記の対策が必須になる。</p>
 
     <h4>例外が出るのに、なぜ LAZY のままにするのか</h4>
-    <p>「トランザクションの外で取りに行けないなら、最初から EAGER にすればいいのでは」と思えるが、<strong>LAZY のままにしておくほうが得</strong>。理由は 4 つ。</p>
+    <p>「トランザクションの外で取りに行けないなら、最初から EAGER にすればいいのでは」と思えるが、<strong>LAZY のままにしておくほうが得</strong>。理由は 3 つ。</p>
 
     <div class="elem-list">
       <div class="elem-card">
@@ -1372,78 +1862,15 @@ List&lt;Product&gt; findAll();                // 商品名だけの画面（カ�
         <p>EAGER にしてしまうと、後者のような「軽く取りたい」クエリが<strong>書けなくなる</strong>。<code>@EntityGraph</code> で EAGER を LAZY に上書きすることは原則できない。</p>
       </div>
 
-      <div class="elem-card">
-        <p class="elem-head"><span class="elem-num">4</span>例外はバグではなく、設計を促す合図</p>
-        <p><code>LazyInitializationException</code> は「このクエリで<strong>何を取ってくるべきか決めていない</strong>」という指摘。対処は EAGER にすることではなく、次の 2 つを決めること。</p>
-        <ul class="elem-points">
-          <li><strong>何を読むか</strong> … 使う関連は <code>@EntityGraph</code> / <code>JOIN FETCH</code> で明示的に取る</li>
-          <li><strong>どこまで持ち出すか</strong> … エンティティは Service の外に出さず、DTO に詰め替えて返す</li>
-        </ul>
-        <p>この 2 つは二択ではなく<strong>別の問題への対策</strong>なので、実務では<strong>両方を組み合わせる</strong>ことが多い。</p>
-        <div class="editor">
-          <div class="editor-bar"><span></span><span></span><span></span></div>
-          <pre><code class="language-java">@Transactional(readOnly = true)
-public List&lt;ProductDto&gt; findAll() {
-
-    // ① @EntityGraph でカテゴリも一緒に読む（N+1 対策）
-    List&lt;Product&gt; products = productRepository.findAllWithCategory();
-
-    // ② DTO に詰め替えて返す（例外対策）
-    return products.stream()
-        .map(p -&gt; new ProductDto(p.getName(), p.getCategory().getName()))
-        .toList();
-}</code></pre>
-        </div>
-        <p>片方だけでも例外は止まるが、それぞれ別の弱点が残る。</p>
-
-        <p class="case-title"><code>@EntityGraph</code> だけ（エンティティをそのまま返す）</p>
-        <p>読み込んだ関連については例外が起きない。問題は、<strong>Repository のメソッドを書く時点で、呼び出し側がどの関連を使うのかを把握しておかなければならない</strong>こと。あとから View 側で別の関連を使い始めると、そこで初めて例外になる。</p>
-        <div class="editor">
-          <div class="editor-bar"><span></span><span></span><span></span></div>
-          <pre><code class="language-java">// Repository：カテゴリだけ読むようにしてある
-@EntityGraph(attributePaths = "category")
-List&lt;Product&gt; findAllWithCategory();
-
-// Controller / View：あとから 1 行追加した
-product.getCategory().getName();   // ✅ 読み込み済み
-product.getMaker().getName();      // 💥 読み込んでいないので例外</code></pre>
-        </div>
-        <p>直すには Repository の <code>attributePaths</code> に <code>"maker"</code> を足す必要がある。つまり<strong>画面を変えるたびに Repository を直す</strong>ことになり、両者が密結合になる。</p>
-
-        <p class="case-title">DTO だけ（<code>@EntityGraph</code> を付けない）</p>
-        <p>エンティティを外に出さないので、例外は<strong>構造的に起きない</strong>。ただし DTO に詰める処理はトランザクションの中で動くため、<strong>関連を取りに行く SQL は普通に走る</strong>。一覧処理では件数ぶん繰り返される。</p>
-        <div class="editor">
-          <div class="editor-bar"><span></span><span></span><span></span></div>
-          <pre><code class="language-java">@Transactional(readOnly = true)
-public List&lt;ProductDto&gt; findAll() {
-
-    return productRepository.findAll().stream()        // ① 商品 1000 件
-        .map(p -&gt; new ProductDto(
-            p.getName(),
-            p.getCategory().getName()                  // ② 1 件ごとに SELECT
-        ))
-        .toList();
-}</code></pre>
-        </div>
-        <div class="editor">
-          <div class="editor-bar"><span></span><span></span><span></span></div>
-          <pre><code class="language-sql">SELECT * FROM products;                     -- ① 1 回
-SELECT * FROM categories WHERE id = 1;      -- ② 1 件目
-SELECT * FROM categories WHERE id = 2;      -- ② 2 件目
--- ... 商品の数だけ繰り返される（合計 1001 回）</code></pre>
-        </div>
-        <p>例外は出ず結果も正しいので、<strong>動いてしまう</strong>のが厄介な点。気づくのは件数が増えて遅くなってから。</p>
-        <p class="dep-note">💬 迷ったら <strong>DTO に詰め替える方針を先に決める</strong>。例外が構造的に起きなくなるので、そのうえで性能のために <code>@EntityGraph</code> を足すのが安全な順序。</p>
-      </div>
     </div>
 
-    <div class="callout">
-      <p class="callout-title">📌 LAZY は「既定を最小にして、必要なぶんだけ足せる状態」</p>
-      <p>LAZY が面倒なのは「どのクエリで何を取るか」を考えさせられるから。EAGER はその判断を放棄して<strong>常に最大量を取る</strong>選択なので、問題は隠れても性能は戻ってこない。</p>
-    </div>
-
-    <h3>6. cascade と orphanRemoval</h3>
-    <p>どちらも「<strong>親エンティティを操作したとき、子をどうするか</strong>」を決める設定。ここでは「注文（<code>Order</code>）と注文明細（<code>OrderItem</code>）」を例にする。</p>
+    <h3>7. cascade</h3>
+    <p><code>cascade</code> と、次のセクションで扱う <code>orphanRemoval</code> は、どちらも「<strong>親エンティティを操作したとき、子をどうするか</strong>」を決める設定。<code>@OneToMany</code> などの<strong>属性</strong>として書く。</p>
+    <ul>
+      <li><code>cascade</code> … 親への操作（保存・削除など）を<strong>子にも伝える</strong></li>
+      <li><code>orphanRemoval</code> … 親のリストから<strong>外された子を削除する</strong>（→ <a href="#orphan-removal">8. orphanRemoval</a>）</li>
+    </ul>
+    <p>書く場所は <code>@OneToMany</code> の括弧の中。<code>mappedBy</code> と並べて指定する。ここでは「注文（<code>Order</code>）と注文明細（<code>OrderItem</code>）」を例にする。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">@Entity
@@ -1454,16 +1881,48 @@ public class Order {
     private Long id;
 
     @OneToMany(mappedBy = "order",
-               cascade = CascadeType.ALL,
-               orphanRemoval = true)
+               cascade = CascadeType.ALL,   // ← 親への操作を子にも伝える
+               orphanRemoval = true)        // ← 外された子を削除する
     private List&lt;OrderItem&gt; items = new ArrayList&lt;&gt;();
 }</code></pre>
     </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>属性</th><th>書かなかったとき（既定）</th><th>よく使う指定</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>cascade</code></td><td>何も伝わらない</td><td><code>CascadeType.ALL</code>（保存・削除などをすべて伝える）</td></tr>
+          <tr><td><code>orphanRemoval</code></td><td><code>false</code>（外しても消えない）</td><td><code>true</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>この 2 行を足すと、<strong>親を操作するだけで、子もあわせて変更される</strong>。子を 1 件ずつ保存したり削除したりするコードが要らなくなる。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">orderRepository.save(order);      // 明細も一緒に INSERT される
+orderRepository.delete(order);    // 明細も一緒に DELETE される
+order.getItems().remove(item);    // 外した明細だけ DELETE される</code></pre>
+    </div>
 
-    <h4>設定しないとどうなるか</h4>
-    <p>まず、どちらも付けていない状態を見ておく。JPA は<strong>エンティティごとに個別に保存・削除するのが基本</strong>。そのため<strong>保存</strong>と<strong>削除</strong>の両方で、親と子を別々に扱う必要がある。</p>
+    <p>親に対して行った操作を、<strong>そのまま子にも適用する</strong>という指定。何を伝えるかは <code>CascadeType</code> で選ぶ。</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>CascadeType</th><th>伝わる操作</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>PERSIST</code></td><td>親を保存すると、子も保存される</td></tr>
+          <tr><td><code>MERGE</code></td><td>親の変更を反映すると、子の変更も反映される</td></tr>
+          <tr><td><code>REMOVE</code></td><td><strong>親を削除すると、子も削除される</strong></td></tr>
+          <tr><td><code>REFRESH</code> / <code>DETACH</code></td><td>再読み込み・切り離しが子にも及ぶ</td></tr>
+          <tr><td><code>ALL</code></td><td>上記すべて</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>以降では、<strong>cascade を付けていないと何が起きるか</strong>を、保存と削除のそれぞれで見ていく。</p>
 
-    <p class="case-title">① 保存するとき：子が保存されない</p>
+    <h4>① 保存：子が保存されない</h4>
     <p>親に明細を 2 件持たせて保存してみる。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
@@ -1473,7 +1932,8 @@ order.addItem(new OrderItem("ノート", 1));
 
 orderRepository.save(order);</code></pre>
     </div>
-    <p>このコードで保存されるのは <strong><code>Order</code> だけ</strong>。<code>order.getItems()</code> に明細が 2 件入っていても、<strong>JPA はそれを保存対象として扱わない</strong>。</p>
+    <p>このコードで <code>INSERT</code> されるのは、<code>orders</code> テーブルの <strong>1 行だけ</strong>。<code>order_items</code> テーブルには <strong>1 行も入らない</strong>。</p>
+    <p>Java 上では <code>order.getItems()</code> に明細が 2 件入っているのに、<strong>DB にはその 2 件がどこにも残らない</strong>。しかも<strong>例外は出ない</strong>ので、保存は成功したように見える。</p>
 
     <figure class="diagram">
       <svg viewBox="0 0 660 170" role="img" aria-label="cascade を付けないと save(order) では親の行だけが挿入され、子のテーブルは空のままであることを示す図">
@@ -1509,7 +1969,9 @@ orderRepository.save(order);</code></pre>
       <figcaption>cascade がないと、save(order) が運ぶのは Order の行だけ</figcaption>
     </figure>
 
-    <p>理由は、<code>@OneToMany(mappedBy = "order")</code> が<strong>外部キーを持たない側</strong>だから（→ <a href="#bidirectional">2. 双方向のリレーションと mappedBy</a>）。この側のリストは<strong>読み取り専用</strong>として扱われるため、<code>order.addItem(...)</code> で明細を追加しても、JPA はそれを<strong>「保存すべき新しいデータ」とは見なさない</strong>。</p>
+    <p>理由は、<code>@OneToMany(mappedBy = "order")</code> が<strong>外部キーを持たない側</strong>だから（→ <a href="#bidirectional">2. 双方向のリレーションと mappedBy</a>）。</p>
+    <p>JPA が <code>Order</code> の <code>items</code> リストを見るのは<strong>読み取るときだけ</strong>で、<strong>中身が増えても DB には反映しない</strong>。</p>
+
     <p>そのため、明細も保存したいなら<strong>自分で 1 件ずつ保存する</strong>必要がある。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
@@ -1519,19 +1981,48 @@ for (OrderItem item : order.getItems()) {
     orderItemRepository.save(item);            // ② 子を 1 件ずつ保存
 }</code></pre>
     </div>
-    <p>明細が増えるたびにこの書き方が必要になり、<strong>保存漏れが起きやすい</strong>。これを「親を保存すれば子も保存される」に変えるのが <code>cascade</code>。</p>
-    <p class="case-title">② 削除するとき：子が取り残される</p>
-    <p>こちらは親だけを消そうとした場合。まず、テーブルの状態を確認しておく。</p>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-plaintext">orders テーブル
-id | ordered_at
- 1 | 2026-10-09
+    <p>この書き方には 2 つの問題がある。</p>
+    <div class="fan">
+      <div class="fan-row">
+        <div class="fan-box fan-box-stale">
+          <div class="fan-item">
+            <span class="fan-line"><span class="fan-mark fan-mark-ng">✗</span>保存漏れが起きやすい</span>
+            <span class="fan-note">明細を扱うすべての処理で書く必要がある</span>
+          </div>
+        </div>
+        <div class="fan-box fan-box-stale">
+          <div class="fan-item">
+            <span class="fan-line"><span class="fan-mark fan-mark-ng">✗</span>書き忘れても例外が出ない</span>
+            <span class="fan-note">注文だけ保存され、成功したように見える</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p><code>CascadeType.ALL</code>（または <code>PERSIST</code>）を付ければ、<code>orderRepository.save(order)</code> の <strong>1 行だけで明細も一緒に保存される</strong>。</p>
 
-order_items テーブル
-id | order_id | name       | quantity
- 5 |        1 | ボールペン |        2    ← 「注文 1 の明細」という意味
- 6 |        1 | ノート     |        1    ← 「注文 1 の明細」という意味</code></pre>
+    <h4>② 削除：子が取り残される</h4>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th colspan="2">orders テーブル</th></tr>
+          <tr><th>id</th><th>ordered_at</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>2026-10-09</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th colspan="4">order_items テーブル</th><th></th></tr>
+          <tr><th>id</th><th>order_id</th><th>name</th><th>quantity</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr><td>5</td><td><strong>1</strong></td><td>ボールペン</td><td>2</td><td rowspan="2">「注文 1 の明細」という意味</td></tr>
+          <tr><td>6</td><td><strong>1</strong></td><td>ノート</td><td>1</td></tr>
+        </tbody>
+      </table>
     </div>
     <p>明細側の <code>order_id = 1</code> が「どの注文の明細か」を保持している。ここで<strong>親の行だけを消す</strong>と、この参照先が消えてしまう。</p>
     <div class="editor">
@@ -1581,69 +2072,39 @@ id | order_id | name       | quantity
       <pre><code class="language-plaintext">ERROR: update or delete on table "orders" violates
        foreign key constraint "fk_order_items_order" on table "order_items"</code></pre>
     </div>
-    <p>どちらにしても、<strong>先に子を消してから親を消す</strong>必要がある。その順序を自動でやってくれるのが <code>cascade</code>。</p>
+    <p>どちらにしても、<strong>先に子を消してから親を消す</strong>必要がある。</p>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-sql">DELETE FROM order_items WHERE order_id = 1;   -- ① 子を先に
 DELETE FROM orders      WHERE id = 1;         -- ② そのあと親</code></pre>
     </div>
+    <p><code>CascadeType.ALL</code>（または <code>REMOVE</code>）を付ければ、<code>orderRepository.delete(order)</code> の 1 行で <strong>子 → 親の順に DELETE を発行してくれる</strong>。外部キー制約違反も、孤児になることも起きない。
 
-    <h4>cascade：親への操作を子にも伝える</h4>
-    <p>親に対して行った操作を、<strong>そのまま子にも適用する</strong>という指定。何を伝えるかは <code>CascadeType</code> で選ぶ。</p>
+    <h3 id="orphan-removal">8. orphanRemoval</h3>
+    <p><code>cascade</code> が効くのは「<strong>親そのものを</strong>保存・削除したとき」。一方 <code>orphanRemoval</code> が働くのは、<strong>親は残したまま、明細を 1 件だけ取り消したいとき</strong>。</p>
+    <p>たとえば「注文はそのままで、ボールペンの明細だけキャンセルする」という処理を考える。</p>
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th>CascadeType</th><th>伝わる操作</th></tr>
+          <tr><th colspan="2">orders テーブル</th><th></th></tr>
+          <tr><th>id</th><th>ordered_at</th><th></th></tr>
         </thead>
         <tbody>
-          <tr><td><code>PERSIST</code></td><td>親を保存すると、子も保存される</td></tr>
-          <tr><td><code>MERGE</code></td><td>親の変更を反映すると、子の変更も反映される</td></tr>
-          <tr><td><code>REMOVE</code></td><td><strong>親を削除すると、子も削除される</strong></td></tr>
-          <tr><td><code>REFRESH</code> / <code>DETACH</code></td><td>再読み込み・切り離しが子にも及ぶ</td></tr>
-          <tr><td><code>ALL</code></td><td>上記すべて</td></tr>
+          <tr><td>1</td><td>2026-10-09</td><td><strong>注文は残したい</strong></td></tr>
         </tbody>
       </table>
     </div>
-    <p><code>CascadeType.ALL</code> を付けると、さきほどの<strong>① 保存</strong>と<strong>② 削除</strong>の問題が、どちらも解決する。</p>
-
-    <p class="case-title">① 保存：子を 1 件ずつ save する必要がなくなる</p>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">orderRepository.save(order);   // これだけで明細も一緒に保存される</code></pre>
-    </div>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-sql">INSERT INTO orders      (...) VALUES (...);   -- 親
-INSERT INTO order_items (...) VALUES (...);   -- 子（ボールペン）
-INSERT INTO order_items (...) VALUES (...);   -- 子（ノート）</code></pre>
-    </div>
-    <p><code>PERSIST</code> が効いて、<strong>リストに入っている明細も保存対象に含まれる</strong>ようになる。</p>
-
-    <p class="case-title">② 削除：子が取り残されない</p>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">orderRepository.delete(order);   // これだけで明細も一緒に削除される</code></pre>
-    </div>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-sql">DELETE FROM order_items WHERE order_id = 1;   -- ① 子を先に消す
-DELETE FROM orders      WHERE id = 1;         -- ② そのあと親</code></pre>
-    </div>
-    <p><code>REMOVE</code> が効いて、<strong>子 → 親の順で DELETE を発行してくれる</strong>。外部キー制約違反も、孤児になることも起きない。</p>
-
-    <h4>orphanRemoval = true：親から外された子を削除する</h4>
-    <p><code>cascade</code> が効くのは「<strong>親そのものを</strong>保存・削除したとき」。一方 <code>orphanRemoval</code> が働くのは、<strong>親は残したまま、明細を 1 件だけ取り消したいとき</strong>。</p>
-    <p>たとえば「注文はそのままで、ボールペンの明細だけキャンセルする」という処理を考える。</p>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-plaintext">orders
-id | ordered_at
- 1 | 2026-10-09        ← 注文は残したい
-
-order_items
-id | order_id | name
- 5 |        1 | ボールペン   ← この明細だけ取り消したい
- 6 |        1 | ノート       ← これは残す</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th colspan="3">order_items テーブル</th><th></th></tr>
+          <tr><th>id</th><th>order_id</th><th>name</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr><td>5</td><td>1</td><td>ボールペン</td><td><strong>この明細だけ取り消したい</strong></td></tr>
+          <tr><td>6</td><td>1</td><td>ノート</td><td>これは残す</td></tr>
+        </tbody>
+      </table>
     </div>
     <p>JPA では、<strong>リストから外す</strong>という書き方でこれを表現する。<code>delete</code> を呼ぶわけではない点が特徴。</p>
     <div class="editor">
@@ -1663,162 +2124,6 @@ public void removeItem(Long orderId, Long itemId) {
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-sql">DELETE FROM order_items WHERE id = 5;   -- 外した 1 件だけ消える</code></pre>
-    </div>
-
-    <h4>付けないとどうなるか</h4>
-    <p><code>orphanRemoval</code> の既定は <code>false</code>。この場合、<strong>リストから外しても明細は消えない</strong>。結果は関連の持ち方で変わる。</p>
-
-    <figure class="diagram">
-      <svg viewBox="0 0 660 215" role="img" aria-label="orphanRemoval の有無によって、リストから外した明細が削除されるか、残ってしまうかの違いを示す図">
-        <text class="dg-note" x="8" y="16">order.getItems().remove(item5) を実行したあとの order_items</text>
-
-        <text class="dg-ok" x="8" y="44">orphanRemoval = true</text>
-        <rect class="dg-head" x="8" y="54" width="300" height="22" rx="5"/>
-        <text class="dg-note" x="20" y="70">id | order_id | name</text>
-        <g class="dg-dim">
-          <rect class="dg-box" x="8" y="78" width="300" height="26" rx="5"/>
-          <text class="dg-code" x="20" y="96">5  |    1     | ボールペン</text>
-        </g>
-        <text class="dg-ng" x="318" y="96">✗ 行が消える</text>
-        <rect class="dg-box" x="8" y="106" width="300" height="26" rx="5"/>
-        <text class="dg-code" x="20" y="124">6  |    1     | ノート</text>
-        <text class="dg-ok" x="318" y="124">✅ 残る</text>
-        <text class="dg-note" x="8" y="148">意図どおり、取り消した明細だけが消える</text>
-
-        <text class="dg-ng" x="8" y="180">orphanRemoval = false（既定）</text>
-        <rect class="dg-box" x="8" y="188" width="300" height="24" rx="5"/>
-        <text class="dg-code" x="20" y="205">5  |    1     | ボールペン</text>
-        <text class="dg-ng" x="318" y="205">✗ 消えずに残ったまま</text>
-      </svg>
-      <figcaption>orphanRemoval がないと、リストから外しても DB の行は残る</figcaption>
-    </figure>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>関連の持ち方</th><th><code>orphanRemoval = false</code> のときに起きること</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><strong>双方向</strong>（<code>mappedBy</code> を使う／このスニペットの形）</td><td><strong>SQL は 1 本も発行されない</strong>。リストから外しただけなので DB は変わらず、読み直すと明細は戻ってくる</td></tr>
-          <tr><td>単方向（コレクション側に <code>@JoinColumn</code> を付けた形）</td><td><code>UPDATE order_items SET order_id = NULL WHERE id = 5</code> が走る。行は残るが<strong>親を失った明細（孤児）になる</strong></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p>この「<strong>親を失って取り残された子</strong>」が <strong>orphan（孤児）</strong>。<code>orphanRemoval</code> は「孤児になった子を削除する」という意味の設定で、ここから名前が来ている。</p>
-
-    <p class="case-title">双方向の場合：なぜ SQL が発行されないのか</p>
-    <p>理由はセクション 2 で見た「<strong><code>mappedBy</code> 側は所有者ではない</strong>」という話と同じ（→ <a href="#bidirectional">2. 双方向のリレーションと mappedBy</a>）。DB で関連を保持しているのは <code>order_items.order_id</code> だけで、それを管理しているのは <code>OrderItem.order</code> フィールド。</p>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">public class Order {
-    @OneToMany(mappedBy = "order")       // ← 所有者ではない（読み取り用）
-    private List&lt;OrderItem&gt; items;
-}
-
-public class OrderItem {
-    @ManyToOne
-    @JoinColumn(name = "order_id")       // ← こちらが所有者
-    private Order order;
-}</code></pre>
-    </div>
-    <p><code>order.getItems().remove(item)</code> は<strong>所有者ではない側のリストをいじっただけ</strong>なので、JPA は「DB を変更すべき操作」と見なさない。</p>
-
-    <p class="case-title">「読み直すと戻ってくる」とは</p>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">// 1 回目のトランザクション
-@Transactional
-public void removeItem() {
-    Order order = orderRepository.findById(1L).orElseThrow();
-
-    order.getItems().size();        // 2 件（ボールペン、ノート）
-    order.getItems().remove(item5);
-    order.getItems().size();        // 1 件 ← メモリ上では消えている
-}                                   // ← コミット。SQL は発行されない</code></pre>
-    </div>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">// 2 回目のトランザクション（別のリクエストなど）
-@Transactional
-public void check() {
-    Order order = orderRepository.findById(1L).orElseThrow();
-
-    order.getItems().size();        // 2 件 ← 戻っている
-}</code></pre>
-    </div>
-    <p>2 回目は DB から読み直すので、<code>SELECT * FROM order_items WHERE order_id = 1</code> の結果がそのまま入る。DB は何も変わっていないため<strong>2 件のまま</strong>。</p>
-    <p class="dep-note">⚠️ つまり<strong>メモリ上では消えたように見えるが、DB は変わっていない</strong>。処理中は成功したように見えて、画面を再読み込みすると明細が復活している、という原因の分かりにくいバグになる。</p>
-    <p class="case-title">所有者側も更新すればどうなるか</p>
-    <p>「所有者側を変えないと反映されないなら、<code>item.setOrder(null)</code> も呼べばいいのでは」と考えられる。実際これなら SQL は発行される。</p>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">@Transactional
-public void removeItem(Long orderId, Long itemId) {
-    Order order = orderRepository.findById(orderId).orElseThrow();
-    OrderItem item = findItem(order, itemId);
-
-    order.getItems().remove(item);   // 反対側のリストから外す
-    item.setOrder(null);             // ← 所有者側も更新する
-}</code></pre>
-    </div>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-sql">UPDATE order_items SET order_id = NULL WHERE id = 5;</code></pre>
-    </div>
-    <p>ただし<strong>これは削除ではない</strong>。行はそのまま残り、どの注文にも属さない明細になる。</p>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-plaintext">order_items
-id | order_id | name
- 5 |   NULL   | ボールペン   ← 行は残っている（孤児）
- 6 |     1    | ノート</code></pre>
-    </div>
-    <p>この行は注文一覧からは見えなくなるが、<strong>テーブルには残り続ける</strong>。売上を集計するときに拾ってしまったり、<code>order_id</code> に <code>NOT NULL</code> 制約があれば更新自体がエラーになったりする。</p>
-
-    <p class="case-title">明細を本当に消す 2 つの方法</p>
-    <p>行ごと消したいなら、次のどちらかを選ぶ。</p>
-
-    <span class="compare-label label-good">✓ ① orphanRemoval = true を付ける（推奨）</span>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">@OneToMany(mappedBy = "order",
-           cascade = CascadeType.ALL,
-           orphanRemoval = true)       // ← これを付ける
-private List&lt;OrderItem&gt; items = new ArrayList&lt;&gt;();</code></pre>
-    </div>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">order.getItems().remove(item);   // リストから外すだけでよい
-// → DELETE FROM order_items WHERE id = 5</code></pre>
-    </div>
-    <p><code>Order</code> が明細を<strong>まとめて管理する</strong>形になるので、呼び出し側は <code>OrderItemRepository</code> を知らなくてよい。</p>
-
-    <span class="compare-label label-good">✓ ② 自分で delete を呼ぶ</span>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">@Transactional
-public void removeItem(Long orderId, Long itemId) {
-    Order order = orderRepository.findById(orderId).orElseThrow();
-    OrderItem item = findItem(order, itemId);
-
-    order.getItems().remove(item);        // メモリ上のリストからも外す
-    orderItemRepository.delete(item);     // ← 明示的に削除する
-}</code></pre>
-    </div>
-    <p><code>orphanRemoval</code> を付けていない場合はこちら。<strong>リストから外す処理も忘れずに書く</strong>こと。これを省くと、同じトランザクション内で <code>order.getItems()</code> を見たときに、消したはずの明細が残って見える。</p>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>書き方</th><th>発行される SQL</th><th>結果</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><code>remove</code> だけ（<code>orphanRemoval</code> なし）</td><td>なし</td><td>DB は変わらない</td></tr>
-          <tr><td><code>remove</code> + <code>setOrder(null)</code></td><td><code>UPDATE ... SET order_id = NULL</code></td><td>行が残る（孤児）</td></tr>
-          <tr><td><code>remove</code>（<code>orphanRemoval = true</code>）</td><td><code>DELETE</code></td><td><strong>行が消える</strong></td></tr>
-          <tr><td><code>remove</code> + <code>delete(item)</code></td><td><code>DELETE</code></td><td><strong>行が消える</strong></td></tr>
-        </tbody>
-      </table>
     </div>
 
     <h4>2 つの違いを図で見る</h4>
@@ -1876,6 +2181,102 @@ public void removeItem(Long orderId, Long itemId) {
     </div>
     <p>役割が違うので、<strong>親子関係を一括で管理したい場合は両方セットで付ける</strong>のが定番。</p>
 
+    <h4>orphanRemoval を付けないとどうなるか</h4>
+    <p><code>orphanRemoval</code> の既定は <code>false</code>。この場合、<strong>リストから外しても明細は消えない</strong>。結果はリレーションの持ち方で変わる。</p>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 660 215" role="img" aria-label="orphanRemoval の有無によって、リストから外した明細が削除されるか、残ってしまうかの違いを示す図">
+        <text class="dg-note" x="8" y="16">order.getItems().remove(item5) を実行したあとの order_items</text>
+
+        <text class="dg-ok" x="8" y="44">orphanRemoval = true</text>
+        <rect class="dg-head" x="8" y="54" width="300" height="22" rx="5"/>
+        <text class="dg-note" x="20" y="70">id | order_id | name</text>
+        <g class="dg-dim">
+          <rect class="dg-box" x="8" y="78" width="300" height="26" rx="5"/>
+          <text class="dg-code" x="20" y="96">5  |    1     | ボールペン</text>
+        </g>
+        <text class="dg-ng" x="318" y="96">✗ 行が消える</text>
+        <rect class="dg-box" x="8" y="106" width="300" height="26" rx="5"/>
+        <text class="dg-code" x="20" y="124">6  |    1     | ノート</text>
+        <text class="dg-ok" x="318" y="124">✅ 残る</text>
+        <text class="dg-note" x="8" y="148">意図どおり、取り消した明細だけが消える</text>
+
+        <text class="dg-ng" x="8" y="180">orphanRemoval = false（既定）</text>
+        <rect class="dg-box" x="8" y="188" width="300" height="24" rx="5"/>
+        <text class="dg-code" x="20" y="205">5  |    1     | ボールペン</text>
+        <text class="dg-ng" x="318" y="205">✗ 消えずに残ったまま</text>
+      </svg>
+      <figcaption>orphanRemoval がないと、リストから外しても DB の行は残る</figcaption>
+    </figure>
+
+    <p>何が起きるかは、<strong>リレーションの持ち方</strong>で変わる。比較するのは次の 2 つの形。</p>
+
+    <span class="code-label">双方向（このセクションで使っている形）</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Entity
+public class Order {
+
+    // 所有者は OrderItem 側
+    @OneToMany(mappedBy = "order")
+    private List&lt;OrderItem&gt; items = new ArrayList&lt;&gt;();
+}
+
+@Entity
+public class OrderItem {
+
+    // 外部キーを持つ（＝所有者）
+    @ManyToOne
+    @JoinColumn(name = "order_id")
+    private Order order;
+}</code></pre>
+    </div>
+
+    <span class="code-label">単方向</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">@Entity
+public class Order {
+
+    // mappedBy が無く、Order 側が外部キーを管理する
+    @OneToMany
+    @JoinColumn(name = "order_id")
+    private List&lt;OrderItem&gt; items = new ArrayList&lt;&gt;();
+}
+
+// OrderItem は Order への参照を持たない</code></pre>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>リレーションの持ち方</th><th><code>orphanRemoval = false</code> のときに起きること</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>双方向</strong></td><td><strong>DB には何も起きない</strong>（SQL が 1 本も発行されない）。明細が消えるのは<strong>メモリ上のリストからだけ</strong>で、<code>order_items</code> の行はそのまま残る。次に読み込み直すと、外したはずの明細がまた現れる</td></tr>
+          <tr><td>単方向</td><td><code>UPDATE order_items SET order_id = NULL WHERE id = 5</code> が走る。行は残るが<strong>親を失った明細（孤児）になる</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>この「<strong>親を失って取り残された子</strong>」が <strong>orphan（孤児）</strong>。<code>orphanRemoval</code> は「孤児になった子を削除する」という意味の設定で、ここから名前が来ている。</p>
+
+    <p class="case-title">双方向の場合：なぜ SQL が発行されないのか</p>
+    <p>理由はセクション 2 で見た「<strong><code>mappedBy</code> 側は所有者ではない</strong>」という話と同じ（→ <a href="#bidirectional">2. 双方向のリレーションと mappedBy</a>）。DB でリレーションを保持しているのは <code>order_items.order_id</code> だけで、それを管理しているのは <code>OrderItem.order</code> フィールド。</p>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">public class Order {
+    @OneToMany(mappedBy = "order")       // ← 所有者ではない（読み取り用）
+    private List&lt;OrderItem&gt; items;
+}
+
+public class OrderItem {
+    @ManyToOne
+    @JoinColumn(name = "order_id")       // ← こちらが所有者
+    private Order order;
+}</code></pre>
+    </div>
+    <p><code>order.getItems().remove(item)</code> は<strong>所有者ではない側のリストをいじっただけ</strong>なので、JPA は「DB を変更すべき操作」と見なさない。</p>
+
     <h4>⚠️ 使ってよいのは、親と子の一生が一致する場合だけ</h4>
     <p>ここまで便利に見えてきた <code>cascade</code> と <code>orphanRemoval</code> だが、<strong>付けてよい関係は限られている</strong>。<code>CascadeType.ALL</code> には <code>REMOVE</code> が含まれるため、<strong>親を消すと子も消える</strong>という挙動がセットで付いてくる。</p>
     <p>判断基準は「<strong>親が消えたとき、子だけ残っても意味があるか</strong>」。</p>
@@ -1895,102 +2296,69 @@ public void removeItem(Long orderId, Long itemId) {
     </div>
     <p>「明細は注文の<strong>一部</strong>」「商品はカテゴリの<strong>一部ではない</strong>」という違いが要点。前者のような関係を<strong>親子関係</strong>、後者のような関係を<strong>参照関係</strong>と呼ぶ。</p>
 
-    <figure class="diagram">
-      <svg viewBox="0 0 660 215" role="img" aria-label="注文と明細は親子関係なので cascade を使えるが、カテゴリと商品は参照関係なので使えないことを示す図">
-        <text class="dg-ok" x="8" y="16">✅ 親子関係：注文 → 明細</text>
-        <rect class="dg-box" x="8" y="26" width="140" height="28" rx="5"/>
-        <text class="dg-code" x="20" y="45">Order #1</text>
-        <text class="dg-ng" x="158" y="45">✗ delete</text>
-        <line class="dg-guide" x1="24" y1="54" x2="24" y2="100"/>
-        <g class="dg-dim">
-          <rect class="dg-box" x="34" y="62" width="140" height="26" rx="5"/>
-          <text class="dg-code" x="46" y="80">OrderItem #5</text>
-          <rect class="dg-box" x="34" y="92" width="140" height="26" rx="5"/>
-          <text class="dg-code" x="46" y="110">OrderItem #6</text>
-        </g>
-        <text class="dg-ng" x="184" y="80">✗</text>
-        <text class="dg-ng" x="184" y="110">✗</text>
-        <text class="dg-note" x="8" y="136">明細は注文の一部なので、</text>
-        <text class="dg-note" x="8" y="154">一緒に消えてよい</text>
+    <h4>双方向のメソッドと cascade の使い分け</h4>
+    <p><code>addItem()</code> と <code>cascade</code> は似た場面に出てくるが、<strong>解決している問題が違う</strong>。</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th></th><th>両側をまとめて更新するメソッド</th><th><code>cascade</code> / <code>orphanRemoval</code></th></tr>
+        </thead>
+        <tbody>
+          <tr><td>決めること</td><td><strong>Java 上の 2 つの参照を揃える</strong></td><td><strong>親への操作を子に伝える</strong></td></tr>
+          <tr><td>書く場所</td><td>エンティティのメソッド（<code>addItem</code> / <code>removeItem</code>）</td><td><code>@OneToMany</code> の属性</td></tr>
+          <tr><td>これが無いと</td><td><code>item.order</code> が <code>null</code> のまま残る</td><td><code>INSERT</code> / <code>DELETE</code> が発行されない</td></tr>
+          <tr><td>扱っている場所</td><td>→ <a href="#bidirectional">2. 双方向のリレーションと mappedBy</a></td><td>このセクション</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>どちらか一方では足りず、<strong>両方そろって初めて「親を保存すれば子も保存される」が成立する</strong>。</p>
 
-        <text class="dg-ng" x="348" y="16">❌ 参照関係：カテゴリ → 商品</text>
-        <rect class="dg-box" x="348" y="26" width="140" height="28" rx="5"/>
-        <text class="dg-code" x="360" y="45">Category #3</text>
-        <text class="dg-ng" x="498" y="45">✗ delete</text>
-        <line class="dg-guide" x1="364" y1="54" x2="364" y2="130"/>
-        <g class="dg-dim">
-          <rect class="dg-box" x="374" y="62" width="140" height="26" rx="5"/>
-          <text class="dg-code" x="386" y="80">Product #10</text>
-          <rect class="dg-box" x="374" y="92" width="140" height="26" rx="5"/>
-          <text class="dg-code" x="386" y="110">Product #11</text>
-          <rect class="dg-box" x="374" y="122" width="140" height="26" rx="5"/>
-          <text class="dg-code" x="386" y="140">Product #12</text>
-        </g>
-        <text class="dg-ng" x="524" y="80">💥</text>
-        <text class="dg-ng" x="524" y="110">💥</text>
-        <text class="dg-ng" x="524" y="140">💥</text>
-        <text class="dg-ng" x="348" y="170">カテゴリを 1 つ消しただけで、</text>
-        <text class="dg-ng" x="348" y="188">その商品が全部消える</text>
-      </svg>
-      <figcaption>親子関係なら cascade は妥当だが、参照関係に付けるとデータを失う</figcaption>
-    </figure>
-
-    <span class="compare-label label-bad">✗ 参照関係に付けてしまった例</span>
+    <span class="code-label">Entity</span>
     <div class="editor">
       <div class="editor-bar"><span></span><span></span><span></span></div>
       <pre><code class="language-java">@Entity
-public class Category {
+public class Order {
 
-    @OneToMany(mappedBy = "category",
-               cascade = CascadeType.ALL,   // ← REMOVE も含まれる
+    // ② 操作の伝播（このセクション）
+    @OneToMany(mappedBy = "order",
+               cascade = CascadeType.ALL,
                orphanRemoval = true)
-    private List&lt;Product&gt; products = new ArrayList&lt;&gt;();
-}</code></pre>
-    </div>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">// 「文房具カテゴリをやめる」つもりの処理
-categoryRepository.delete(category);</code></pre>
-    </div>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-sql">DELETE FROM products   WHERE category_id = 3;   -- 💥 商品が全部消える
-DELETE FROM categories WHERE id = 3;</code></pre>
-    </div>
-    <p>カテゴリを整理するだけのつもりが、<strong>そのカテゴリの商品データを全件失う</strong>。しかも <code>delete</code> の 1 行を見ただけでは気づけず、問題が表に出るのは<strong>実行したあと</strong>。</p>
+    private List&lt;OrderItem&gt; items = new ArrayList&lt;&gt;();
 
-    <span class="compare-label label-good">✓ 参照関係では cascade を付けない</span>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">@Entity
-public class Category {
-
-    @OneToMany(mappedBy = "category")   // cascade も orphanRemoval も付けない
-    private List&lt;Product&gt; products = new ArrayList&lt;&gt;();
-}</code></pre>
-    </div>
-    <p>この場合、カテゴリを消そうとすると<strong>外部キー制約でエラーになる</strong>。一見不便だが、<strong>データを失うより望ましい</strong>。商品が残っているうちはカテゴリを消せない、という保護として働く。</p>
-    <p>どうしても消したいなら、先に商品の付け替えや整理を明示的に行う。</p>
-    <div class="editor">
-      <div class="editor-bar"><span></span><span></span><span></span></div>
-      <pre><code class="language-java">@Transactional
-public void deleteCategory(Long categoryId, Long newCategoryId) {
-    Category old = categoryRepository.findById(categoryId).orElseThrow();
-    Category dest = categoryRepository.findById(newCategoryId).orElseThrow();
-
-    // 商品を別のカテゴリに付け替える（＝消さない）
-    for (Product p : productRepository.findByCategory(old)) {
-        p.setCategory(dest);
+    // ① 参照を揃える（セクション 2）
+    public void addItem(OrderItem item) {
+        items.add(item);
+        item.setOrder(this);
     }
-
-    categoryRepository.delete(old);
 }</code></pre>
     </div>
 
-    <div class="callout callout-warn">
-      <p class="callout-title">⚠️ 迷ったら付けない</p>
-      <p><code>cascade</code> を付け忘れても、起きるのは「<strong>保存されない</strong>」「<strong>消せない</strong>」というエラー。気づいてから直せる。一方で<strong>誤って付けた場合に起きるのはデータの消失</strong>で、あとから取り戻せない。</p>
-      <p>判断に迷う関係（「ユーザー → 投稿」など）では、<strong>まず付けずに書き、必要になったら足す</strong>のが安全。</p>
+    <span class="code-label">呼び出し側</span>
+    <div class="editor">
+      <div class="editor-bar"><span></span><span></span><span></span></div>
+      <pre><code class="language-java">Order order = new Order();
+order.addItem(new OrderItem("ボールペン", 2));   // ① で order_id の値が決まる
+
+orderRepository.save(order);                    // ② で明細も INSERT される</code></pre>
+    </div>
+    <div class="fan">
+      <p class="fan-intro"><strong>使い分けの目安</strong></p>
+      <div class="fan-row">
+        <div class="fan-box fan-box-owner">
+          <span class="fan-label">両側をまとめて更新するメソッド</span>
+          <div class="fan-item">
+            <span class="fan-line"><span class="fan-mark fan-mark-ok">✓</span>双方向にしたら必ず用意する</span>
+            <span class="fan-note">参照のずれは<strong>どの関係でも起きる</strong></span>
+          </div>
+        </div>
+        <div class="fan-box fan-box-stale">
+          <span class="fan-label">cascade / orphanRemoval</span>
+          <div class="fan-item">
+            <span class="fan-line"><span class="fan-mark fan-mark-ng">!</span>付ける関係を選ぶ</span>
+            <span class="fan-note"><strong>親と子の一生が一致する関係だけ</strong>に付ける</span>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
